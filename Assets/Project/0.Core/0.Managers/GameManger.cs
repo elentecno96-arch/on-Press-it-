@@ -1,17 +1,11 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
-public class GameManger : MonoBehaviour
+namespace Project.Core.Manager
 {
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
+    /// <summary>
+    /// 이 친구는 게임의 흐름 담당할거임
+    /// </summary>
+    public class GameManger : MonoBehaviour
     {
         
     }
