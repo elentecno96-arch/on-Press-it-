@@ -4,7 +4,7 @@ using UnityEngine;
 namespace Project.Core.Utilities
 {
     /// <summary>
-    /// 제네릭 추상 싱글톤
+    /// 제네릭 추상 베이스 싱글톤
     /// </summary>
     public abstract class BaseSingleton<T> : MonoBehaviour where T : MonoBehaviour
     {
