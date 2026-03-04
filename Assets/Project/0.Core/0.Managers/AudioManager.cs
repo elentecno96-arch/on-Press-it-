@@ -1,20 +1,33 @@
 using Cysharp.Threading.Tasks;
+<<<<<<< Updated upstream
+=======
+using Project.Core.Utilities;
+>>>>>>> Stashed changes
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Audio;
 namespace Project.Core.Managers
+<<<<<<< Updated upstream
 {
 
     public class AudioManager : MonoBehaviour
 {
+=======
+{    public class AudioManager : BaseSingleton<AudioManager>
+    {
+>>>>>>> Stashed changes
         [Header("Audio Mixer")]
         [SerializeField] private AudioMixer mainMixer;
 
         [Header("BGM Source")]
         [SerializeField] private AudioSource musicSource;
 
+<<<<<<< Updated upstream
         public async UniTask Initialize()
+=======
+        public override async UniTask Initialize()
+>>>>>>> Stashed changes
         {
             // 설정 저장소(PlayerPrefs 등)에서 기존 볼륨 값을 가져와 세팅할 수 있습니다.
             await UniTask.Yield();
@@ -40,4 +53,8 @@ namespace Project.Core.Managers
             musicSource.Play();
         }
     }
+<<<<<<< Updated upstream
 }
+=======
+}
+>>>>>>> Stashed changes
