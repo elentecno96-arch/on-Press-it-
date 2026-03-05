@@ -164,6 +164,7 @@ PlayerSettings:
   androidMaxAspectRatio: 2.1
   applicationIdentifier:
     Android: com.DefaultCompany.Pressit
+    Standalone: com.DefaultCompany.Press-it-
   buildNumber:
     Standalone: 0
     VisionOS: 0
@@ -895,7 +896,7 @@ PlayerSettings:
     PS5: DOTWEEN
     QNX: DOTWEEN
     Stadia: DOTWEEN
-    Standalone: DOTWEEN
+    Standalone: UNITASK_DOTWEEN_SUPPORT;DOTWEEN
     VisionOS: DOTWEEN
     WebGL: DOTWEEN
     Windows Store Apps: DOTWEEN
@@ -933,8 +934,8 @@ PlayerSettings:
   apiCompatibilityLevelPerPlatform: {}
   m_RenderingPath: 1
   m_MobileRenderingPath: 1
-  metroPackageName: Press it!
-  metroPackageVersion: 
+  metroPackageName: Pressit
+  metroPackageVersion: 1.0.0.0
   metroCertificatePath: 
   metroCertificatePassword: 
   metroCertificateSubject: 
@@ -942,7 +943,7 @@ PlayerSettings:
   metroCertificateNotAfter: 0000000000000000
   metroApplicationDescription: Press it!
   wsaImages: {}
-  metroTileShortName: 
+  metroTileShortName: Press it!
   metroTileShowName: 0
   metroMediumTileShowName: 0
   metroLargeTileShowName: 0
