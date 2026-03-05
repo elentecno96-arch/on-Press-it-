@@ -14,13 +14,28 @@ namespace Project.Core.Ui.GlobalUi.View
 
         private Tween _fadeTween;
 
-        public void Init() => fadeGroup.alpha = 0f;
+        public void Init()
+        {
+            fadeGroup.alpha = 0f;
+            gameObject.SetActive(false);
+        }
 
         public async UniTask PlayFade(float targetAlpha)
         {
             _fadeTween?.Kill();
+
+            if (targetAlpha > 0)
+            {
+                gameObject.SetActive(true);
+            }
+
             _fadeTween = fadeGroup.DOFade(targetAlpha, fadeDuration);
             await _fadeTween.ToUniTask();
+
+            if (targetAlpha <= 0)
+            {
+                gameObject.SetActive(false);
+            }
         }
     }
 }
