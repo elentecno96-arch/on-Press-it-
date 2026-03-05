@@ -1,5 +1,6 @@
 using Cysharp.Threading.Tasks;
 using Project.Core.Utilities;
+using UnityEngine;
 
 namespace Project.Core.Managers
 {
@@ -22,19 +23,14 @@ namespace Project.Core.Managers
 
         public async UniTask EnterGameScene(string sceneName)
         {
-            UniTask sessionTask = InitGameScene();
-            await LoadingManager.Instance.LoadSceneAsync(sceneName, sessionTask);
+            await LoadingManager.Instance.LoadSceneAsync(sceneName, InitGameScene());
         }
 
         private async UniTask InitGameScene()
         {
-            await UniTask.WhenAll(
-                // TODO:
-                // Stage 데이터 세팅
-                // Audio 프리로드
-                // Chart 로드
-                UniTask.CompletedTask
-            );
+            await UniTask.Yield();
+
+            Debug.Log("[GameManager] InitGameScene 완료");
         }
     }
 }

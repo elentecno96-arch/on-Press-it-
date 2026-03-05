@@ -1,6 +1,7 @@
 using Cysharp.Threading.Tasks;
-using Project.Core.Utilities;
 using Project.Core.Ui.GlobalUi.View;
+using Project.Core.Utilities;
+using Project.Data.LoadingText;
 using UnityEngine;
 
 namespace Project.Core.Ui.GlobalUi
@@ -10,28 +11,36 @@ namespace Project.Core.Ui.GlobalUi
     /// </summary>
     public class GlobalUIPresenter : BaseSingleton<GlobalUIPresenter>
     {
+        private const float FADE_IN_VALUE = 1f;
+        private const float FADE_OUT_VALUE = 0f;
+
         [SerializeField] private GlobalFadeView fadeView;       
-        [SerializeField] private GlobalLoadingView loadingView; 
+        [SerializeField] private GlobalLoadingView loadingView;
 
         // 추후 SO로 분리 예정
-        private readonly string[] _messages = { "화면 닦는 중...", "노트 배치 중...", "관객 입장 중..." };
+        [SerializeField] private LoadingMessageData messageData;
 
         public override UniTask Initialize()
         {
             fadeView.Init();
             loadingView.Init();
+
+            IsInitialized = true;
+
             return UniTask.CompletedTask;
         }
 
         public async UniTask ShowLoading()
         {
-            await fadeView.PlayFade(1f);
+            await fadeView.PlayFade(FADE_IN_VALUE);
 
-            string randomMsg = _messages[Random.Range(0, _messages.Length)];
-            loadingView.SetText(randomMsg);
+            if (messageData != null)
+            {
+                loadingView.SetText(messageData.GetRandomMessage());
+            }
+
             loadingView.SetVisible(true);
-
-            await loadingView.Show(); 
+            await loadingView.Show();
         }
 
         public async UniTask HideLoading()
@@ -39,7 +48,7 @@ namespace Project.Core.Ui.GlobalUi
             await loadingView.Hide(); 
             loadingView.SetVisible(false);
 
-            await fadeView.PlayFade(0f);
+            await fadeView.PlayFade(FADE_OUT_VALUE);
         }
 
         public void SetProgress(float val)
