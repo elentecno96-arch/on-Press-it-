@@ -11,6 +11,7 @@ namespace Project.Core.Managers
     {
         public override async UniTask Initialize()
         {
+            await UniTask.Yield();
             if (IsInitialized) return;
 
             //전역 매니저 기본 초기화
