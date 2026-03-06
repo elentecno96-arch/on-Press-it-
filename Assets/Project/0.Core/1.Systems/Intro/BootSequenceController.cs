@@ -1,8 +1,9 @@
 using Cysharp.Threading.Tasks;
 using DG.Tweening;
 using Project.Core.Managers;
-using UnityEngine;
 using System.Collections;
+using UnityEngine;
+using UnityEngine.InputSystem;
 
 namespace Project.Core.Systems.Intro
 {
@@ -28,6 +29,8 @@ namespace Project.Core.Systems.Intro
         [SerializeField] private CanvasGroup startGroup;   // Start_Tx의 CanvasGroup
         [SerializeField] private GameObject startObject;   // Start_Tx 오브젝트
 
+        private bool _isTransitioning = false;
+
         private void Start()
         {
             if (CheckComponents())
@@ -50,8 +53,15 @@ namespace Project.Core.Systems.Intro
             return true;
         }
 
+        /// <summary>
+        /// 인트로 연출 순서 코루틴
+        /// </summary>
+        /// <returns></returns>
         private IEnumerator IntroSequenceRoutine()
         {
+            Debug.Log("게임매니저 초기화 시작");
+            yield return GameManager.Instance.Initialize().ToCoroutine();
+
             warningGroup.alpha = 0f;
             logoGroup.alpha = 0f;
             startGroup.alpha = 0f;
@@ -72,7 +82,12 @@ namespace Project.Core.Systems.Intro
             startObject.SetActive(true);
             startGroup.DOFade(1f, START_TEXT_LOOP_DURATION).SetLoops(-1, LoopType.Yoyo).SetLink(startObject); //오브젝트가 파괴되면 트윈도 같이 kill
 
-            yield return new WaitUntil(() => Input.anyKeyDown || Input.GetMouseButtonDown(0)); //인풋 시스템으로 변경 예정
+            //터치나 클릭이 발생할 때 까지 대기
+            yield return new WaitUntil(() =>
+                (Touchscreen.current != null && Touchscreen.current.primaryTouch.press.isPressed) ||
+                (Pointer.current != null && Pointer.current.press.isPressed) ||
+                (Keyboard.current != null && Keyboard.current.anyKey.isPressed)
+            );
 
             EnterMainScene();
         }
@@ -82,16 +97,15 @@ namespace Project.Core.Systems.Intro
         /// </summary>
         private void EnterMainScene()
         {
+            if (_isTransitioning) return; //중복 예외 처리
+
+            _isTransitioning = true;
             Debug.Log("메인 씬으로 이동 요청");
 
             if (GameManager.Instance != null)
             {
-                GameManager.Instance.EnterGameScene("TestCore1").Forget(); //테스트 코드
+                GameManager.Instance.EnterGameScene("TestCore1").Forget(); //현재 테스트용 씬 이동
                 //GameManager.Instance.EnterGameScene("Main").Forget();
-            }
-            else
-            {
-                Debug.LogError("게임매니저가 존재 하지 않습니다 필드를 확인해주세요");
             }
         }
     }
