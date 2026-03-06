@@ -1,4 +1,6 @@
 using Cysharp.Threading.Tasks;
+using Project.Rhythm;
+using Project.Rhythm.Data;
 using Project.Rhythm.Timeline;
 using System;
 using UnityEngine;
@@ -11,51 +13,36 @@ namespace Project.Core.Managers
     public class StageManager : MonoBehaviour
     {
         [SerializeField] private AudioSource musicSource;
-
-        private AudioTimeline audioTimeline;
+        private AudioTimeline _audioTimeline;
+        // private RhythmEventSystem _eventSystem;
+        // private JudgementSystem _judgementSystem;
 
         public event Action OnStageInitialized;
-
-        private bool isInitialized;
+        private bool _isInitialized;
 
         public async UniTask Initialize()
         {
-            if (isInitialized)
-                return;
+            if (_isInitialized) return;
 
-            await UniTask.Yield();
+            // 1. 스테이지 데이터 가져오기 (GameManager 등 전역 상태 참조)
+            // var stageData = GameManager.Instance.CurrentStageData;
 
-            // AudioTimeline 생성
-            audioTimeline = new AudioTimeline();
-            audioTimeline.Initialize(musicSource);
+            // 2. 하위 시스템 순차적 초기화
+            _audioTimeline = new AudioTimeline();
+            //_audioTimeline.Initialize(musicSource,stageData);
+            // _audioTimeline.SetTimeRegion(stageData.startTime, stageData.endTime);
 
-            // EventSystem 생성 예정
-            // JudgementSystem 생성 예정
+            // 3. 이벤트 시스템 및 판정 시스템 초기화 대기
+            // await _eventSystem.Initialize(stageData);
+            // await _judgementSystem.Initialize();
 
-            isInitialized = true;
+            await UniTask.Yield(); // 필요 시 한 프레임 대기
 
-            Debug.Log("[StageManager] Initialize 완료");
+            _isInitialized = true;
 
+            // 로딩 매니저에게 "준비 완료" 신호 발송
             OnStageInitialized?.Invoke();
-        }
-
-        public void StartStage()
-        {
-            if (!isInitialized)
-                return;
-
-            audioTimeline.StartTimeline();
-        }
-
-        private void Update()
-        {
-            if (!isInitialized)
-                return;
-
-            float currentTime = audioTimeline.GetTime();
-
-            // EventSystem.Process(currentTime);
-            // JudgementSystem.Update(currentTime);
+            Debug.Log("[StageManager] 씬 내부 모든 시스템 초기화 완료");
         }
     }
 }

@@ -1,3 +1,4 @@
+using Project.Rhythm.Data;
 using UnityEngine;
 
 namespace Project.Rhythm.Timeline
@@ -8,48 +9,28 @@ namespace Project.Rhythm.Timeline
     public class AudioTimeline
     {
         private AudioSource audioSource;
-        private float startTime;
+        private float _stageStartTime; //실제 게임 위치
         private bool isPlaying;
 
-        /// <summary>
-        /// 초기화
-        /// </summary>
-        /// <param name="source"></param>
-        public void Initialize(AudioSource source)
+        public void Initialize(AudioSource source, StageData data)
         {
             audioSource = source;
+            audioSource.clip = data.masterTrack;
+
+            audioSource.time = data.startPosition;
+            _stageStartTime = data.playStartTime;
         }
 
-        /// <summary>
-        /// 타임 라인 시작
-        /// </summary>
         public void StartTimeline()
         {
-            if (audioSource == null)
-                return;
-
             audioSource.Play();
-
-            startTime = audioSource.time;
             isPlaying = true;
         }
 
         public float GetTime()
         {
-            if (!isPlaying || audioSource == null)
-                return 0f;
-
-            return audioSource.time - startTime;
-        }
-
-        
-        public void Stop()
-        {
-            if (audioSource == null)
-                return;
-
-            audioSource.Stop();
-            isPlaying = false;
+            if (!isPlaying) return 0f;
+            return audioSource.time - _stageStartTime;
         }
     }
 }

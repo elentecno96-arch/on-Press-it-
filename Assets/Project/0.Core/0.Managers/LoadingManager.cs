@@ -20,41 +20,35 @@ namespace Project.Core.Managers
 
         public async UniTask LoadSceneAsync(string sceneName)
         {
-            Debug.Log($"{sceneName} 로딩 시작");
-
             OnLoadingStarted?.Invoke();
 
             var op = SceneManager.LoadSceneAsync(sceneName);
             op.allowSceneActivation = false;
 
             await UniTask.WaitUntil(() => op.progress >= LOAD_THRESHOLD);
-
             op.allowSceneActivation = true;
-
             await UniTask.WaitUntil(() => op.isDone);
 
-            //GameScene 초기화
-            await InitializeGameScene();
+            await InitializeStageInScene();
 
             OnLoadingFinished?.Invoke();
         }
 
-        private async UniTask InitializeGameScene()
+        private async UniTask InitializeStageInScene()
         {
             var stageManager = UnityEngine.Object.FindFirstObjectByType<StageManager>();
 
-            if (stageManager == null)
-            {
-                Debug.LogWarning("StageManager not found");
-                return;
-            }
+            if (stageManager == null) return;
 
             var tcs = new UniTaskCompletionSource();
 
-            stageManager.OnStageInitialized += () =>
+            Action onInit = null;
+            onInit = () =>
             {
+                stageManager.OnStageInitialized -= onInit;
                 tcs.TrySetResult();
             };
+            stageManager.OnStageInitialized += onInit;
 
             stageManager.Initialize().Forget();
 
