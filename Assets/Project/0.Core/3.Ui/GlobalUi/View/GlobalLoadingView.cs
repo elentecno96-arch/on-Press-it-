@@ -68,15 +68,19 @@ public class GlobalLoadingView : MonoBehaviour
 
     public async UniTask UpdateProgress(float value, float duration)
     {
-        _progressTween?.Kill();
+        if (_progressTween != null && _progressTween.IsActive())
+        {
+            _progressTween.Kill(false);
+        }
 
-        if (duration <= PROGRESS_ZERO)
+        if (duration <= 0.01f)
         {
             loadingBar.value = value;
             return;
         }
 
-        _progressTween = loadingBar.DOValue(value, duration);
-        await _progressTween.ToUniTask();
+        _progressTween = loadingBar.DOValue(value, duration).SetEase(Ease.Linear);
+
+        await _progressTween.ToUniTask(TweenCancelBehaviour.Kill, this.GetCancellationTokenOnDestroy());
     }
 }

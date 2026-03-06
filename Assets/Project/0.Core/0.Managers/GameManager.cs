@@ -11,27 +11,28 @@ namespace Project.Core.Managers
     {
         public override async UniTask Initialize()
         {
+            Debug.Log("모든 매니저 초기화 진행");
+
             await UniTask.Yield();
+
             if (IsInitialized) return;
+
+            if (InputManager.Instance != null)
+            {
+                await InputManager.Instance.Initialize();
+            }
 
             //전역 매니저 기본 초기화
             // await AudioManager.Instance.Initialize();
             // await PlayerManager.Instance.Initialize();
-            // await StageManager.Instance.Initialize();
 
+            Debug.Log("모든 매니저 초기화 진행 완료");
             IsInitialized = true;
         }
 
         public async UniTask EnterGameScene(string sceneName)
         {
-            await LoadingManager.Instance.LoadSceneAsync(sceneName, InitGameScene());
-        }
-
-        private async UniTask InitGameScene()
-        {
-            await UniTask.Yield();
-
-            Debug.Log("[GameManager] InitGameScene 완료");
+            await LoadingManager.Instance.LoadSceneAsync(sceneName);
         }
     }
 }
