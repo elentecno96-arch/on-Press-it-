@@ -1,5 +1,6 @@
 using Cysharp.Threading.Tasks;
 using Project.Core.Utilities;
+using Project.Rhythm.Data;
 using UnityEngine;
 
 namespace Project.Core.Managers
@@ -9,6 +10,7 @@ namespace Project.Core.Managers
     /// </summary>
     public class GameManager : BaseSingleton<GameManager>
     {
+        public StageData CurrentStageData { get; private set; }
         public override async UniTask Initialize()
         {
             Debug.Log("모든 매니저 초기화 진행");
@@ -28,6 +30,14 @@ namespace Project.Core.Managers
 
             Debug.Log("모든 매니저 초기화 진행 완료");
             IsInitialized = true;
+        }
+
+        /// <summary>
+        /// 메인에서 스테이지를 클릭했을 때 호출
+        /// </summary>
+        public void SelectStage(StageData stageData)
+        {
+            CurrentStageData = stageData;
         }
 
         public async UniTask EnterGameScene(string sceneName)

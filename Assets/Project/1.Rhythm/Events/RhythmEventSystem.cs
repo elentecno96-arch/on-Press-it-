@@ -1,51 +1,78 @@
 using Project.Rhythm.Data;
+using System;
 using System.Collections.Generic;
-using UnityEngine;
 
-namespace Project.Rhythm
+namespace Project.Rhythm.Event
 {
     /// <summary>
-    /// 리듬 이벤트 시스템 (순수클래스)
+    /// StageTime을 기준으로 노트를 생성해야 할 시점을 트리거하는 시스템
     /// </summary>
     public class RhythmEventSystem
     {
-        private List<RhythmAction> _sortedActions;
+        private struct EventData
+        {
+            public RhythmAction action;
+            public float spawnTriggerTime; // 실제 생성되어야 하는 StageTime
+            public float targetHitTime;    // 판정 지점 도착 StageTime
+        }
+
+        private readonly List<EventData> _events = new();
         private int _currentIndex;
-        private float _bpm;
+        private float _secondsPerBeat;
 
-        public void Initialize(StageData data)
+        public event Action<RhythmAction, float> OnSpawnTriggered;
+
+        public void Initialize(StageData data, float appearDuration)
         {
-            _bpm = data.bpm;
-            _sortedActions = new List<RhythmAction>();
-
-            foreach (var p in data.patterns)
-            {
-                _sortedActions.AddRange(p.actions);
-            }
-            _sortedActions.Sort((a, b) => a.beat.CompareTo(b.beat));
-
+            _events.Clear();
             _currentIndex = 0;
+            _secondsPerBeat = 60f / data.bpm;
+
+            foreach (var pattern in data.patterns)
+            {
+                foreach (var action in pattern.actions)
+                {
+                    float hitTime = action.beat * _secondsPerBeat;
+
+                    float spawnTime = hitTime - (appearDuration * 0.7f);
+
+                    _events.Add(new EventData
+                    {
+                        action = action,
+                        spawnTriggerTime = spawnTime,
+                        targetHitTime = hitTime
+                    });
+                }
+            }
+            _events.Sort((a, b) => a.spawnTriggerTime.CompareTo(b.spawnTriggerTime));
         }
 
-        public void Process(float currentTime)
+        /// <summary>
+        /// StageManager에서 계산된 stageTime(musicTime - playStartTime)을 인자로 받습니다
+        /// </summary>
+        public void Process(float stageTime)
         {
-            if (_currentIndex >= _sortedActions.Count) return;
+            if (stageTime < 0f) return;
 
-            // 박자를 시간으로 변환
-            float targetTime = (_sortedActions[_currentIndex].beat * (60f / _bpm));
-
-            if (currentTime >= targetTime)
+            while (_currentIndex < _events.Count)
             {
-                TriggerAction(_sortedActions[_currentIndex]);
-                _currentIndex++;
+                var evt = _events[_currentIndex];
+
+                if (stageTime >= evt.spawnTriggerTime)
+                {
+                    OnSpawnTriggered?.Invoke(evt.action, evt.targetHitTime);
+                    _currentIndex++;
+                }
+                else
+                {
+                    break;
+                }
             }
         }
 
-        private void TriggerAction(RhythmAction action)
+        public void Reset()
         {
-            Debug.Log($"[Event] {action.type} 실행! (Beat: {action.beat})");
-            // 판정 시스템
+            _currentIndex = 0;
         }
     }
 }
-
