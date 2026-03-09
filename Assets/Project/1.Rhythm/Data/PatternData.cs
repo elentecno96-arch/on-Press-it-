@@ -7,7 +7,7 @@ namespace Project.Rhythm.Data
     /// <summary>
     /// 패턴 타입 열거형
     /// </summary>
-    public enum PatternType { Tap, Hold, Slide }
+    public enum PatternType { None, Tap, Hold, Slide }
 
     /// <summary>
     /// 리듬 행동 이벤트
@@ -18,6 +18,10 @@ namespace Project.Rhythm.Data
         public float beat;          // 박자 단위
         public PatternType type;
         public float duration;      // Hold 패턴에서 사용 예정
+
+        public string spawnStrategyId;
+        public string moveStrategyId;
+        public string actionStrategyId;
     }
 
     /// <summary>

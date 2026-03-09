@@ -16,7 +16,10 @@ namespace Project.Core.Managers
 
         private const float LOAD_THRESHOLD = 0.9f;
 
-        public override async UniTask Initialize() => await UniTask.CompletedTask;
+        public override async UniTask Initialize()
+        {
+            await UniTask.CompletedTask;
+        }
 
         public async UniTask LoadSceneAsync(string sceneName)
         {
@@ -26,7 +29,9 @@ namespace Project.Core.Managers
             op.allowSceneActivation = false;
 
             await UniTask.WaitUntil(() => op.progress >= LOAD_THRESHOLD);
+
             op.allowSceneActivation = true;
+
             await UniTask.WaitUntil(() => op.isDone);
 
             await InitializeStageInScene();
@@ -36,23 +41,18 @@ namespace Project.Core.Managers
 
         private async UniTask InitializeStageInScene()
         {
+            await UniTask.NextFrame();
+
             var stageManager = UnityEngine.Object.FindFirstObjectByType<StageManager>();
-
-            if (stageManager == null) return;
-
-            var tcs = new UniTaskCompletionSource();
-
-            Action onInit = null;
-            onInit = () =>
+            if (stageManager == null)
             {
-                stageManager.OnStageInitialized -= onInit;
-                tcs.TrySetResult();
-            };
-            stageManager.OnStageInitialized += onInit;
+                Debug.LogWarning("[LoadingManager] StageManager를 찾을 수 없습니다.");
+                return;
+            }
 
-            stageManager.Initialize().Forget();
+            await stageManager.Initialize();
 
-            await tcs.Task;
+            Debug.Log("StageManager 초기화 완료 확인");
         }
     }
 }
