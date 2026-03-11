@@ -938,7 +938,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8583615526856081923, guid: ca6875e10a4ecbb45b212516c851a7e6, type: 3}
       propertyPath: m_SizeDelta.x
-      value: 800
+      value: 850
       objectReference: {fileID: 0}
     - target: {fileID: 8583615526856081923, guid: ca6875e10a4ecbb45b212516c851a7e6, type: 3}
       propertyPath: m_SizeDelta.y
@@ -950,7 +950,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8583615526856081923, guid: ca6875e10a4ecbb45b212516c851a7e6, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 249.99998
+      value: 100
       objectReference: {fileID: 0}
     - target: {fileID: 9132221569044395060, guid: ca6875e10a4ecbb45b212516c851a7e6, type: 3}
       propertyPath: m_Pivot.x
@@ -1131,7 +1131,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3233954950732652321, guid: e8c9692f29e08a24ab7cf33eb2cf895d, type: 3}
       propertyPath: m_Type
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 3233954950732652321, guid: e8c9692f29e08a24ab7cf33eb2cf895d, type: 3}
       propertyPath: m_Sprite
@@ -1187,6 +1187,10 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5497494785065656800, guid: e8c9692f29e08a24ab7cf33eb2cf895d, type: 3}
       propertyPath: m_fontColor.r
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5766421664481830496, guid: e8c9692f29e08a24ab7cf33eb2cf895d, type: 3}
+      propertyPath: m_Value
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6584512959193189000, guid: e8c9692f29e08a24ab7cf33eb2cf895d, type: 3}
