@@ -1,19 +1,21 @@
 using Project.Rhythm.Data;
 using System;
 using System.Collections.Generic;
+using Project.Rhythm.Data.Struct;
+using Project.Rhythm.Data.Enum;
 
 namespace Project.Rhythm.Event
 {
     /// <summary>
-    /// StageTime을 기준으로 노트를 생성해야 할 시점을 트리거하는 시스템
+    /// StageTime을 기준으로 노트를 생성해야 할 시점을 트리거하는 시스템.
     /// </summary>
     public class RhythmEventSystem
     {
         private struct EventData
         {
             public RhythmAction action;
-            public float spawnTriggerTime; // 실제 생성되어야 하는 StageTime
-            public float targetHitTime;    // 판정 지점 도착 StageTime
+            public float spawnTriggerTime; // 실제 소환되어야 하는 절대 시간
+            public float targetHitTime;    // 정박(판정) 절대 시간
         }
 
         private readonly List<EventData> _events = new();
@@ -26,47 +28,47 @@ namespace Project.Rhythm.Event
         {
             _events.Clear();
             _currentIndex = 0;
+
+            if (data == null || data.bpm <= 0) return;
+
             _secondsPerBeat = 60f / data.bpm;
 
-            foreach (var pattern in data.patterns)
+            foreach (var action in data.actions)
             {
-                foreach (var action in pattern.actions)
+                if (action.type == PatternType.None)
+                    continue;
+
+                float hitTime = action.beat * _secondsPerBeat;
+
+                float spawnTime = hitTime - appearDuration;
+
+                _events.Add(new EventData
                 {
-                    float hitTime = action.beat * _secondsPerBeat;
-
-                    float spawnTime = hitTime - (appearDuration * 0.7f);
-
-                    _events.Add(new EventData
-                    {
-                        action = action,
-                        spawnTriggerTime = spawnTime,
-                        targetHitTime = hitTime
-                    });
-                }
+                    action = action,
+                    spawnTriggerTime = spawnTime,
+                    targetHitTime = hitTime
+                });
             }
             _events.Sort((a, b) => a.spawnTriggerTime.CompareTo(b.spawnTriggerTime));
         }
 
         /// <summary>
-        /// StageManager에서 계산된 stageTime(musicTime - playStartTime)을 인자로 받습니다
+        /// StageManager의 Update에서 호출되어 시간을 체크함
         /// </summary>
         public void Process(float stageTime)
         {
-            if (stageTime < 0f) return;
+            if (_currentIndex >= _events.Count)
+                return;
 
             while (_currentIndex < _events.Count)
             {
-                var evt = _events[_currentIndex];
+                EventData evt = _events[_currentIndex];
 
-                if (stageTime >= evt.spawnTriggerTime)
-                {
-                    OnSpawnTriggered?.Invoke(evt.action, evt.targetHitTime);
-                    _currentIndex++;
-                }
-                else
-                {
+                if (stageTime < evt.spawnTriggerTime)
                     break;
-                }
+                OnSpawnTriggered?.Invoke(evt.action, evt.targetHitTime);
+
+                _currentIndex++;
             }
         }
 

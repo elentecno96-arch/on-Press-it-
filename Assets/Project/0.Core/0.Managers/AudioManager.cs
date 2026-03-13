@@ -1,10 +1,13 @@
 using Cysharp.Threading.Tasks;
+using Project.Core.Utilities;
 using UnityEngine;
 using UnityEngine.Audio;
 namespace Project.Core.Managers
 {
-
-    public class AudioManager : MonoBehaviour
+    /// <summary>
+    /// 전역 오디오 담당 매지저
+    /// </summary>
+    public class AudioManager : BaseSingleton<AudioManager>
     {
         [Header("Audio Mixer")]
         [SerializeField] private AudioMixer mainMixer;
@@ -12,10 +15,10 @@ namespace Project.Core.Managers
         [Header("BGM Source")]
         [SerializeField] private AudioSource musicSource;
 
-        public async UniTask Initialize()
+        public override async UniTask Initialize()
         {
-            // 설정 저장소(PlayerPrefs 등)에서 기존 볼륨 값을 가져와 세팅할 수 있습니다.
             await UniTask.Yield();
+
             Debug.Log("AudioManager: 믹서 연결 및 초기화 완료");
         }
 
@@ -24,8 +27,6 @@ namespace Project.Core.Managers
         /// </summary>
         public void SetVolume(string parameterName, float volume)
         {
-            // 오디오 믹서는 데시벨(dB) 단위를 사용하므로 로그 계산이 필요합니다.
-            // 0은 -80dB, 1은 0dB가 되도록 매핑합니다.
             float dB = volume > 0 ? Mathf.Log10(volume) * 20 : -80f;
             mainMixer.SetFloat(parameterName, dB);
         }

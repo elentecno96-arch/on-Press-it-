@@ -1,122 +1,149 @@
 using System.Collections.Generic;
 using UnityEngine;
 using Project.Rhythm.Data;
+using Project.Rhythm.Data.Struct;
+using Project.Rhythm.Data.Enum;
 using Project.Core.Managers;
 
 namespace Project.Rhythm.Editor
 {
     public class BeatRecorder : MonoBehaviour
     {
-        [Header("Settings")]
-        [SerializeField] private KeyCode recordKey = KeyCode.Space;
-        [SerializeField] private float bpm = 120f;
-        [SerializeField] private bool useSnapping = true; 
+        [SerializeField] private KeyCode tapKey = KeyCode.Space;
+        [SerializeField] private KeyCode slideKey = KeyCode.A;
+        [SerializeField] private KeyCode holdKey = KeyCode.D;
+        [SerializeField] private KeyCode saveKey = KeyCode.S;
 
-        [Header("Target Data")]
-        [SerializeField] private PatternData targetPatternData;
+        [SerializeField] private bool useSnapping = true;
+        [Range(1, 16)][SerializeField] private int snapDivision = 4;
 
-        private List<RhythmAction> _recordedActions = new List<RhythmAction>();
+        [SerializeField] private StageData targetStageData;
+
+        private readonly List<RhythmAction> _recordedActions = new();
         private float _secondsPerBeat;
+
+        // 홀드 기록용 임시 변수
+        private float? _holdStartBeat = null;
 
         private void Start()
         {
-            _secondsPerBeat = 60f / bpm;
-            Debug.Log($"<color=cyan>[Recorder]</color> 초기화 완료. BPM: {bpm}, 1비트당 시간: {_secondsPerBeat}s");
+            if (targetStageData == null)
+            {
+                Debug.LogError("<color=red>[Recorder]</color> Target Stage Data가 없습니다!");
+                return;
+            }
+
+            _secondsPerBeat = 60f / targetStageData.bpm;
+            Debug.Log($"<color=cyan>[Recorder]</color> 시작 | BPM: {targetStageData.bpm}");
         }
 
         private void Update()
         {
-            if (Input.GetKeyDown(recordKey))
+            if (targetStageData == null) return;
+
+            if (Input.GetKeyDown(tapKey)) TryRecord(PatternType.Tap);
+            if (Input.GetKeyDown(slideKey)) TryRecord(PatternType.Slide);
+
+            if (Input.GetKeyDown(holdKey))
             {
-                Debug.Log($"<color=white>[Input Check]</color> Space Key Pressed! CurrentTime: {StageManager.CurrentTime}");
-        
-        if (StageManager.CurrentTime <= 0)
+                _holdStartBeat = GetCurrentBeat();
+                Debug.Log($"<color=orange>[Hold Start]</color> Beat: {_holdStartBeat:F2}");
+            }
+
+            if (Input.GetKeyUp(holdKey) && _holdStartBeat.HasValue)
+            {
+                float endBeat = GetCurrentBeat();
+                float duration = endBeat - _holdStartBeat.Value;
+
+                if (duration < 0.1f) duration = 1f / snapDivision;
+
+                _recordedActions.Add(new RhythmAction
                 {
-                    Debug.LogWarning("<color=red>[Warning]</color> StageManager.CurrentTime이 0 이하입니다. 음악이 재생 중인지 확인하세요!");
-            return;
-                }
+                    beat = _holdStartBeat.Value,
+                    type = PatternType.Hold,
+                    duration = duration
+                });
 
-                RecordHit();
+                Debug.Log($"<color=orange>[Hold End]</color> Beat: {_holdStartBeat:F2} | Duration: {duration:F2}");
+                _holdStartBeat = null;
             }
 
-            if (Input.GetKeyDown(KeyCode.S))
-            {
-                SaveToSO();
-            }
+            // 4. 데이터 저장
+            if (Input.GetKeyDown(saveKey)) SaveToStageData();
         }
 
-        private void RecordHit()
+        private float GetCurrentBeat()
         {
-            float rawBeat = StageManager.CurrentTime / _secondsPerBeat;
-            float finalBeat = rawBeat;
+            float currentTime = StageManager.CurrentTime;
+            if (currentTime <= 0f) return 0f;
 
-            if (useSnapping)
-            {
-                finalBeat = Mathf.Round(rawBeat * 4f) / 4f;
-            }
+            float rawBeat = currentTime / _secondsPerBeat;
+            return useSnapping ? Mathf.Round(rawBeat * snapDivision) / snapDivision : rawBeat;
+        }
 
-            var newAction = new RhythmAction
+        private void TryRecord(PatternType type)
+        {
+            float finalBeat = GetCurrentBeat();
+            if (StageManager.CurrentTime <= 0f) return;
+
+            _recordedActions.Add(new RhythmAction
             {
                 beat = finalBeat,
-                type = PatternType.Tap,
-                spawnStrategyId = "Center",
-                moveStrategyId = "Scale",
-                actionStrategyId = "Tap"
-            };
+                type = type,
+                duration = 0f
+            });
 
-            _recordedActions.Add(newAction);
-
-            Debug.Log($"<color=yellow>[Record]</color> No.{_recordedActions.Count} | " +
-                      $"Beat: {finalBeat:F2} (Raw: {rawBeat:F2}) | " +
-                      $"Time: {StageManager.CurrentTime:F2}s"); 
+            Debug.Log($"<color=yellow>[Recorded]</color> {type} | Beat: {finalBeat:F2}");
         }
 
-        private void SaveToSO()
+        private void SaveToStageData()
         {
-            if (targetPatternData == null)
-            {
-                Debug.LogError("<color=red>[Recorder]</color> 대상 PatternData SO가 할당되지 않았습니다!");
-                return;
-            }
-
-            if (_recordedActions.Count == 0)
-            {
-                Debug.LogWarning("<color=orange>[Recorder]</color> 기록된 데이터가 없어 저장을 건너뜁니다.");
-                return;
-            }
-            // targetPatternData.actions.Clear(); 
+            if (targetStageData == null || _recordedActions.Count == 0) return;
 
             foreach (var action in _recordedActions)
             {
-                targetPatternData.actions.Add(action);
+                targetStageData.actions.Add(action);
             }
 
-            targetPatternData.actions.Sort((a, b) => a.beat.CompareTo(b.beat));
+            targetStageData.actions.Sort((a, b) => a.beat.CompareTo(b.beat));
 
 #if UNITY_EDITOR
-            UnityEditor.EditorUtility.SetDirty(targetPatternData);
-
+            UnityEditor.EditorUtility.SetDirty(targetStageData);
             UnityEditor.AssetDatabase.SaveAssets();
-            UnityEditor.AssetDatabase.Refresh();
 #endif
-
-            Debug.Log($"<color=green>[Success]</color> {targetPatternData.name}에 {_recordedActions.Count}개 저장 완료!");
+            Debug.Log($"<color=green>[Saved]</color> {targetStageData.name}에 {_recordedActions.Count}개 노트 저장 완료!");
             _recordedActions.Clear();
         }
 
         private void OnGUI()
         {
-            if (StageManager.CurrentTime <= 0) return;
+            if (!Application.isPlaying || targetStageData == null) return;
 
-            GUIStyle style = new GUIStyle();
-            style.fontSize = 25;
-            style.normal.textColor = Color.white;
+            GUIStyle style = new GUIStyle { fontSize = 20, normal = { textColor = Color.cyan } };
+            GUIStyle boldStyle = new GUIStyle { fontSize = 22, fontStyle = FontStyle.Bold, normal = { textColor = Color.yellow } };
+            GUIStyle recordingStyle = new GUIStyle { fontSize = 22, fontStyle = FontStyle.Bold, normal = { textColor = Color.yellow } };
 
-            GUILayout.BeginArea(new Rect(20, 20, 400, 200));
-            GUILayout.Label($"Recording Key: {recordKey}", style); 
-            GUILayout.Label($"Current Beat: {(StageManager.CurrentTime / _secondsPerBeat):F2}", style); 
+            GUILayout.BeginArea(new Rect(30, 30, 600, 500));
+            GUILayout.Label($"Recording for: {targetStageData.name}", style);
+            GUILayout.Space(10);
+
+            GUILayout.Label($"[ {tapKey} ] : TAP (Bat/Normal)", style);
+            GUILayout.Label($"[ {slideKey} ] : SLIDE", style);
+            GUILayout.Label($"[ {holdKey} ] : HOLD (Stone - Press & Release)", style);
+            GUILayout.Space(15);
+
+            float currentBeat = StageManager.CurrentTime / _secondsPerBeat;
+            GUILayout.Label($"Current Beat: {currentBeat:F2}", boldStyle);
+
+            if (_holdStartBeat.HasValue)
+            {
+                float currentDuration = currentBeat - _holdStartBeat.Value;
+                GUILayout.Label($"● HOLDING... Duration: {currentDuration:F2}", recordingStyle);
+            }
+
             GUILayout.Label($"Recorded Count: {_recordedActions.Count}", style);
-            GUILayout.Label("Press 'S' to Save", style);
+            GUILayout.Space(10);
+            GUILayout.Label($"Press '{saveKey}' to Save to Asset", boldStyle);
             GUILayout.EndArea();
         }
     }

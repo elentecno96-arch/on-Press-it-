@@ -26,6 +26,7 @@ namespace Project.Core.Managers
         private float _touchStartTime;
         private bool _isHoldLogged = false;
         private string _lastInputType = "None"; //런타임 디버깅 용 변수
+        private bool _isSlideProcessed = false;
 
         public override UniTask Initialize()
         {
@@ -52,16 +53,21 @@ namespace Project.Core.Managers
             switch (touch.phase)
             {
                 case TouchPhase.Began:
-                    _lastInputType = "TAP"; //탭 기록
+                    _lastInputType = "TAP/HOLD_START";
                     _touchStartTime = Time.time;
                     _isHoldLogged = false;
+                    _isSlideProcessed = false;
+
                     OnTapAction?.Invoke(touch.screenPosition);
+                    OnHoldAction?.Invoke();
                     break;
 
                 case TouchPhase.Moved:
+                    if (_isSlideProcessed) return;
                     if (touch.delta.magnitude > SLIDE_THRESHOLD)
                     {
-                        _lastInputType = "SLIDE"; //슬라이드 기록
+                        _lastInputType = "SLIDE";
+                        _isSlideProcessed = true;
                         OnSlideAction?.Invoke(touch.delta);
                     }
                     break;
@@ -69,12 +75,13 @@ namespace Project.Core.Managers
                 case TouchPhase.Stationary:
                     if (Time.time - _touchStartTime > HOLD_DETECTION_TIME && !_isHoldLogged)
                     {
-                        _lastInputType = "HOLD"; //홀드 기록
-                        OnHoldAction?.Invoke();
                         _isHoldLogged = true;
                     }
                     break;
+
                 case TouchPhase.Ended:
+                    _lastInputType = "RELEASE";
+                    _isSlideProcessed = false;
                     OnReleaseAction?.Invoke();
                     break;
             }

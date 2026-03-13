@@ -10,55 +10,46 @@ namespace Project.Rhythm.Timeline
     {
         private AudioSource _audioSource;
         private float _playStartTimeOffset;
-        private bool _isStarted;
+        private bool _started;
+
+        public bool IsPlaying => _audioSource != null && _audioSource.isPlaying;
 
         public void Initialize(AudioSource source, StageData data)
         {
             _audioSource = source;
-
-            if (_audioSource == null)
-            {
-                Debug.LogError("[AudioTimeline] AudioSource가 할당되지 않았습니다.");
-                return;
-            }
 
             _audioSource.clip = data.masterTrack;
             _audioSource.loop = false;
             _audioSource.playOnAwake = false;
 
             _playStartTimeOffset = data.playStartTime;
-            _isStarted = false;
+            _started = false;
         }
 
         public void StartTimeline()
         {
-            if (_audioSource == null || _audioSource.clip == null) return;
+            if (_audioSource == null || _audioSource.clip == null)
+                return;
 
             _audioSource.Play();
-            _isStarted = true;
-            Debug.Log("<color=cyan>[AudioTimeline] 음악 재생 시작</color>");
+            _started = true;
         }
 
-        /// <summary>
-        /// 실제 리듬 액션의 기준이 되는 StageTime을 반환
-        /// </summary>
         public float GetStageTime()
         {
-            if (!_isStarted || _audioSource == null) return -1f;
+            if (!_started)
+                return -1f;
 
-            float musicTime = _audioSource.time;
-            return musicTime - _playStartTimeOffset;
+            float time = _audioSource.time - _playStartTimeOffset;
+            return Mathf.Max(0f, time);
         }
 
         public void Stop()
         {
             if (_audioSource != null)
-            {
                 _audioSource.Stop();
-            }
-            _isStarted = false;
-        }
 
-        public bool IsPlaying => _audioSource != null && _audioSource.isPlaying;
+            _started = false;
+        }
     }
 }

@@ -1,5 +1,6 @@
 using Project.Rhythm.Data;
-using Project.Rhythm.Note.State;
+using Project.Rhythm.Data.Enum;
+using Project.Rhythm.Data.Struct;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -8,35 +9,37 @@ namespace Project.Rhythm.Judgement
 {
     public enum JudgeResult { Perfect, Great, Good, Miss }
 
-    /// <summary>
-    /// 플레이어의 입력과 노트의 타이밍을 비교하여 판정을 내리는 시스템
-    /// </summary>
     public class JudgementSystem
     {
         private struct JudgeData
         {
             public RhythmAction action;
-            public Note.Note note; 
+            public Note.Note note;
             public float targetTime;
         }
 
-        private const float PERFECT_WINDOW = 0.05f;
-        private const float GREAT_WINDOW = 0.12f;
-        private const float GOOD_WINDOW = 0.18f;
-        private const float MISS_WINDOW = 0.25f;
+        //StageData로 위치 변경 예정
+        private const float PERFECT_WINDOW = 0.12f;
+        private const float GREAT_WINDOW = 0.21f;
+        private const float GOOD_WINDOW = 0.27f;
+        private const float MISS_WINDOW = 0.34f;
 
         private readonly Queue<JudgeData> _judgeQueue = new();
+       // private StageData _stageData;
         private float _secondsPerBeat;
+        private JudgeData? _activeHoldNote = null;
 
-        public event Action<JudgeResult, PatternType> OnJudged;
+        public event Action<JudgeResult, Note.Note> OnJudged;
+
 
         public void Initialize(StageData data)
         {
             _secondsPerBeat = 60f / data.bpm;
             _judgeQueue.Clear();
+            _activeHoldNote = null;
         }
 
-        public void RegisterNote(RhythmAction action, Project.Rhythm.Note.Note note)
+        public void RegisterNote(RhythmAction action, Note.Note note)
         {
             float targetTime = action.beat * _secondsPerBeat;
 
@@ -48,50 +51,74 @@ namespace Project.Rhythm.Judgement
             });
         }
 
-        /// <summary>
-        /// 플레이어 입력 시 호출되어 가장 앞의 노트와 비교 판정
-        /// </summary>
         public void ProcessInput(PatternType inputType, float stageTime)
         {
             if (_judgeQueue.Count == 0) return;
 
             var target = _judgeQueue.Peek();
+            float absDiff = Mathf.Abs(stageTime - target.targetTime);
 
-            if (target.action.type == PatternType.None)
-            {
-                _judgeQueue.Dequeue();
-                return;
-            }
-
-            float diff = stageTime - target.targetTime;
-            float absDiff = Mathf.Abs(diff);
-
-            if (diff < -GOOD_WINDOW) return;
-
-            if (target.action.type != inputType)
-            {
-                ApplyResult(target, JudgeResult.Miss, inputType);
-                return;
-            }
+            if (absDiff > MISS_WINDOW) return;
 
             JudgeResult result = CalculateResult(absDiff);
-            ApplyResult(target, result, inputType);
+            ApplyResult(target, result);
         }
 
-        private void ApplyResult(JudgeData target, JudgeResult result, PatternType inputType)
+
+        public void ProcessInputDown(float stageTime)
+        {
+            if (_judgeQueue.Count == 0 || _activeHoldNote.HasValue) return;
+
+            var target = _judgeQueue.Peek();
+
+            float absDiff = Mathf.Abs(stageTime - target.targetTime);
+
+            if (absDiff <= MISS_WINDOW)
+            {
+                _judgeQueue.Dequeue();
+                _activeHoldNote = target;
+                OnJudged?.Invoke(JudgeResult.Perfect, target.note);
+            }
+        }
+
+
+        public void ProcessInputUp(float stageTime)
+        {
+            if (!_activeHoldNote.HasValue) return;
+
+            var target = _activeHoldNote.Value;
+            float targetReleaseTime = target.targetTime + (target.action.duration * _secondsPerBeat);
+            float absDiff = Mathf.Abs(stageTime - targetReleaseTime);
+
+            JudgeResult result = CalculateResult(absDiff);
+
+            PrintJudgeLog(result);
+            OnJudged?.Invoke(result, target.note);
+            _activeHoldNote = null;
+        }
+
+        public void UpdateHoldCheck(bool isPressing, float stageTime)
+        {
+            if (!_activeHoldNote.HasValue) return;
+
+            if (!isPressing)
+            {
+                float targetReleaseTime = _activeHoldNote.Value.targetTime + (_activeHoldNote.Value.action.duration * _secondsPerBeat);
+
+                if (stageTime < targetReleaseTime - GOOD_WINDOW)
+                {
+                    PrintJudgeLog(JudgeResult.Miss);
+                    OnJudged?.Invoke(JudgeResult.Miss, _activeHoldNote.Value.note);
+                    _activeHoldNote = null;
+                }
+            }
+        }
+
+        private void ApplyResult(JudgeData target, JudgeResult result)
         {
             _judgeQueue.Dequeue();
-
-            if (target.note != null)
-            {
-                if (result != JudgeResult.Miss)
-                {
-                    target.note.ExecuteAction(inputType);
-                }
-                target.note.ChangeState(new EndState(target.note, result));
-            }
-
-            OnJudged?.Invoke(result, inputType);
+            PrintJudgeLog(result);
+            OnJudged?.Invoke(result, target.note);
         }
 
         private JudgeResult CalculateResult(float absDiff)
@@ -102,27 +129,41 @@ namespace Project.Rhythm.Judgement
             return JudgeResult.Miss;
         }
 
-        /// <summary>
-        /// 입력 없이 판정 범위를 벗어난 노트를 Miss 처리합니다. [cite: 2026-03-09]
-        /// </summary>
         public void CheckMiss(float stageTime)
         {
             while (_judgeQueue.Count > 0)
             {
                 var target = _judgeQueue.Peek();
 
-                if (target.action.type == PatternType.None)
-                {
-                    _judgeQueue.Dequeue();
-                    continue;
-                }
-
                 if (stageTime > target.targetTime + MISS_WINDOW)
                 {
-                    ApplyResult(target, JudgeResult.Miss, target.action.type);
+                    _judgeQueue.Dequeue();
+                    PrintJudgeLog(JudgeResult.Miss);
+                    OnJudged?.Invoke(JudgeResult.Miss, target.note);
                 }
-                else break;
+                else
+                {
+                    break;
+                }
             }
+        }
+
+        /// <summary>
+        /// 판정 로그 확인용
+        /// </summary>
+        /// <param name="result"></param>
+        private void PrintJudgeLog(JudgeResult result)
+        {
+            string color = result switch
+            {
+                JudgeResult.Perfect => "cyan",
+                JudgeResult.Great => "green",
+                JudgeResult.Good => "yellow",
+                JudgeResult.Miss => "red",
+                _ => "white"
+            };
+
+            Debug.Log($"<color={color}>[Judgement]</color> <b>{result.ToString().ToUpper()}</b>");
         }
     }
 }

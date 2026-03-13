@@ -1,4 +1,4 @@
-using Project.Rhythm.Data;
+using Project.Rhythm.Data.Struct;
 
 public interface INote
 {
