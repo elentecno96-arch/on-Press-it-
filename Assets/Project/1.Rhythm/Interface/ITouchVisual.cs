@@ -1,4 +1,5 @@
-using Project.Rhythm.Data;
+using Project.Rhythm.Data.Enum;
+using Project.Rhythm.Judgement;
 
 namespace Project.Rhythm.Interface
 {
@@ -7,10 +8,11 @@ namespace Project.Rhythm.Interface
     /// </summary>
     public interface ITouchVisual
     {
-        /// <summary>
-        /// 입력하는 형태에 따라 반응 연출
-        /// </summary>
-        /// <param name="type"></param>
         void PlayAction(PatternType type);
+        void StopHoldAction();
+
+        void PlayAction(JudgeResult result);
+
+        void UpdateVisual(float progress);
     }
 }

@@ -25,8 +25,8 @@ namespace Project.Core.Managers
             }
 
             //전역 매니저 기본 초기화
-            // await AudioManager.Instance.Initialize();
-            // await PlayerManager.Instance.Initialize();
+            await AudioManager.Instance.Initialize();
+            await PlayerManager.Instance.Initialize();
 
             Debug.Log("모든 매니저 초기화 진행 완료");
             IsInitialized = true;

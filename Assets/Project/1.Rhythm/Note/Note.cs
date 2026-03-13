@@ -1,71 +1,84 @@
 using Project.Core.Managers;
-using Project.Rhythm.Data;
-using Project.Rhythm.Note.Interface;
-using Project.Rhythm.Note.State;
+using Project.Rhythm.Interface;
+using Project.Rhythm.Judgement;
 using UnityEngine;
 
 namespace Project.Rhythm.Note
 {
     /// <summary>
-    /// 베이스 노트 ( 필드의 모든 노트는 이 스크립트를 컴포넌트 해야함 )
+    /// 리듬 이벤트용 노트 오브젝트
+    /// (타이밍과 상태만 관리)
     /// </summary>
     public class Note : MonoBehaviour
     {
-        public ISpawnStrategy SpawnStrategy { get; private set; }
-        public IMoveStrategy MoveStrategy { get; private set; }
-        public IActionStrategy ActionStrategy { get; private set; }
+        private ITouchVisual _visual;
 
-        private TouchEventVisual _visual;
-
-        public float TargetTime { get; private set; }
-        public float AppearDuration { get; private set; }
+        [SerializeField] private bool isPersistent;
+        [SerializeField] private string noteID;
+        public bool IsPersistent => isPersistent;
+        public string NoteID => noteID;
         public float SpawnTime { get; private set; }
-
-        private INoteState _currentState;
-        public INoteState CurrentState
-        {
-            get { return _currentState; }
-            set { _currentState = value; }
-        }
+        public float AppearDuration { get; private set; }
+        private bool _isJudged;
+        private bool isRandomPos;
 
         private void Awake()
         {
-            _visual = GetComponent<TouchEventVisual>();
+            _visual = GetComponent<ITouchVisual>();
         }
 
-        public void Setup(ISpawnStrategy s, IMoveStrategy m, IActionStrategy a, float target, float duration)
+        public void Setup(float spawnTime, float appearDuration, bool isRandomPos = false) 
         {
-            SpawnStrategy = s;
-            MoveStrategy = m;
-            ActionStrategy = a;
-            TargetTime = target;
-            AppearDuration = duration;
+            SpawnTime = spawnTime;
+            AppearDuration = appearDuration;
+            this.isRandomPos = isRandomPos;
+            _isJudged = false;
 
-            SpawnTime = StageManager.CurrentTime;
+            RectTransform rect = GetComponent<RectTransform>();
+            if (rect != null)
+            {
+                if (this.isRandomPos)
+                {
+                    float rx = Random.Range(-400f, 400f);
+                    float ry = Random.Range(-200f, 200f);
+                    rect.anchoredPosition = new Vector2(rx, ry);
+                }
+                else
+                {
+                    rect.anchoredPosition = Vector2.zero;
+                }
+                Vector3 lp = rect.localPosition;
+                lp.z = 0f;
+                rect.localPosition = lp;
 
-            ChangeState(new SpawnState(this));
-        }
-
-        public void ChangeState(INoteState newState)
-        {
-            _currentState?.Exit();
-            _currentState = newState;
-            _currentState?.Enter();
-        }
-
-        public void ExecuteAction(PatternType type)
-        {
-            ActionStrategy?.Execute(_visual, type);
+                //rect.localScale = new Vector3(0.2f, 0.2f, 1f);
+            }
         }
 
         public void UpdateNote(float currentTime)
         {
-            _currentState?.Update(currentTime);
+            float elapsed = currentTime - SpawnTime;
+            float progress = elapsed / AppearDuration;
+
+            _visual?.UpdateVisual(progress);
+
+            if (progress >= 1.5f)
+            {
+                Destroy(gameObject);
+            }
         }
 
-        public void OnInput(PatternType type)
+        public void OnJudged(JudgeResult result)
         {
-            _currentState?.HandleInput(type);
+            if (_isJudged) return;
+            _isJudged = true;
+
+            _visual?.PlayAction(result);
+        }
+
+        public void ResetJudgedState()
+        {
+            _isJudged = false;
         }
     }
 }

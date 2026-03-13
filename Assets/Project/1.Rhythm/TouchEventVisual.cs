@@ -1,7 +1,6 @@
-using Cysharp.Threading.Tasks;
-using Project.Rhythm.Data;
+using Project.Rhythm.Data.Enum;
 using Project.Rhythm.Interface;
-using System.Threading;
+using Project.Rhythm.Judgement;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -11,111 +10,107 @@ using UnityEngine.UI;
 /// </summary>
 public class TouchEventVisual : MonoBehaviour, ITouchVisual
 {
-    [SerializeField] private Image targetImage;              // 변경 이미지
-    [SerializeField] private Sprite idleSprite;              // 대기 이미지
-    [SerializeField] private Sprite actionSprite;            // 액션 이미지
-    [SerializeField] private int returnMs = 100;             // 액션 후 대기 복귀 속도
+    [SerializeField] private Image targetImage;
+    [SerializeField] private Sprite idleSprite;    // 대기 상태
+    [SerializeField] private Sprite successSprite; // 성공 상태
+    [SerializeField] private Sprite missSprite;    // 실패 상태
 
-    [SerializeField] private Animator animator;              // 연출이 필요할 경우 사용하는 애니메이터
-    [SerializeField] private string tapTrigger = "Tap";      // Tap 트리거 이름
-    [SerializeField] private string slideTrigger = "Slide";  // Slide 트리거 이름
-    [SerializeField] private string holdBool = "IsHolding";  
+    [SerializeField] private Animator animator;
+    [SerializeField] private string successTrigger = "Success";
+    [SerializeField] private string tapTrigger = "Tap";
+    [SerializeField] private string slideTrigger = "Slide";
+    [SerializeField] private string holdBool = "IsHolding";
 
-    private bool _isActionPlaying; // 중복 실행 방지를 위한 플래그
-    private bool _isPermanentAction;
+    private bool _isJudged;
 
     /// <summary>
-    /// (인터페이스 구현부) 터치 발생 시 호출
+    /// [노트 전용] 판정 결과가 나왔을 때 호출 (선반 연출 등)
+    /// </summary>
+    public void PlayAction(JudgeResult result)
+    {
+        if (_isJudged) return;
+
+        if (result != JudgeResult.Miss) SetSuccessVisual();
+        else SetMissVisual();
+    }
+
+    /// <summary>
+    /// [플레이어 전용] 입력 액션이 발생했을 때 호출 (손 움직임 등)
     /// </summary>
     public void PlayAction(PatternType type)
     {
-        var token = this.GetCancellationTokenOnDestroy();
+        if (animator == null) return;
 
         switch (type)
         {
             case PatternType.Tap:
-                HandleTapVisual(token).Forget();
+                if (HasParameter(tapTrigger)) animator.SetTrigger(tapTrigger);
                 break;
             case PatternType.Slide:
-                SlideVisual().Forget();
+                if (HasParameter(slideTrigger)) animator.SetTrigger(slideTrigger);
                 break;
             case PatternType.Hold:
-                SetHoldState(true);
+                if (HasParameter(holdBool)) animator.SetBool(holdBool, true);
                 break;
         }
     }
 
-    private async UniTaskVoid HandleTapVisual(CancellationToken token)
+    // 파라미터가 실제로 애니메이터에 있는지 확인하는 헬퍼 함수
+    private bool HasParameter(string paramName)
     {
-        if (animator != null)
+        if (string.IsNullOrEmpty(paramName)) return false;
+
+        foreach (AnimatorControllerParameter param in animator.parameters)
         {
-            animator.SetTrigger(tapTrigger);
+            if (param.name == paramName) return true;
         }
-        if (!_isPermanentAction)
-        {
-            if (targetImage != null && actionSprite != null)
-            {
-                targetImage.sprite = actionSprite;
-            }
-            _isPermanentAction = true;
-    }
-        await UniTask.CompletedTask;
+        return false;
     }
 
+    /// <summary>
+    /// [플레이어 전용] 홀드 입력이 끝났을 때 호출
+    /// </summary>
     public void StopHoldAction()
     {
-        SetHoldState(false);
+        if (animator != null) animator.SetBool(holdBool, false);
     }
 
-    private async UniTaskVoid TapVisual(CancellationToken token) 
+    private void SetSuccessVisual()
     {
-        if (_isActionPlaying) return;
-        _isActionPlaying = true;
-
-        if (animator != null) animator.SetTrigger(tapTrigger);
-
-        if (targetImage != null && actionSprite != null)
+        _isJudged = true;
+        if (targetImage != null && successSprite != null)
         {
-            targetImage.sprite = actionSprite;
-
-            await UniTask.Delay(returnMs, cancellationToken: token);
-
-            if (targetImage != null)
-            {
-                targetImage.sprite = idleSprite;
-            }
+            targetImage.sprite = successSprite;
+            targetImage.SetNativeSize();
         }
 
-        _isActionPlaying = false;
+        if (animator != null) animator.SetTrigger(successTrigger);
     }
 
-    private async UniTaskVoid SlideVisual()
+    private void SetMissVisual()
     {
-        if (animator != null) animator.SetTrigger(slideTrigger);
-
-        await SwapSprite();
-    }
-
-    private void SetHoldState(bool isHolding)
-    {
-        if (animator != null && animator.runtimeAnimatorController != null)
+        _isJudged = true;
+        if (targetImage != null && missSprite != null)
         {
-            animator.SetBool(holdBool, isHolding);
-        }
-
-        if (targetImage != null && actionSprite != null)
-        {
-            targetImage.sprite = isHolding ? actionSprite : idleSprite;
+            targetImage.sprite = missSprite;
+            targetImage.SetNativeSize();
         }
     }
 
-    private async UniTask SwapSprite()
+    public void UpdateVisual(float progress)
     {
-        if (targetImage != null && actionSprite != null)
+        transform.localScale = Vector3.LerpUnclamped(Vector3.zero, Vector3.one, progress);
+    }
+
+    public void ResetVisual()
+    {
+        _isJudged = false;
+        if (targetImage != null)
         {
-            targetImage.sprite = actionSprite;
-            await UniTask.Delay(returnMs);
             targetImage.sprite = idleSprite;
+            targetImage.SetNativeSize();
         }
+        if (animator != null) animator.Rebind();
+        transform.localScale = Vector3.zero;
     }
 }

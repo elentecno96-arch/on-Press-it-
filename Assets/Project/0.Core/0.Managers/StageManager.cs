@@ -1,6 +1,7 @@
 using Cysharp.Threading.Tasks;
 using Project.Rhythm;
 using Project.Rhythm.Data;
+using Project.Rhythm.Data.Enum;
 using Project.Rhythm.Event;
 using Project.Rhythm.Interface;
 using Project.Rhythm.Judgement;
@@ -19,24 +20,27 @@ namespace Project.Core.Managers
         [SerializeField] private StageData testStageData;
         [SerializeField] private AudioSource musicSource;
         [SerializeField] private StagePresenter presenter;
+        public NoteCollection NoteCollection { get; private set; }
 
         [SerializeField] private float noteAppearDuration = 2.0f;
+        [SerializeField] private float stageStartDelay = 1.5f;
 
         private AudioTimeline _audioTimeline;
         private RhythmEventSystem _eventSystem;
         private JudgementSystem _judgementSystem;
         private NoteSpawner _noteSpawner;
-        private ITouchVisual _touchVisual;
+        private ITouchVisual _touchVisual; 
 
         private bool _isInitialized;
         private StageData _activeStageData;
 
         public event Action OnStageStart;
         public event Action OnStageComplete;
+        private bool _isPressing;
 
-        private readonly List<Note> _activeNotes = new List<Note>();
+        private readonly List<Note> _activeNotes = new();
+        private StoneVisual _fixedStone;
 
-        // 시간의 절대 기준 (StageTime)
         public static float CurrentTime { get; private set; }
 
         public async UniTask Initialize()
@@ -51,6 +55,8 @@ namespace Project.Core.Managers
             _noteSpawner = new NoteSpawner(presenter);
             _touchVisual = presenter.GetTouchVisual();
 
+            CollectPersistentNotes();
+
             BindSystems();
             AddInputEvents();
 
@@ -63,6 +69,8 @@ namespace Project.Core.Managers
 
         private void InitializeSystems(StageData stageData)
         {
+            NoteCollection = new NoteCollection();
+
             _audioTimeline = new AudioTimeline();
             _audioTimeline.Initialize(musicSource, stageData);
 
@@ -75,40 +83,48 @@ namespace Project.Core.Managers
 
         private void BindSystems()
         {
-            _eventSystem.OnSpawnTriggered += (action, hitTime) =>
+            _judgementSystem.OnJudged += (result, note) =>
             {
-                Note spawnedNote = _noteSpawner.Spawn(action, hitTime, noteAppearDuration);
+                _touchVisual?.PlayAction(result);
 
-                if (spawnedNote != null)
+                if (note != null)
                 {
-                    _judgementSystem.RegisterNote(action, spawnedNote);
-                    _activeNotes.Add(spawnedNote);
+                    note.OnJudged(result);
                 }
             };
 
-            _judgementSystem.OnJudged += (result, note) =>
+            _eventSystem.OnSpawnTriggered += (action, hitTime) =>
             {
-                // note가 판정되면 리스트에서 제거 대상이 됩니다.
+                var persistentNote = NoteCollection.GetNote("Stage3_Stone");
+
+                if (action.type == PatternType.Hold && persistentNote != null)
+                {
+                    _judgementSystem.RegisterNote(action, persistentNote);
+                }
+                else
+                {
+                    Note spawnedNote = _noteSpawner.Spawn(CurrentTime, noteAppearDuration);
+                    if (spawnedNote != null)
+                    {
+                        _judgementSystem.RegisterNote(action, spawnedNote);
+                        _activeNotes.Add(spawnedNote);
+                    }
+                }
             };
         }
 
-        private async UniTask StartSequence(StageData data, CancellationToken token)
+        private void CollectPersistentNotes()
         {
-            try
+            if (presenter == null) return;
+
+            var allNotes = presenter.GetComponentsInChildren<Note>(true);
+            foreach (var note in allNotes)
             {
-                await UniTask.Delay((int)(noteAppearDuration * 1000), cancellationToken: token);
-
-                OnStageStart?.Invoke();
-                _audioTimeline.StartTimeline();
-
-                await UniTask.WaitUntil(
-                    () => _audioTimeline.GetStageTime() >= (data.endPosition),
-                    cancellationToken: token
-                );
-
-                OnStageComplete?.Invoke();
+                if (note.IsPersistent && !string.IsNullOrEmpty(note.NoteID))
+                {
+                    NoteCollection.Register(note.NoteID, note);
+                }
             }
-            catch (OperationCanceledException) { }
         }
 
         private void Update()
@@ -116,28 +132,43 @@ namespace Project.Core.Managers
             if (!_isInitialized) return;
 
             CurrentTime = _audioTimeline.GetStageTime();
+            if (CurrentTime < 0f) return;
 
             _eventSystem.Process(CurrentTime);
+            _judgementSystem.UpdateHoldCheck(_isPressing, CurrentTime);
             _judgementSystem.CheckMiss(CurrentTime);
 
             for (int i = _activeNotes.Count - 1; i >= 0; i--)
             {
                 var note = _activeNotes[i];
-
-                if (note == null || !note.gameObject.activeInHierarchy)
+                if (note == null)
                 {
                     _activeNotes.RemoveAt(i);
                     continue;
                 }
+
                 note.UpdateNote(CurrentTime);
             }
+        }
 
-            _eventSystem.Process(CurrentTime);
-            _judgementSystem.CheckMiss(CurrentTime);
+        private async UniTask StartSequence(StageData data, CancellationToken token)
+        {
+            try
+            {
+                await UniTask.Yield();
+                await UniTask.Delay((int)(stageStartDelay * 1000), cancellationToken: token);
+
+                OnStageStart?.Invoke();
+                _audioTimeline.StartTimeline();
+
+                await UniTask.WaitUntil(() => _audioTimeline.GetStageTime() >= data.endPosition, cancellationToken: token);
+
+                OnStageComplete?.Invoke();
+            }
+            catch (OperationCanceledException) { }
         }
 
         #region Input Handling
-
         private void OnTap(Vector2 pos)
         {
             if (!_isInitialized) return;
@@ -155,19 +186,24 @@ namespace Project.Core.Managers
         private void OnHold()
         {
             if (!_isInitialized) return;
-            _judgementSystem.ProcessInput(PatternType.Hold, CurrentTime);
+            _isPressing = true; 
+
+            _judgementSystem.ProcessInputDown(CurrentTime);
             _touchVisual?.PlayAction(PatternType.Hold);
         }
 
         private void OnRelease()
         {
             if (!_isInitialized) return;
-            if (_touchVisual is TouchEventVisual visual) visual.StopHoldAction();
-        }
+            _isPressing = false; 
 
+            _judgementSystem.ProcessInputUp(CurrentTime);
+
+            if (_touchVisual is ITouchVisual visual) visual.StopHoldAction();
+        }
         #endregion
 
-        #region Input Event Setup
+        #region Lifecycle & Events
         private void AddInputEvents()
         {
             var input = InputManager.Instance;
@@ -191,10 +227,6 @@ namespace Project.Core.Managers
         private void OnDestroy()
         {
             RemoveInputEvents();
-            if (_eventSystem != null)
-            {
-                // 무명 메서드 구독 해제는 어려우므로 필요 시 별도 메서드로 추출
-            }
         }
         #endregion
     }
