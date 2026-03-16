@@ -1,9 +1,11 @@
+using Cysharp.Threading.Tasks;
 using Project.Rhythm.Data.Enum;
 using Project.Rhythm.Interface;
 using Project.Rhythm.Judgement;
+using System;
+using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
-using System.Collections;
 
 namespace Project.Rhythm.Note
 {
@@ -77,51 +79,57 @@ namespace Project.Rhythm.Note
             if (holdSlider != null) holdSlider.gameObject.SetActive(false);
 
             if (result != JudgeResult.Miss)
-                StartCoroutine(SuccessRoutine());
+            {
+                SuccessRoutine().Forget();
+            }
             else
-                StartCoroutine(FailRoutine());
+            {
+                FailRoutine().Forget();
+            }
         }
 
-        private IEnumerator SuccessRoutine()
+        private async UniTask SuccessRoutine()
         {
             targetImage.sprite = painSprite;
-
             _rectTransform.localScale = new Vector3(1.1f, 0.8f, 1f);
-            yield return new WaitForSeconds(0.1f);
 
-            targetImage.sprite = spitSprites[Random.Range(0, spitSprites.Length)];
+            await UniTask.Delay(TimeSpan.FromSeconds(0.1f));
+
+            targetImage.sprite = spitSprites[UnityEngine.Random.Range(0, spitSprites.Length)];
             _rectTransform.localScale = Vector3.one;
             Spit(mineralPrefabs);
 
-            yield return new WaitForSeconds(1.0f);
+            await UniTask.Delay(TimeSpan.FromSeconds(1.0f));
             ResetVisual();
         }
 
-        private IEnumerator FailRoutine()
+        private async UniTask FailRoutine()
         {
             targetImage.sprite = ignoreSprites[0];
-            yield return new WaitForSeconds(0.15f);
-            targetImage.sprite = ignoreSprites[1];
-            yield return new WaitForSeconds(0.15f);
+            // yield return new WaitForSeconds(0.15f) 대신 await 사용
+            await UniTask.Delay(TimeSpan.FromSeconds(0.15f));
 
-            targetImage.sprite = spitSprites[Random.Range(0, spitSprites.Length)];
+            targetImage.sprite = ignoreSprites[1];
+            await UniTask.Delay(TimeSpan.FromSeconds(0.15f));
+
+            targetImage.sprite = spitSprites[UnityEngine.Random.Range(0, spitSprites.Length)];
             Spit(trashPrefabs);
 
-            yield return new WaitForSeconds(1.0f);
+            await UniTask.Delay(TimeSpan.FromSeconds(1.0f));
             ResetVisual();
         }
 
         private void Spit(GameObject[] prefabs)
         {
             if (prefabs == null || prefabs.Length == 0) return;
-            GameObject prefab = prefabs[Random.Range(0, prefabs.Length)];
+            GameObject prefab = prefabs[UnityEngine.Random.Range(0, prefabs.Length)];
             GameObject obj = Instantiate(prefab, mouthPos.position, Quaternion.identity, transform.parent);
 
             if (obj.TryGetComponent<Rigidbody2D>(out var rb))
             {
-                Vector2 force = new Vector2(Random.Range(200f, 400f), Random.Range(500f, 800f));
+                Vector2 force = new Vector2(UnityEngine.Random.Range(200f, 400f), UnityEngine.Random.Range(500f, 800f));
                 rb.AddForce(force);
-                rb.AddTorque(Random.Range(-10f, 10f));
+                rb.AddTorque(UnityEngine.Random.Range(-10f, 10f));
             }
         }
 
