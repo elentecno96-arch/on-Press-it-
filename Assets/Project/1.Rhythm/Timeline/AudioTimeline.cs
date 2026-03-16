@@ -10,10 +10,15 @@ namespace Project.Rhythm.Timeline
     {
         private AudioSource _audioSource;
         private float _playStartTimeOffset;
-        private bool _started;
+        private bool _isStarted;
 
         public bool IsPlaying => _audioSource != null && _audioSource.isPlaying;
 
+        /// <summary>
+        /// 초기화
+        /// </summary>
+        /// <param name="source"></param>
+        /// <param name="data"></param>
         public void Initialize(AudioSource source, StageData data)
         {
             _audioSource = source;
@@ -21,9 +26,10 @@ namespace Project.Rhythm.Timeline
             _audioSource.clip = data.masterTrack;
             _audioSource.loop = false;
             _audioSource.playOnAwake = false;
+            _audioSource.Stop();
 
             _playStartTimeOffset = data.playStartTime;
-            _started = false;
+            _isStarted = false;
         }
 
         public void StartTimeline()
@@ -32,16 +38,15 @@ namespace Project.Rhythm.Timeline
                 return;
 
             _audioSource.Play();
-            _started = true;
+            _isStarted = true;
         }
 
         public float GetStageTime()
         {
-            if (!_started)
+            if (!_isStarted)
                 return -1f;
 
-            float time = _audioSource.time - _playStartTimeOffset;
-            return Mathf.Max(0f, time);
+            return _audioSource.time - _playStartTimeOffset;
         }
 
         public void Stop()
@@ -49,7 +54,7 @@ namespace Project.Rhythm.Timeline
             if (_audioSource != null)
                 _audioSource.Stop();
 
-            _started = false;
+            _isStarted = false;
         }
     }
 }

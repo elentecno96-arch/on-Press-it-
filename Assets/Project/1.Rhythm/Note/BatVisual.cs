@@ -23,7 +23,8 @@ namespace Project.Rhythm.Note
         private RectTransform _rectTransform;
         private bool _isJudged;
         private bool _isFalling;
-        private bool _isBatSpawned; 
+        private bool _isBatSpawned;
+        private Coroutine _flashCoroutine;
 
         private Sprite _selectedBatSprite;
         private Vector2 _fallDirection = new Vector2(-0.4f, -1.2f).normalized;
@@ -102,8 +103,31 @@ namespace Project.Rhythm.Note
                 Destroy(gameObject, 0.15f);
             }
         }
+        public void PlayAction(PatternType type)
+        {
+            if (type == PatternType.Signal)
+            {
+                if (_flashCoroutine != null) StopCoroutine(_flashCoroutine);
+                _flashCoroutine = StartCoroutine(FlashEyeRoutine());
+            }
+        }
 
-        public void PlayAction(PatternType type) { }
+        private System.Collections.IEnumerator FlashEyeRoutine()
+        {
+            if (targetImage == null) yield break;
+
+            // 1. 눈 색상을 밝게 (번쩍!)
+            targetImage.color = Color.red;
+            _rectTransform.localScale = new Vector3(0.5f, 0.5f, 1f); // 살짝 커짐
+
+            // 2. 아주 짧게 대기
+            yield return new WaitForSeconds(0.1f);
+
+            // 3. 다시 원래 상태로 (은은하게 유지)
+            targetImage.color = new Color(1f, 1f, 1f, 0.8f);
+            _rectTransform.localScale = new Vector3(0.4f, 0.4f, 1f);
+        }
+
         public void StopHoldAction() { }
     }
 }

@@ -2,6 +2,7 @@ using Cysharp.Threading.Tasks;
 using Project.Rhythm;
 using Project.Rhythm.Data;
 using Project.Rhythm.Data.Enum;
+using Project.Rhythm.Data.Struct;
 using Project.Rhythm.Event;
 using Project.Rhythm.Interface;
 using Project.Rhythm.Judgement;
@@ -20,7 +21,6 @@ namespace Project.Core.Managers
         [SerializeField] private StageData testStageData;
         [SerializeField] private AudioSource musicSource;
         [SerializeField] private StagePresenter presenter;
-        public NoteCollection NoteCollection { get; private set; }
 
         [SerializeField] private float noteAppearDuration = 2.0f;
         [SerializeField] private float stageStartDelay = 1.5f;
@@ -28,15 +28,16 @@ namespace Project.Core.Managers
         private AudioTimeline _audioTimeline;
         private RhythmEventSystem _eventSystem;
         private JudgementSystem _judgementSystem;
-        private NoteSpawner _noteSpawner;
-        private ITouchVisual _touchVisual; 
+        private NoteSpawnSystem _noteSpawner;
+        private ITouchVisual _touchVisual;
+
+        private RhythmInputController _inputController;
 
         private bool _isInitialized;
         private StageData _activeStageData;
 
         public event Action OnStageStart;
         public event Action OnStageComplete;
-        private bool _isPressing;
 
         private readonly List<Note> _activeNotes = new();
         private StoneVisual _fixedStone;
@@ -52,16 +53,24 @@ namespace Project.Core.Managers
             InitializeSystems(_activeStageData);
 
             presenter.Initialize(_activeStageData);
-            _noteSpawner = new NoteSpawner(presenter);
+            _noteSpawner = new NoteSpawnSystem(presenter);
             _touchVisual = presenter.GetTouchVisual();
 
-            CollectPersistentNotes();
+            _inputController = new RhythmInputController(_judgementSystem, () => CurrentTime);
+
+            _inputController.OnInputTriggered += (type) =>
+            {
+                if (type == PatternType.None) _touchVisual?.StopHoldAction();
+                else _touchVisual?.PlayAction(type);
+            };
 
             BindSystems();
-            AddInputEvents();
+
+            _judgementSystem.OnJudged += (result, note) => {
+                presenter.GetTouchVisual()?.PlayAction(result);
+            };
 
             _isInitialized = true;
-
             StartSequence(_activeStageData, this.GetCancellationTokenOnDestroy()).Forget();
 
             await UniTask.CompletedTask;
@@ -69,7 +78,6 @@ namespace Project.Core.Managers
 
         private void InitializeSystems(StageData stageData)
         {
-            NoteCollection = new NoteCollection();
 
             _audioTimeline = new AudioTimeline();
             _audioTimeline.Initialize(musicSource, stageData);
@@ -83,48 +91,30 @@ namespace Project.Core.Managers
 
         private void BindSystems()
         {
-            _judgementSystem.OnJudged += (result, note) =>
-            {
+            _judgementSystem.OnJudged += (result, note) => {
                 _touchVisual?.PlayAction(result);
-
                 if (note != null)
                 {
                     note.OnJudged(result);
                 }
             };
 
-            _eventSystem.OnSpawnTriggered += (action, hitTime) =>
+            _eventSystem.OnSpawnTriggered += (action, hitTime, duration) =>
             {
-                var persistentNote = NoteCollection.GetNote("Stage3_Stone");
+                var note = _noteSpawner.GetOrSpawn(action, CurrentTime, duration);
 
-                if (action.type == PatternType.Hold && persistentNote != null)
+                if (note == null) return;
+
+                if (action.role == ActionRole.Signal)
                 {
-                    _judgementSystem.RegisterNote(action, persistentNote);
+                    note.PlaySignalEffect();
                 }
                 else
                 {
-                    Note spawnedNote = _noteSpawner.Spawn(CurrentTime, noteAppearDuration);
-                    if (spawnedNote != null)
-                    {
-                        _judgementSystem.RegisterNote(action, spawnedNote);
-                        _activeNotes.Add(spawnedNote);
-                    }
+                    _judgementSystem.RegisterNote(action, note);
+                    if (!note.IsPersistent) _activeNotes.Add(note);
                 }
             };
-        }
-
-        private void CollectPersistentNotes()
-        {
-            if (presenter == null) return;
-
-            var allNotes = presenter.GetComponentsInChildren<Note>(true);
-            foreach (var note in allNotes)
-            {
-                if (note.IsPersistent && !string.IsNullOrEmpty(note.NoteID))
-                {
-                    NoteCollection.Register(note.NoteID, note);
-                }
-            }
         }
 
         private void Update()
@@ -135,7 +125,7 @@ namespace Project.Core.Managers
             if (CurrentTime < 0f) return;
 
             _eventSystem.Process(CurrentTime);
-            _judgementSystem.UpdateHoldCheck(_isPressing, CurrentTime);
+            _judgementSystem.UpdateHoldCheck(InputManager.Instance.IsPressing, CurrentTime);
             _judgementSystem.CheckMiss(CurrentTime);
 
             for (int i = _activeNotes.Count - 1; i >= 0; i--)
@@ -148,6 +138,19 @@ namespace Project.Core.Managers
                 }
 
                 note.UpdateNote(CurrentTime);
+            }
+
+            if (_judgementSystem.IsHolding)
+            {
+                float progress = _judgementSystem.GetHoldProgress(CurrentTime);
+
+                _touchVisual?.UpdateVisual(progress);
+
+                var holdNote = _judgementSystem.GetCurrentHoldNote();
+                if (holdNote != null)
+                {
+                    holdNote.UpdateHoldProgress(progress);
+                }
             }
         }
 
@@ -168,66 +171,9 @@ namespace Project.Core.Managers
             catch (OperationCanceledException) { }
         }
 
-        #region Input Handling
-        private void OnTap(Vector2 pos)
-        {
-            if (!_isInitialized) return;
-            _judgementSystem.ProcessInput(PatternType.Tap, CurrentTime);
-            _touchVisual?.PlayAction(PatternType.Tap);
-        }
-
-        private void OnSlide(Vector2 delta)
-        {
-            if (!_isInitialized) return;
-            _judgementSystem.ProcessInput(PatternType.Slide, CurrentTime);
-            _touchVisual?.PlayAction(PatternType.Slide);
-        }
-
-        private void OnHold()
-        {
-            if (!_isInitialized) return;
-            _isPressing = true; 
-
-            _judgementSystem.ProcessInputDown(CurrentTime);
-            _touchVisual?.PlayAction(PatternType.Hold);
-        }
-
-        private void OnRelease()
-        {
-            if (!_isInitialized) return;
-            _isPressing = false; 
-
-            _judgementSystem.ProcessInputUp(CurrentTime);
-
-            if (_touchVisual is ITouchVisual visual) visual.StopHoldAction();
-        }
-        #endregion
-
-        #region Lifecycle & Events
-        private void AddInputEvents()
-        {
-            var input = InputManager.Instance;
-            if (input == null) return;
-            input.OnTapAction += OnTap;
-            input.OnSlideAction += OnSlide;
-            input.OnHoldAction += OnHold;
-            input.OnReleaseAction += OnRelease;
-        }
-
-        private void RemoveInputEvents()
-        {
-            var input = InputManager.Instance;
-            if (input == null) return;
-            input.OnTapAction -= OnTap;
-            input.OnSlideAction -= OnSlide;
-            input.OnHoldAction -= OnHold;
-            input.OnReleaseAction -= OnRelease;
-        }
-
         private void OnDestroy()
         {
-            RemoveInputEvents();
+            _inputController?.Dispose(); // 구독 해제
         }
-        #endregion
     }
 }

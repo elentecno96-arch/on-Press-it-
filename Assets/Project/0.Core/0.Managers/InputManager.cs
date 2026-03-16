@@ -4,7 +4,6 @@ using System;
 using UnityEngine;
 using UnityEngine.InputSystem.EnhancedTouch;
 using Touch = UnityEngine.InputSystem.EnhancedTouch.Touch;
-using TouchPhase = UnityEngine.InputSystem.TouchPhase;
 
 namespace Project.Core.Managers
 {
@@ -15,91 +14,69 @@ namespace Project.Core.Managers
     {
         private GameInput _gameInput;
 
-        public event Action<Vector2> OnTapAction;
+        public event Action<Vector2> OnPointerDown; // Tap/Hold 시작 통합
         public event Action<Vector2> OnSlideAction;
-        public event Action OnHoldAction;
-        public event Action OnReleaseAction;
+        public event Action OnPointerUp;  
+
+        public bool IsPressing => Touch.activeTouches.Count > 0;
 
         private const float SLIDE_THRESHOLD = 50f;
-        private const float HOLD_DETECTION_TIME = 0.2f;
-
-        private float _touchStartTime;
-        private bool _isHoldLogged = false;
-        private string _lastInputType = "None"; //런타임 디버깅 용 변수
+        private string _lastInputType = "None";
         private bool _isSlideProcessed = false;
 
         public override UniTask Initialize()
         {
             if (IsInitialized) return UniTask.CompletedTask;
 
-            _gameInput = new GameInput();
-            EnhancedTouchSupport.Enable(); // 다중 터치 지원 활성화
-            _gameInput.Player.Enable();
+            EnhancedTouchSupport.Enable();
+
+            Touch.onFingerDown += OnFingerDown;
+            Touch.onFingerMove += OnFingerMove;
+            Touch.onFingerUp += OnFingerUp;
 
             IsInitialized = true;
-            Debug.Log("<color=green>[InputManager]</color> 초기화 완료");
             return UniTask.CompletedTask;
         }
 
-        private void Update()
+        private void OnFingerDown(Finger finger)
         {
-            if (!IsInitialized) return;
+            _lastInputType = "DOWN";
+            _isSlideProcessed = false;
+            OnPointerDown?.Invoke(finger.currentTouch.screenPosition);
+        }
 
-            var activeTouches = Touch.activeTouches;
-            if (activeTouches.Count == 0) return;
+        private void OnFingerMove(Finger finger)
+        {
+            if (_isSlideProcessed) return;
 
-            var touch = activeTouches[0];
-
-            switch (touch.phase)
+            if (finger.currentTouch.delta.magnitude > SLIDE_THRESHOLD)
             {
-                case TouchPhase.Began:
-                    _lastInputType = "TAP/HOLD_START";
-                    _touchStartTime = Time.time;
-                    _isHoldLogged = false;
-                    _isSlideProcessed = false;
-
-                    OnTapAction?.Invoke(touch.screenPosition);
-                    OnHoldAction?.Invoke();
-                    break;
-
-                case TouchPhase.Moved:
-                    if (_isSlideProcessed) return;
-                    if (touch.delta.magnitude > SLIDE_THRESHOLD)
-                    {
-                        _lastInputType = "SLIDE";
-                        _isSlideProcessed = true;
-                        OnSlideAction?.Invoke(touch.delta);
-                    }
-                    break;
-
-                case TouchPhase.Stationary:
-                    if (Time.time - _touchStartTime > HOLD_DETECTION_TIME && !_isHoldLogged)
-                    {
-                        _isHoldLogged = true;
-                    }
-                    break;
-
-                case TouchPhase.Ended:
-                    _lastInputType = "RELEASE";
-                    _isSlideProcessed = false;
-                    OnReleaseAction?.Invoke();
-                    break;
+                _lastInputType = "SLIDE";
+                _isSlideProcessed = true;
+                OnSlideAction?.Invoke(finger.currentTouch.delta);
             }
+        }
+
+        private void OnFingerUp(Finger finger)
+        {
+            _lastInputType = "UP";
+            OnPointerUp?.Invoke();
         }
 
         private void OnDisable()
         {
-            _gameInput?.Player.Disable();
+            Touch.onFingerDown -= OnFingerDown;
+            Touch.onFingerMove -= OnFingerMove;
+            Touch.onFingerUp -= OnFingerUp;
             EnhancedTouchSupport.Disable();
         }
 
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
         private void OnGUI()
         {
-            GUI.Label(new Rect(20, 100, 400, 50), $"Last Input: {_lastInputType}", new GUIStyle { fontSize = 30, normal = new GUIStyleState { textColor = Color.cyan } });
+            GUI.Label(new Rect(20, 100, 400, 50), $"Input State: {_lastInputType} | Pressing: {IsPressing}",
+                new GUIStyle { fontSize = 30, normal = new GUIStyleState { textColor = Color.cyan } });
         }
 #endif
     }
-
-
 }
