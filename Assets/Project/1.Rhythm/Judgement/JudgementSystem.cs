@@ -18,71 +18,81 @@ namespace Project.Rhythm.Judgement
             public float targetTime;
         }
 
+        /// <summary>
+        /// 추후 SO로 분리되어 가지고 올 판정 세부 변수
+        /// </summary>
+        private float _perfectWin, _greatWin, _goodWin, _missWin;
+
         //StageData로 위치 변경 예정
-        private const float PERFECT_WINDOW = 0.12f;
-        private const float GREAT_WINDOW = 0.21f;
-        private const float GOOD_WINDOW = 0.27f;
-        private const float MISS_WINDOW = 0.34f;
+        //private const float PERFECT_WINDOW = 0.12f;
+        //private const float GREAT_WINDOW = 0.21f;
+        //private const float GOOD_WINDOW = 0.27f;
+        //private const float MISS_WINDOW = 0.34f;
 
         private readonly Queue<JudgeData> _judgeQueue = new();
-       // private StageData _stageData;
         private float _secondsPerBeat;
         private JudgeData? _activeHoldNote = null;
 
         public event Action<JudgeResult, Note.Note> OnJudged;
-
+        public bool IsHolding => _activeHoldNote.HasValue;
 
         public void Initialize(StageData data)
         {
             _secondsPerBeat = 60f / data.bpm;
             _judgeQueue.Clear();
             _activeHoldNote = null;
+
+            //초기 임시 할당
+            _perfectWin = 0.12f;
+            _greatWin = 0.21f;
+            _goodWin = 0.27f;
+            _missWin = 0.34f;
         }
 
         public void RegisterNote(RhythmAction action, Note.Note note)
         {
-            float targetTime = action.beat * _secondsPerBeat;
-
             _judgeQueue.Enqueue(new JudgeData
             {
                 action = action,
                 note = note,
-                targetTime = targetTime
+                targetTime = action.beat * _secondsPerBeat
             });
         }
 
-        public void ProcessInput(PatternType inputType, float stageTime)
+        public void ProcessTap(float stageTime)
         {
             if (_judgeQueue.Count == 0) return;
 
             var target = _judgeQueue.Peek();
+            if (target.action.type == PatternType.Hold) return;  //홀드 패턴 무시 
+
             float absDiff = Mathf.Abs(stageTime - target.targetTime);
+            if (absDiff > _missWin) return;
 
-            if (absDiff > MISS_WINDOW) return;
-
-            JudgeResult result = CalculateResult(absDiff);
-            ApplyResult(target, result);
+            ApplyResult(target, CalculateResult(absDiff));
         }
 
 
-        public void ProcessInputDown(float stageTime)
+        public void ProcessHoldDown(float stageTime)
         {
             if (_judgeQueue.Count == 0 || _activeHoldNote.HasValue) return;
 
             var target = _judgeQueue.Peek();
 
+            if (target.action.type != PatternType.Hold) return;
+
             float absDiff = Mathf.Abs(stageTime - target.targetTime);
 
-            if (absDiff <= MISS_WINDOW)
+            if (absDiff <= _missWin)
             {
                 _judgeQueue.Dequeue();
                 _activeHoldNote = target;
-                OnJudged?.Invoke(JudgeResult.Perfect, target.note);
+                OnJudged?.Invoke(CalculateResult(absDiff), target.note);
             }
         }
 
 
-        public void ProcessInputUp(float stageTime)
+        public void ProcessHoldUp(float stageTime)
         {
             if (!_activeHoldNote.HasValue) return;
 
@@ -92,8 +102,7 @@ namespace Project.Rhythm.Judgement
 
             JudgeResult result = CalculateResult(absDiff);
 
-            PrintJudgeLog(result);
-            OnJudged?.Invoke(result, target.note);
+            LogAndNotify(result, target.note);
             _activeHoldNote = null;
         }
 
@@ -105,10 +114,9 @@ namespace Project.Rhythm.Judgement
             {
                 float targetReleaseTime = _activeHoldNote.Value.targetTime + (_activeHoldNote.Value.action.duration * _secondsPerBeat);
 
-                if (stageTime < targetReleaseTime - GOOD_WINDOW)
+                if (stageTime < targetReleaseTime - _goodWin)
                 {
-                    PrintJudgeLog(JudgeResult.Miss);
-                    OnJudged?.Invoke(JudgeResult.Miss, _activeHoldNote.Value.note);
+                    LogAndNotify(JudgeResult.Miss, _activeHoldNote.Value.note);
                     _activeHoldNote = null;
                 }
             }
@@ -117,15 +125,20 @@ namespace Project.Rhythm.Judgement
         private void ApplyResult(JudgeData target, JudgeResult result)
         {
             _judgeQueue.Dequeue();
+            LogAndNotify(result, target.note);
+        }
+
+        private void LogAndNotify(JudgeResult result, Note.Note note)
+        {
             PrintJudgeLog(result);
-            OnJudged?.Invoke(result, target.note);
+            OnJudged?.Invoke(result, note);
         }
 
         private JudgeResult CalculateResult(float absDiff)
         {
-            if (absDiff <= PERFECT_WINDOW) return JudgeResult.Perfect;
-            if (absDiff <= GREAT_WINDOW) return JudgeResult.Great;
-            if (absDiff <= GOOD_WINDOW) return JudgeResult.Good;
+            if (absDiff <= _perfectWin) return JudgeResult.Perfect;
+            if (absDiff <= _greatWin) return JudgeResult.Great;
+            if (absDiff <= _goodWin) return JudgeResult.Good;
             return JudgeResult.Miss;
         }
 
@@ -134,19 +147,28 @@ namespace Project.Rhythm.Judgement
             while (_judgeQueue.Count > 0)
             {
                 var target = _judgeQueue.Peek();
-
-                if (stageTime > target.targetTime + MISS_WINDOW)
+                if (stageTime > target.targetTime + _missWin)
                 {
-                    _judgeQueue.Dequeue();
-                    PrintJudgeLog(JudgeResult.Miss);
-                    OnJudged?.Invoke(JudgeResult.Miss, target.note);
+                    ApplyResult(target, JudgeResult.Miss);
                 }
-                else
-                {
-                    break;
-                }
+                else break;
             }
         }
+
+        public float GetHoldProgress(float stageTime)
+        {
+            if (!_activeHoldNote.HasValue) return 0f;
+
+            var target = _activeHoldNote.Value;
+
+            float startTime = target.targetTime;
+            float durationTime = target.action.duration * _secondsPerBeat;
+
+            float elapsed = stageTime - startTime;
+            return Mathf.Clamp01(elapsed / durationTime);
+        }
+
+        public Note.Note GetCurrentHoldNote() => _activeHoldNote?.note;
 
         /// <summary>
         /// 판정 로그 확인용

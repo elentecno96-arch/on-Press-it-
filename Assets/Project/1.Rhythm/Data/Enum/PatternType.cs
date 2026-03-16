@@ -5,6 +5,7 @@ namespace Project.Rhythm.Data.Enum
         None,
         Tap,
         Hold,
-        Slide
+        Slide,
+        Signal
     }
 }

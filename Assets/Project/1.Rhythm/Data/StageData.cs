@@ -18,12 +18,11 @@ namespace Project.Rhythm.Data
         public GameObject backgroundPrefab;     // 배경용 프리팹 (가장 뒤)
         public GameObject playerPrefab;         // 플레이어 비주얼 프리팹 (가장 앞)
         public GameObject notePrefab;           // 노트 프리팹
-        public GameObject FeedBackNotePrefab;   // 피드백 연출 용 프리팹
 
-        //public float perfact_Judge = 0.12f;
-        //public float great_Judge = 0.21f;
-        //public float Good_Judge = 0.27f;
-        //public float Miss_judge = 0.34f;
+        public float perfectWindow = 0.12f;
+        public float greatWindow = 0.21f;
+        public float goodWindow = 0.27f;
+        public float missWindow = 0.34f;
 
         [Header("Timing")]
         public float playStartTime;       // 곡 시작 오프셋

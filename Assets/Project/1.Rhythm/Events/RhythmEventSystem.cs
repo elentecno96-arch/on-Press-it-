@@ -16,15 +16,16 @@ namespace Project.Rhythm.Event
             public RhythmAction action;
             public float spawnTriggerTime; // 실제 소환되어야 하는 절대 시간
             public float targetHitTime;    // 정박(판정) 절대 시간
+            public float duration; //개별 노트 유지 시간
         }
 
         private readonly List<EventData> _events = new();
         private int _currentIndex;
         private float _secondsPerBeat;
 
-        public event Action<RhythmAction, float> OnSpawnTriggered;
+        public event Action<RhythmAction, float, float> OnSpawnTriggered;
 
-        public void Initialize(StageData data, float appearDuration)
+        public void Initialize(StageData data, float defaultAppearDuration)
         {
             _events.Clear();
             _currentIndex = 0;
@@ -35,18 +36,18 @@ namespace Project.Rhythm.Event
 
             foreach (var action in data.actions)
             {
-                if (action.type == PatternType.None)
-                    continue;
+                if (action.type == PatternType.None) continue;
 
                 float hitTime = action.beat * _secondsPerBeat;
-
-                float spawnTime = hitTime - appearDuration;
+                float duration = (action.type == PatternType.Hold) ? 0.1f : defaultAppearDuration;
+                float spawnTime = hitTime - duration;
 
                 _events.Add(new EventData
                 {
                     action = action,
                     spawnTriggerTime = spawnTime,
-                    targetHitTime = hitTime
+                    targetHitTime = hitTime,
+                    duration = duration
                 });
             }
             _events.Sort((a, b) => a.spawnTriggerTime.CompareTo(b.spawnTriggerTime));
@@ -57,16 +58,16 @@ namespace Project.Rhythm.Event
         /// </summary>
         public void Process(float stageTime)
         {
-            if (_currentIndex >= _events.Count)
-                return;
+            // [변경점 4] 안전 코드 추가
+            if (stageTime < 0 || _currentIndex >= _events.Count) return;
 
             while (_currentIndex < _events.Count)
             {
                 EventData evt = _events[_currentIndex];
 
-                if (stageTime < evt.spawnTriggerTime)
-                    break;
-                OnSpawnTriggered?.Invoke(evt.action, evt.targetHitTime);
+                if (stageTime < evt.spawnTriggerTime) break;
+
+                OnSpawnTriggered?.Invoke(evt.action, evt.targetHitTime, evt.duration);
 
                 _currentIndex++;
             }

@@ -23,6 +23,23 @@ public class TouchEventVisual : MonoBehaviour, ITouchVisual
 
     private bool _isJudged;
 
+    //파라미터 존재 캐싱용
+    private bool _hasTapParam;
+    private bool _hasSlideParam;
+    private bool _hasHoldParam;
+    private bool _hasSuccessParam;
+
+    private void Awake()
+    {
+        if (animator != null)
+        {
+            _hasTapParam = CheckParameter(tapTrigger);
+            _hasSlideParam = CheckParameter(slideTrigger);
+            _hasHoldParam = CheckParameter(holdBool);
+            _hasSuccessParam = CheckParameter(successTrigger);
+        }
+    }
+
     /// <summary>
     /// [노트 전용] 판정 결과가 나왔을 때 호출 (선반 연출 등)
     /// </summary>
@@ -44,13 +61,13 @@ public class TouchEventVisual : MonoBehaviour, ITouchVisual
         switch (type)
         {
             case PatternType.Tap:
-                if (HasParameter(tapTrigger)) animator.SetTrigger(tapTrigger);
+                if (_hasTapParam) animator.SetTrigger(tapTrigger);
                 break;
             case PatternType.Slide:
-                if (HasParameter(slideTrigger)) animator.SetTrigger(slideTrigger);
+                if (_hasSlideParam) animator.SetTrigger(slideTrigger);
                 break;
             case PatternType.Hold:
-                if (HasParameter(holdBool)) animator.SetBool(holdBool, true);
+                if (_hasHoldParam) animator.SetBool(holdBool, true);
                 break;
         }
     }
@@ -58,12 +75,10 @@ public class TouchEventVisual : MonoBehaviour, ITouchVisual
     // 파라미터가 실제로 애니메이터에 있는지 확인하는 헬퍼 함수
     private bool HasParameter(string paramName)
     {
-        if (string.IsNullOrEmpty(paramName)) return false;
-
-        foreach (AnimatorControllerParameter param in animator.parameters)
-        {
-            if (param.name == paramName) return true;
-        }
+        if (paramName == tapTrigger) return _hasTapParam;
+        if (paramName == slideTrigger) return _hasSlideParam;
+        if (paramName == holdBool) return _hasHoldParam;
+        if (paramName == successTrigger) return _hasSuccessParam;
         return false;
     }
 
@@ -72,7 +87,10 @@ public class TouchEventVisual : MonoBehaviour, ITouchVisual
     /// </summary>
     public void StopHoldAction()
     {
-        if (animator != null) animator.SetBool(holdBool, false);
+        if (animator != null && _hasHoldParam)
+        {
+            animator.SetBool(holdBool, false);
+        }
     }
 
     private void SetSuccessVisual()
@@ -84,8 +102,23 @@ public class TouchEventVisual : MonoBehaviour, ITouchVisual
             targetImage.SetNativeSize();
         }
 
-        if (animator != null) animator.SetTrigger(successTrigger);
+        if (animator != null && _hasSuccessParam)
+        {
+            animator.SetTrigger(successTrigger);
+        }
     }
+
+    private bool CheckParameter(string paramName)
+    {
+        if (string.IsNullOrEmpty(paramName)) return false;
+
+        foreach (AnimatorControllerParameter param in animator.parameters)
+        {
+            if (param.name == paramName) return true;
+        }
+        return false;
+    }
+
 
     private void SetMissVisual()
     {
