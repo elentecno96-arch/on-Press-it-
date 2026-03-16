@@ -29,8 +29,6 @@ namespace Project.Core.Managers
         private RhythmEventSystem _eventSystem;
         private JudgementSystem _judgementSystem;
         private NoteSpawnSystem _noteSpawner;
-        private ITouchVisual _touchVisual;
-
         private RhythmInputController _inputController;
 
         private bool _isInitialized;
@@ -40,7 +38,6 @@ namespace Project.Core.Managers
         public event Action OnStageComplete;
 
         private readonly List<Note> _activeNotes = new();
-
         public static float CurrentTime { get; private set; }
 
         public async UniTask Initialize()
@@ -50,19 +47,14 @@ namespace Project.Core.Managers
             _activeStageData = GameManager.Instance.CurrentStageData ?? testStageData;
 
             InitializeSystems(_activeStageData);
-
             presenter.Initialize(_activeStageData);
-
             _noteSpawner = new NoteSpawnSystem(presenter);
 
+            // 1. 입력 컨트롤러 생성 및 단일 구독 관리
             _inputController = new RhythmInputController(_judgementSystem, () => CurrentTime);
 
-            _inputController.OnInputTriggered += (type) =>
-            {
-                var visual = presenter.GetTouchVisual();
-                if (type == PatternType.None) visual?.StopHoldAction();
-                else visual?.PlayAction(type);
-            };
+            // Initialize에서만 한 번 구독합니다.
+            _inputController.OnInputTriggered += InputTriggered;
 
             BindSystems();
 
@@ -87,13 +79,15 @@ namespace Project.Core.Managers
 
         private void BindSystems()
         {
-            _judgementSystem.OnJudged += (result, note) => {
-                presenter.GetTouchVisual()?.PlayAction(result);
+            _eventSystem.OnCountdownTriggered += () =>
+            {
+                presenter.StartCountdown();
+            };
 
-                if (note != null)
-                {
-                    note.OnJudged(result);
-                }
+            _judgementSystem.OnJudged += (result, note) =>
+            {
+                presenter.GetTouchVisual()?.PlayAction(result);
+                note?.OnJudged(result);
             };
 
             _eventSystem.OnSpawnTriggered += (action, hitTime, duration) =>
@@ -103,12 +97,10 @@ namespace Project.Core.Managers
                 if (!string.IsNullOrEmpty(action.targetID))
                 {
                     note = presenter.GetFixedNote(action.targetID);
-
                     if (note != null)
                     {
-                        note.ResetJudgedState(); 
+                        note.ResetJudgedState();
                         note.InitializePersistent(CurrentTime, duration);
-                        Debug.Log($"<color=cyan>[Manager]</color> 고정 노트 연결: {action.targetID}");
                     }
                 }
 
@@ -120,23 +112,10 @@ namespace Project.Core.Managers
 
                 if (note == null) return;
 
-                if (action.role == ActionRole.Signal)
+                _judgementSystem.RegisterNote(action, note);
+                if (!note.IsPersistent && !_activeNotes.Contains(note))
                 {
-                    note.PlaySignalEffect();
-
-                    var visual = presenter.GetTouchVisual();
-                    if (visual is Stage3PlayerVisual s3Visual)
-                    {
-                        s3Visual.StartCountdown(duration);
-                    }
-                }
-                else
-                {
-                    _judgementSystem.RegisterNote(action, note);
-                    if (!note.IsPersistent)
-                    {
-                        if (!_activeNotes.Contains(note)) _activeNotes.Add(note);
-                    }
+                    _activeNotes.Add(note);
                 }
             };
         }
@@ -154,22 +133,28 @@ namespace Project.Core.Managers
 
             for (int i = _activeNotes.Count - 1; i >= 0; i--)
             {
-                var note = _activeNotes[i];
-                if (note == null) { _activeNotes.RemoveAt(i); continue; }
-                note.UpdateNote(CurrentTime);
+                if (_activeNotes[i] == null) { _activeNotes.RemoveAt(i); continue; }
+                _activeNotes[i].UpdateNote(CurrentTime);
             }
 
             if (_judgementSystem.IsHolding)
             {
                 float progress = _judgementSystem.GetHoldProgress(CurrentTime);
-
                 presenter.GetTouchVisual()?.UpdateVisual(progress);
+                _judgementSystem.GetCurrentHoldNote()?.UpdateHoldProgress(progress);
+            }
+        }
 
-                var holdNote = _judgementSystem.GetCurrentHoldNote();
-                if (holdNote != null)
-                {
-                    holdNote.UpdateHoldProgress(progress);
-                }
+        private void InputTriggered(PatternType type)
+        {
+            var visual = presenter.GetTouchVisual();
+            if (type == PatternType.None)
+            {
+                visual?.StopHoldAction();
+            }
+            else
+            {
+                visual?.PlayAction(type);
             }
         }
 
@@ -193,6 +178,7 @@ namespace Project.Core.Managers
         private void OnDestroy()
         {
             _inputController?.Dispose(); // 구독 해제
+            _audioTimeline?.Stop();
         }
     }
 }

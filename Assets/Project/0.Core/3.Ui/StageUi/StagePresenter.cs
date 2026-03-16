@@ -2,6 +2,7 @@ using Project.Core.Ui.StageUi.View;
 using Project.Rhythm.Data;
 using Project.Rhythm.Interface;
 using Project.Rhythm.Judgement;
+using Project.Data.Stage.STAGE3;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -14,6 +15,7 @@ namespace Project.Rhythm.Presentation
     public class StagePresenter : MonoBehaviour
     {
         [SerializeField] private StageView view;
+        private Stage3Environment _environment;
 
         private readonly Dictionary<int, Note.Note> _fixedNoteMap = new();
 
@@ -28,6 +30,7 @@ namespace Project.Rhythm.Presentation
             view.Clear();
 
             GameObject bgObj = view.CreateBackground(_stageData.backgroundPrefab);
+            _environment = bgObj.GetComponent<Stage3Environment>();
             //view.CreateBackground(_stageData.backgroundPrefab);
             GameObject playerObj = view.CreatePlayer(_stageData.playerPrefab);
 
@@ -74,5 +77,7 @@ namespace Project.Rhythm.Presentation
             //판정 연출 용
             Debug.Log($"<color=white>[Visual Effect]</color> {result}");
         }
+        public void StartCountdown() => _environment?.StartCountdown();
+        public void StopCountdown() => _environment?.StopCountdown();
     }
 }

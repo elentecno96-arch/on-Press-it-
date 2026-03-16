@@ -1,135 +1,125 @@
 using Project.Rhythm.Data.Enum;
-using Project.Rhythm.Interface;
 using Project.Rhythm.Judgement;
+using Project.Rhythm.Visual;
 using UnityEngine;
-using UnityEngine.UI;
+using DG.Tweening;
 
 namespace Project.Rhythm.Note
 {
     /// <summary>
     /// 스테이지 2 박쥐 노트 
     /// </summary>
-    public class BatVisual : MonoBehaviour, ITouchVisual
+    public class BatVisual : BaseRhythmVisual
     {
-        [SerializeField] private Image targetImage;
-        [SerializeField] private Sprite[] eyeSprites;      // 빨간 눈 랜덤 5종
-        [SerializeField] private Sprite[] batSprites;      // 박쥐 랜덤 2종
-        [SerializeField] private Sprite[] successSprites;  // 성공 이미지 랜덤 2종
-        [SerializeField] private Sprite[] missSprites;     // 실패 이미지 랜덤 2종
-
-        [SerializeField] private float scaleUpStart = 0.6f;
         [SerializeField] private float fallSpeed = 2500f;
 
-        private RectTransform _rectTransform;
-        private bool _isJudged;
+        private Vector2 _fallDirection = new Vector2(-0.4f, -1.2f).normalized;
         private bool _isFalling;
         private bool _isBatSpawned;
-        private Coroutine _flashCoroutine;
 
-        private Sprite _selectedBatSprite;
-        private Vector2 _fallDirection = new Vector2(-0.4f, -1.2f).normalized;
-
-        private void Awake()
+        protected override void Awake()
         {
-            _rectTransform = GetComponent<RectTransform>();
-        }
+            base.Awake();
 
-        private void OnEnable()
-        {
-            _isJudged = false;
-            _isFalling = false;
-            _isBatSpawned = false;
-
-            if (eyeSprites.Length > 0 && targetImage != null)
+            if (idleFrames != null && idleFrames.Length > 0)
             {
-                targetImage.sprite = eyeSprites[Random.Range(0, eyeSprites.Length)];
-                targetImage.color = Color.white;
+                targetImage.sprite = idleFrames[Random.Range(0, idleFrames.Length)];
             }
-
-            if (batSprites.Length > 0)
-                _selectedBatSprite = batSprites[Random.Range(0, batSprites.Length)];
-
-            _rectTransform.localScale = new Vector3(0.4f, 0.4f, 1f);
-            _rectTransform.localRotation = Quaternion.identity;
         }
 
-        public void UpdateVisual(float progress)
+        protected override void Update()
         {
             if (_isFalling)
             {
-                _rectTransform.anchoredPosition += _fallDirection * fallSpeed * Time.deltaTime;
-                _rectTransform.Rotate(Vector3.forward * 600f * Time.deltaTime);
+                targetImage.rectTransform.anchoredPosition += _fallDirection * fallSpeed * Time.deltaTime;
+                targetImage.rectTransform.Rotate(Vector3.forward * 600f * Time.deltaTime);
                 return;
             }
 
-            if (!_isJudged)
+            if (!_isBatSpawned)
             {
-                if (progress < scaleUpStart)
-                {
-                    _rectTransform.localScale = new Vector3(0.4f, 0.4f, 1f);
-                }
-                else if (progress >= scaleUpStart)
-                {
-                    if (!_isBatSpawned)
-                    {
-                        _isBatSpawned = true;
-                        targetImage.sprite = _selectedBatSprite; 
-                    }
-                    float t = (progress - scaleUpStart) / (1.0f - scaleUpStart);
-                    float currentScale = Mathf.Lerp(0.4f, 1.0f, t);
-                    _rectTransform.localScale = new Vector3(currentScale, currentScale, 1f);
-                }
+                base.Update();
             }
         }
 
-        public void PlayAction(JudgeResult result)
+        public override void UpdateVisual(float progress)
+        {
+            if (_isFalling || _isJudged) return;
+
+            float targetScale;
+
+            if (progress <= 0.7f)
+            {
+                float t = progress / 0.5f;
+                targetScale = Mathf.Lerp(0.05f, 0.25f, t * t);
+            }
+            else
+            {
+                if (!_isBatSpawned)
+                {
+                    _isBatSpawned = true;
+                    _isLooping = false;
+                    if (actionFrames != null && actionFrames.Length > 0)
+                        targetImage.sprite = actionFrames[Random.Range(0, actionFrames.Length)];
+                }
+                float t = (progress - 0.5f) / 0.5f;
+                float acceleratedT = t * t * t;
+                targetScale = Mathf.Lerp(0.25f, 1.0f, acceleratedT);
+            }
+
+            if (progress > 1.0f)
+            {
+                float t = (progress - 1.0f) / 1.0f;
+                targetScale = Mathf.Lerp(1.0f, 3.0f, t);
+            }
+
+            transform.localScale = new Vector3(targetScale, targetScale, 1f);
+        }
+
+        public override void PlayAction(PatternType type)
+        {
+            if (type == PatternType.Signal)
+            {
+                PlaySfx(actionSfx); // signalSfx
+                targetImage.color = Color.red;
+                transform.DOScale(Vector3.one * 1.2f, 0.1f).OnComplete(() => {
+                    targetImage.color = Color.white;
+                    transform.DOScale(Vector3.one * 1.0f, 0.1f);
+                });
+            }
+        }
+
+        public override void PlayAction(JudgeResult result)
         {
             if (_isJudged) return;
             _isJudged = true;
 
             if (result != JudgeResult.Miss)
             {
-                if (successSprites.Length > 0)
-                    targetImage.sprite = successSprites[Random.Range(0, successSprites.Length)];
+                PlaySfx(successSfx);
+                if (successFrames.Length > 0)
+                    targetImage.sprite = successFrames[Random.Range(0, successFrames.Length)];
 
-                _isFalling = true;
+                _isFalling = true; 
             }
             else
             {
-                if (missSprites.Length > 0)
-                    targetImage.sprite = missSprites[Random.Range(0, missSprites.Length)];
+                PlaySfx(missSfx);
+                if (missFrames.Length > 0)
+                    targetImage.sprite = missFrames[Random.Range(0, missFrames.Length)];
 
                 targetImage.color = Color.red;
-                Destroy(gameObject, 0.15f);
-            }
-        }
-        public void PlayAction(PatternType type)
-        {
-            if (type == PatternType.Signal)
-            {
-                if (_flashCoroutine != null) StopCoroutine(_flashCoroutine);
-                _flashCoroutine = StartCoroutine(FlashEyeRoutine());
+                targetImage.DOFade(0, 0.2f).OnComplete(() => {
+                });
             }
         }
 
-        private System.Collections.IEnumerator FlashEyeRoutine()
+        public override void ResetVisual()
         {
-            if (targetImage == null) yield break;
-
-            // 1. 눈 색상을 밝게 (번쩍!)
-            targetImage.color = Color.red;
-            _rectTransform.localScale = new Vector3(0.5f, 0.5f, 1f); // 살짝 커짐
-
-            // 2. 아주 짧게 대기
-            yield return new WaitForSeconds(0.1f);
-
-            // 3. 다시 원래 상태로 (은은하게 유지)
-            targetImage.color = new Color(1f, 1f, 1f, 0.8f);
-            _rectTransform.localScale = new Vector3(0.4f, 0.4f, 1f);
+            base.ResetVisual();
+            _isFalling = false;
+            targetImage.rectTransform.localRotation = Quaternion.identity;
+            targetImage.color = Color.white;
         }
-
-        public void StopHoldAction() { }
-
-        public void StartCountdown(float duration) { }
     }
 }

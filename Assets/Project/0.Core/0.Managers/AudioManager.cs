@@ -11,15 +11,25 @@ namespace Project.Core.Managers
     {
         [Header("Audio Mixer")]
         [SerializeField] private AudioMixer mainMixer;
+        [SerializeField] private AudioMixerGroup bgmGroup;
+        [SerializeField] private AudioMixerGroup sfxGroup;
 
         [Header("BGM Source")]
         [SerializeField] private AudioSource musicSource;
+
+        public AudioMixerGroup BGMGroup => bgmGroup;
+        public AudioMixerGroup SFXGroup => sfxGroup;
 
         public override async UniTask Initialize()
         {
             await UniTask.Yield();
 
             Debug.Log("AudioManager: 믹서 연결 및 초기화 완료");
+        }
+
+        public void AssignMixerGroup(AudioSource source, bool isBGM = false)
+        {
+            source.outputAudioMixerGroup = isBGM ? bgmGroup : sfxGroup;
         }
 
         /// <summary>

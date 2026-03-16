@@ -1,56 +1,23 @@
 using Cysharp.Threading.Tasks;
 using Project.Rhythm.Data.Enum;
-using Project.Rhythm.Interface;
 using Project.Rhythm.Judgement;
-using System;
+using Project.Rhythm.Visual;
 using UnityEngine;
 using UnityEngine.UI;
 
 namespace Project.Rhythm.Note
 {
-    /// <summary>
-    /// 3스테이지 살아있는 돌맹이 연출 (이미지 교체 중심)
-    /// </summary>
-    public class StoneVisual : MonoBehaviour, ITouchVisual
+    public class StoneVisual : BaseRhythmVisual
     {
-        [SerializeField] private Image targetImage;
         [SerializeField] private Slider holdSlider;
-
-        [SerializeField] private Sprite[] idleSprites;    // 대기 2프레임
-        [SerializeField] private Sprite painSprite;       // 성공 직후 아파함 (1프레임)
-        [SerializeField] private Sprite[] ignoreSprites;  // 실패 시 무시함 2프레임
-        [SerializeField] private Sprite[] spitSprites;    // 뱉는 입 모양 랜덤
-
+        [SerializeField] private Sprite painSprite;             // 성공 직후 아파함
         [SerializeField] private GameObject[] mineralPrefabs;
         [SerializeField] private GameObject[] trashPrefabs;
         [SerializeField] private Transform mouthPos;
+        [SerializeField] private AudioClip spitSfx;             // 광물 튀어나오는 소리
 
-        private RectTransform _rectTransform;
-        private bool _isJudged = false;
-        private float _animTimer;
-        private int _animFrame;
-
-        private void Awake() => _rectTransform = GetComponent<RectTransform>();
-
-        private void OnEnable()
+        public override void UpdateVisual(float progress)
         {
-            _isJudged = false;
-            _animTimer = 0f;
-            _animFrame = 0;
-            targetImage.sprite = idleSprites[0];
-            _rectTransform.localScale = Vector3.one;
-            _rectTransform.anchoredPosition = Vector2.zero;
-
-            if (holdSlider != null) holdSlider.gameObject.SetActive(false);
-        }
-
-        public void UpdateVisual(float progress)
-        {
-            if (progress <= 0.01f && _isJudged)
-            {
-                ResetVisual();
-            }
-
             if (_isJudged) return;
 
             if (progress > 0 && progress < 1.0f)
@@ -62,24 +29,16 @@ namespace Project.Rhythm.Note
                 }
 
                 float shake = Mathf.Sin(Time.time * 50f) * (progress * 5f);
-                _rectTransform.anchoredPosition = new Vector2(shake, 0);
+                targetImage.rectTransform.anchoredPosition = new Vector2(shake, 0);
             }
-            else if (progress >= 1.0f || progress <= 0)
+            else
             {
-                if (holdSlider != null && holdSlider.gameObject.activeSelf)
-                    holdSlider.gameObject.SetActive(false);
-            }
-
-            _animTimer += Time.deltaTime;
-            if (_animTimer >= 0.2f)
-            {
-                _animTimer = 0f;
-                _animFrame = (_animFrame + 1) % idleSprites.Length;
-                targetImage.sprite = idleSprites[_animFrame];
+                if (holdSlider != null) holdSlider.gameObject.SetActive(false);
+                targetImage.rectTransform.anchoredPosition = Vector2.zero;
             }
         }
 
-        public void PlayAction(JudgeResult result)
+        public override void PlayAction(JudgeResult result)
         {
             if (_isJudged) return;
             _isJudged = true;
@@ -88,10 +47,12 @@ namespace Project.Rhythm.Note
 
             if (result != JudgeResult.Miss)
             {
+                PlaySfx(successSfx);
                 SuccessRoutine().Forget();
             }
             else
             {
+                PlaySfx(missSfx);
                 FailRoutine().Forget();
             }
         }
@@ -99,16 +60,16 @@ namespace Project.Rhythm.Note
         private async UniTask SuccessRoutine()
         {
             targetImage.sprite = painSprite;
-
-            if (spitSprites != null && spitSprites.Length > 0)
+            if (actionFrames != null && actionFrames.Length > 0)
             {
-                foreach (var s in spitSprites)
+                foreach (var s in actionFrames)
                 {
                     targetImage.sprite = s;
                     await UniTask.Delay(100);
                 }
             }
 
+            PlaySfx(spitSfx);
             Spit(mineralPrefabs);
 
             await UniTask.Delay(1000);
@@ -117,8 +78,8 @@ namespace Project.Rhythm.Note
 
         private async UniTask FailRoutine()
         {
-            targetImage.sprite = ignoreSprites[0];
-            Spit(trashPrefabs); 
+            if (missFrames.Length > 0) targetImage.sprite = missFrames[0];
+            Spit(trashPrefabs);
             await UniTask.Delay(1000);
             ResetVisual();
         }
@@ -130,18 +91,6 @@ namespace Project.Rhythm.Note
             Instantiate(prefab, mouthPos.position, Quaternion.identity, transform.parent);
         }
 
-        public void ResetVisual()
-        {
-            _isJudged = false;
-            _animTimer = 0f;
-            targetImage.sprite = idleSprites[0];
-            _rectTransform.anchoredPosition = Vector2.zero;
-            _rectTransform.localScale = Vector3.one;
-        }
-
-        public void PlayAction(PatternType type) { }
-        public void StopHoldAction() { }
-
-        public void StartCountdown(float duration) { }
+        public override void PlayAction(PatternType type) { }
     }
 }

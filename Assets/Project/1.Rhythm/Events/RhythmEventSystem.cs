@@ -16,19 +16,23 @@ namespace Project.Rhythm.Event
             public RhythmAction action;
             public float spawnTriggerTime; // 실제 소환되어야 하는 절대 시간
             public float targetHitTime;    // 정박(판정) 절대 시간
-            public float duration; //개별 노트 유지 시간
+            public float duration;          //개별 노트 유지 시간
         }
 
         private readonly List<EventData> _events = new();
         private int _currentIndex;
         private float _secondsPerBeat;
+        private int _nextAutoCountIndex; // 카운트다운용 인덱스 별도 관리
+        private const float COUNTDOWN_LEAD_TIME = 3.0f; // 3초 전 알림
 
+        public event Action OnCountdownTriggered;
         public event Action<RhythmAction, float, float> OnSpawnTriggered;
 
         public void Initialize(StageData data, float defaultAppearDuration)
         {
             _events.Clear();
             _currentIndex = 0;
+            _nextAutoCountIndex = 0;
 
             if (data == null || data.bpm <= 0) return;
 
@@ -58,17 +62,31 @@ namespace Project.Rhythm.Event
         /// </summary>
         public void Process(float stageTime)
         {
-            // [변경점 4] 안전 코드 추가
-            if (stageTime < 0 || _currentIndex >= _events.Count) return;
+            if (stageTime < 0) return;
+
+            while (_nextAutoCountIndex < _events.Count)
+            {
+                var evt = _events[_nextAutoCountIndex];
+
+                if (evt.action.type == PatternType.Hold && evt.action.role == ActionRole.Hit)
+                {
+                    if (stageTime >= evt.targetHitTime - COUNTDOWN_LEAD_TIME)
+                    {
+                        OnCountdownTriggered?.Invoke();
+                        _nextAutoCountIndex++;
+                        continue;
+                    }
+                    break; 
+                }
+                _nextAutoCountIndex++;
+            }
 
             while (_currentIndex < _events.Count)
             {
                 EventData evt = _events[_currentIndex];
-
                 if (stageTime < evt.spawnTriggerTime) break;
 
                 OnSpawnTriggered?.Invoke(evt.action, evt.targetHitTime, evt.duration);
-
                 _currentIndex++;
             }
         }
@@ -76,6 +94,7 @@ namespace Project.Rhythm.Event
         public void Reset()
         {
             _currentIndex = 0;
+            _nextAutoCountIndex = 0;
         }
     }
 }
