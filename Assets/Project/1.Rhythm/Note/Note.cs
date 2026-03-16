@@ -55,6 +55,13 @@ namespace Project.Rhythm.Note
             }
         }
 
+        public void InitializePersistent(float spawnTime, float appearDuration)
+        {
+            SpawnTime = spawnTime;
+            AppearDuration = appearDuration;
+            _isJudged = false;
+        }
+
         public void UpdateNote(float currentTime)
         {
             if (isPersistent) return;

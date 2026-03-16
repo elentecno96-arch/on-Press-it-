@@ -72,16 +72,6 @@ public class TouchEventVisual : MonoBehaviour, ITouchVisual
         }
     }
 
-    // 파라미터가 실제로 애니메이터에 있는지 확인하는 헬퍼 함수
-    private bool HasParameter(string paramName)
-    {
-        if (paramName == tapTrigger) return _hasTapParam;
-        if (paramName == slideTrigger) return _hasSlideParam;
-        if (paramName == holdBool) return _hasHoldParam;
-        if (paramName == successTrigger) return _hasSuccessParam;
-        return false;
-    }
-
     /// <summary>
     /// [플레이어 전용] 홀드 입력이 끝났을 때 호출
     /// </summary>
@@ -146,4 +136,6 @@ public class TouchEventVisual : MonoBehaviour, ITouchVisual
         if (animator != null) animator.Rebind();
         transform.localScale = Vector3.zero;
     }
+
+    public void StartCountdown(float duration) { }
 }

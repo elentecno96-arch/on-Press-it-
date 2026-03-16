@@ -78,7 +78,6 @@ namespace Project.Rhythm.Judgement
             if (_judgeQueue.Count == 0 || _activeHoldNote.HasValue) return;
 
             var target = _judgeQueue.Peek();
-
             if (target.action.type != PatternType.Hold) return;
 
             float absDiff = Mathf.Abs(stageTime - target.targetTime);
@@ -87,7 +86,6 @@ namespace Project.Rhythm.Judgement
             {
                 _judgeQueue.Dequeue();
                 _activeHoldNote = target;
-                OnJudged?.Invoke(CalculateResult(absDiff), target.note);
             }
         }
 
