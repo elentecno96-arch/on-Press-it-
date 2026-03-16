@@ -349,9 +349,19 @@ CanvasGroup:
   m_CorrespondingSourceObject: {fileID: 206034314009772704, guid: ca6875e10a4ecbb45b212516c851a7e6, type: 3}
   m_PrefabInstance: {fileID: 2999918252904515172}
   m_PrefabAsset: {fileID: 0}
+--- !u!224 &1556542996 stripped
+RectTransform:
+  m_CorrespondingSourceObject: {fileID: 5103327938368656113, guid: ca6875e10a4ecbb45b212516c851a7e6, type: 3}
+  m_PrefabInstance: {fileID: 2999918252904515172}
+  m_PrefabAsset: {fileID: 0}
 --- !u!225 &1652573887 stripped
 CanvasGroup:
   m_CorrespondingSourceObject: {fileID: 7125458650986755844, guid: ca6875e10a4ecbb45b212516c851a7e6, type: 3}
+  m_PrefabInstance: {fileID: 2999918252904515172}
+  m_PrefabAsset: {fileID: 0}
+--- !u!224 &1652573888 stripped
+RectTransform:
+  m_CorrespondingSourceObject: {fileID: 8583615526856081923, guid: ca6875e10a4ecbb45b212516c851a7e6, type: 3}
   m_PrefabInstance: {fileID: 2999918252904515172}
   m_PrefabAsset: {fileID: 0}
 --- !u!1 &1823292886
@@ -671,6 +681,14 @@ PrefabInstance:
       propertyPath: warningGroup
       value: 
       objectReference: {fileID: 1889740057}
+    - target: {fileID: 6830805012213552162, guid: d27a6403e13f75b4e811d5fb27ff392f, type: 3}
+      propertyPath: logoTransform
+      value: 
+      objectReference: {fileID: 1652573888}
+    - target: {fileID: 6830805012213552162, guid: d27a6403e13f75b4e811d5fb27ff392f, type: 3}
+      propertyPath: startTextTransform
+      value: 
+      objectReference: {fileID: 1556542996}
     - target: {fileID: 8946682038681515754, guid: d27a6403e13f75b4e811d5fb27ff392f, type: 3}
       propertyPath: m_Name
       value: BootOrder
