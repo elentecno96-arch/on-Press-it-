@@ -27,22 +27,31 @@ namespace Project.Rhythm.Presentation
 
             view.Clear();
 
-            view.CreateBackground(_stageData.backgroundPrefab);
+            GameObject bgObj = view.CreateBackground(_stageData.backgroundPrefab);
+            //view.CreateBackground(_stageData.backgroundPrefab);
             GameObject playerObj = view.CreatePlayer(_stageData.playerPrefab);
 
             _playerTouchVisual = playerObj.GetComponentInChildren<ITouchVisual>();
-            CachePersistentNotes();
+            //CachePersistentNotes();
+            CachePersistentNotes(bgObj);
         }
 
-        private void CachePersistentNotes()
+        private void CachePersistentNotes(GameObject bgRoot)
         {
             _fixedNoteMap.Clear();
-            var notes = GetComponentsInChildren<Note.Note>(true);
+
+            var notes = bgRoot.GetComponentsInChildren<Note.Note>(true);
+
             foreach (var note in notes)
             {
                 if (note.IsPersistent && !string.IsNullOrEmpty(note.NoteID))
                 {
-                    _fixedNoteMap.TryAdd(note.NoteID.GetHashCode(), note);
+                    int key = note.NoteID.GetHashCode();
+                    if (!_fixedNoteMap.ContainsKey(key))
+                    {
+                        _fixedNoteMap.Add(key, note);
+                        Debug.Log($"<color=green>[Presenter]</color> 고정 노트 연결: {note.NoteID}");
+                    }
                 }
             }
         }

@@ -14,5 +14,6 @@ namespace Project.Rhythm.Interface
         void PlayAction(JudgeResult result);
 
         void UpdateVisual(float progress);
+        void StartCountdown(float duration);
     }
 }

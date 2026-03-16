@@ -26,7 +26,10 @@ public class SpitObject : MonoBehaviour
     {
         _animTimer = 0f;
         _animFrame = 0;
-        if (animSprites != null && animSprites.Length > 0)
+
+        if (_image == null) _image = GetComponent<Image>();
+
+        if (animSprites != null && animSprites.Length > 0 && _image != null)
         {
             _image.sprite = animSprites[0];
         }

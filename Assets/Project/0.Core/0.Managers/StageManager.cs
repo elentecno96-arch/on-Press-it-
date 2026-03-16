@@ -40,7 +40,6 @@ namespace Project.Core.Managers
         public event Action OnStageComplete;
 
         private readonly List<Note> _activeNotes = new();
-        private StoneVisual _fixedStone;
 
         public static float CurrentTime { get; private set; }
 
@@ -53,22 +52,19 @@ namespace Project.Core.Managers
             InitializeSystems(_activeStageData);
 
             presenter.Initialize(_activeStageData);
+
             _noteSpawner = new NoteSpawnSystem(presenter);
-            _touchVisual = presenter.GetTouchVisual();
 
             _inputController = new RhythmInputController(_judgementSystem, () => CurrentTime);
 
             _inputController.OnInputTriggered += (type) =>
             {
-                if (type == PatternType.None) _touchVisual?.StopHoldAction();
-                else _touchVisual?.PlayAction(type);
+                var visual = presenter.GetTouchVisual();
+                if (type == PatternType.None) visual?.StopHoldAction();
+                else visual?.PlayAction(type);
             };
 
             BindSystems();
-
-            _judgementSystem.OnJudged += (result, note) => {
-                presenter.GetTouchVisual()?.PlayAction(result);
-            };
 
             _isInitialized = true;
             StartSequence(_activeStageData, this.GetCancellationTokenOnDestroy()).Forget();
@@ -92,7 +88,8 @@ namespace Project.Core.Managers
         private void BindSystems()
         {
             _judgementSystem.OnJudged += (result, note) => {
-                _touchVisual?.PlayAction(result);
+                presenter.GetTouchVisual()?.PlayAction(result);
+
                 if (note != null)
                 {
                     note.OnJudged(result);
@@ -101,18 +98,45 @@ namespace Project.Core.Managers
 
             _eventSystem.OnSpawnTriggered += (action, hitTime, duration) =>
             {
-                var note = _noteSpawner.GetOrSpawn(action, CurrentTime, duration);
+                Note note = null;
+
+                if (!string.IsNullOrEmpty(action.targetID))
+                {
+                    note = presenter.GetFixedNote(action.targetID);
+
+                    if (note != null)
+                    {
+                        note.ResetJudgedState(); 
+                        note.InitializePersistent(CurrentTime, duration);
+                        Debug.Log($"<color=cyan>[Manager]</color> 고정 노트 연결: {action.targetID}");
+                    }
+                }
+
+                if (note == null)
+                {
+                    var noteObj = _noteSpawner.GetOrSpawn(action, CurrentTime, duration);
+                    note = noteObj?.GetComponent<Note>();
+                }
 
                 if (note == null) return;
 
                 if (action.role == ActionRole.Signal)
                 {
                     note.PlaySignalEffect();
+
+                    var visual = presenter.GetTouchVisual();
+                    if (visual is Stage3PlayerVisual s3Visual)
+                    {
+                        s3Visual.StartCountdown(duration);
+                    }
                 }
                 else
                 {
                     _judgementSystem.RegisterNote(action, note);
-                    if (!note.IsPersistent) _activeNotes.Add(note);
+                    if (!note.IsPersistent)
+                    {
+                        if (!_activeNotes.Contains(note)) _activeNotes.Add(note);
+                    }
                 }
             };
         }
@@ -131,12 +155,7 @@ namespace Project.Core.Managers
             for (int i = _activeNotes.Count - 1; i >= 0; i--)
             {
                 var note = _activeNotes[i];
-                if (note == null)
-                {
-                    _activeNotes.RemoveAt(i);
-                    continue;
-                }
-
+                if (note == null) { _activeNotes.RemoveAt(i); continue; }
                 note.UpdateNote(CurrentTime);
             }
 
@@ -144,7 +163,7 @@ namespace Project.Core.Managers
             {
                 float progress = _judgementSystem.GetHoldProgress(CurrentTime);
 
-                _touchVisual?.UpdateVisual(progress);
+                presenter.GetTouchVisual()?.UpdateVisual(progress);
 
                 var holdNote = _judgementSystem.GetCurrentHoldNote();
                 if (holdNote != null)

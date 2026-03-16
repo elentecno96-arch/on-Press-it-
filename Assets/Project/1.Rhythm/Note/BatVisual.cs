@@ -129,5 +129,7 @@ namespace Project.Rhythm.Note
         }
 
         public void StopHoldAction() { }
+
+        public void StartCountdown(float duration) { }
     }
 }
