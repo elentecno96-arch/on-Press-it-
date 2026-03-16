@@ -71,7 +71,7 @@ namespace Project.Rhythm.Note
 
             _visual?.UpdateVisual(progress);
 
-            if (progress >= 1.5f)
+            if (progress >= 2f)
             {
                 HandleRetire();
             }
@@ -89,11 +89,6 @@ namespace Project.Rhythm.Note
             _isJudged = true;
 
             _visual?.PlayAction(result);
-
-            if (!isPersistent)
-            {
-                Invoke(nameof(HandleRetire), 0.5f);
-            }
         }
 
         private void HandleRetire()

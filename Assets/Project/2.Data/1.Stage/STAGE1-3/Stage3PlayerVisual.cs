@@ -1,175 +1,97 @@
 using Project.Rhythm.Data.Enum;
-using Project.Rhythm.Interface;
 using Project.Rhythm.Judgement;
-using System.Collections;
-using TMPro;
+using Project.Rhythm.Visual;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class Stage3PlayerVisual : MonoBehaviour, ITouchVisual
+namespace Project.Rhythm.Player
 {
-    [SerializeField] private Image handImage;
-    [SerializeField] private Slider playerHoldSlider;
-    [SerializeField] private TextMeshProUGUI countdownText;
-
-    [SerializeField] private Sprite[] idleSprites;    
-    [SerializeField] private Sprite[] holdSprites;    
-    [SerializeField] private Sprite[] successSprites; 
-    [SerializeField] private Sprite[] failSprites;
-
-    private Coroutine _countdownCoroutine;
-
-    private float _animTimer;
-    private int _animFrame;
-    private bool _isHolding;
-    private bool _isLocked;
-
-    private void Start()
+    public class Stage3PlayerVisual : BaseRhythmVisual
     {
-        if (playerHoldSlider != null) playerHoldSlider.gameObject.SetActive(false);
-    }
+        [SerializeField] private Slider playerHoldSlider;
+        private bool _isLocked;
 
-    private void Update()
-    {
-        if (_isLocked || _isHolding) return;
-
-        _animTimer += Time.deltaTime;
-        if (_animTimer >= 0.15f)
+        protected override void Awake()
         {
-            _animTimer = 0f;
-            if (idleSprites != null && idleSprites.Length > 0)
+            base.Awake();
+            if (playerHoldSlider != null) playerHoldSlider.gameObject.SetActive(false);
+        }
+        protected override void Update()
+        {
+            base.Update();
+        }
+
+        public override void UpdateVisual(float progress)
+        {
+            if (_isLocked) return;
+
+            if (_isHolding)
             {
-                _animFrame = (_animFrame + 1) % idleSprites.Length;
-                handImage.sprite = idleSprites[_animFrame];
+                if (playerHoldSlider != null)
+                {
+                    if (!playerHoldSlider.gameObject.activeSelf) playerHoldSlider.gameObject.SetActive(true);
+                    playerHoldSlider.value = progress;
+                }
+
+                float shakeStrength = 1.5f + (progress * 4f);
+                targetImage.rectTransform.anchoredPosition = new Vector2(
+                    Random.Range(-shakeStrength, shakeStrength),
+                    Random.Range(-shakeStrength, shakeStrength)
+                );
+            }
+            else
+            {
+                targetImage.rectTransform.anchoredPosition = Vector2.zero;
             }
         }
-    }
 
-    public void PlayAction(PatternType type)
-    {
-        if (_isLocked) return;
-
-        if (type == PatternType.Hold)
+        public override void PlayAction(PatternType type)
         {
-            if (_countdownCoroutine != null) StopCoroutine(_countdownCoroutine);
-            if (countdownText != null) countdownText.gameObject.SetActive(false);
+            if (_isLocked) return;
 
-            _isHolding = true;
-            _animFrame = 0;
-            if (holdSprites.Length > 0) handImage.sprite = holdSprites[0];
-        }
-    }
-
-    public void StopHoldAction()
-    {
-        if (playerHoldSlider != null) playerHoldSlider.gameObject.SetActive(false);
-    }
-
-    public void PlayAction(JudgeResult result)
-    {
-        _isHolding = false;
-        StopAllCoroutines();
-        StartCoroutine(JudgeResultRoutine(result));
-    }
-
-    private IEnumerator JudgeResultRoutine(JudgeResult result)
-    {
-        _isLocked = true;
-        if (playerHoldSlider != null) playerHoldSlider.gameObject.SetActive(false);
-
-        Sprite[] targetSprites = (result != JudgeResult.Miss) ? successSprites : failSprites;
-
-        if (targetSprites != null && targetSprites.Length >= 2)
-        {
-            handImage.sprite = targetSprites[0];
-            yield return new WaitForSeconds(0.08f);
-
-            handImage.sprite = targetSprites[1]; 
-            yield return new WaitForSeconds(0.6f);
-        }
-
-        Unlock();
-    }
-
-    private void Unlock()
-    {
-        _isLocked = false;
-        _isHolding = false;
-        _animTimer = 0f;
-        _animFrame = 0;
-    }
-
-    public void UpdateVisual(float progress)
-    {
-        if (_isLocked) return;
-
-        if (progress > 0 && progress < 1.0f && !_isHolding)
-        {
-            _isHolding = true;
-        }
-
-        if (_isHolding)
-        {
-            if (playerHoldSlider != null)
+            if (type == PatternType.Hold)
             {
-                if (!playerHoldSlider.gameObject.activeSelf) playerHoldSlider.gameObject.SetActive(true);
-                playerHoldSlider.value = progress;
+                _isHolding = true;
+                PlaySfx(actionSfx);
+
+                SetAnimation(actionFrames, true);
             }
-            float shakeStrength = 1.5f + (progress * 4f);
-            float shakeX = Random.Range(-shakeStrength, shakeStrength);
-            float shakeY = Random.Range(-shakeStrength, shakeStrength);
-            handImage.rectTransform.anchoredPosition = new Vector2(shakeX, shakeY);
-
-            UpdateHoldAnimation();
         }
-        else
+
+        public override void StopHoldAction()
         {
-            handImage.rectTransform.anchoredPosition = Vector2.zero;
+            if (!_isHolding) return;
+            _isHolding = false;
+
+            if (playerHoldSlider != null) playerHoldSlider.gameObject.SetActive(false);
+
+            SetAnimation(idleFrames, true);
         }
-    }
 
-    private void UpdateHoldAnimation()
-    {
-        if (holdSprites == null || holdSprites.Length == 0) return;
-
-        _animTimer += Time.deltaTime;
-        if (_animTimer >= 0.12f)
+        public override void PlayAction(JudgeResult result)
         {
-            _animTimer = 0f;
-            _animFrame = (_animFrame + 1) % holdSprites.Length;
-            handImage.sprite = holdSprites[_animFrame];
-        }
-    }
+            _isHolding = false;
+            _isLocked = true; 
 
-    public void StartCountdown(float duration)
-    {
-        if (countdownText == null) return;
+            if (playerHoldSlider != null) playerHoldSlider.gameObject.SetActive(false);
 
-        // 강제로 텍스트 오브젝트를 켜고 루틴 시작
-        countdownText.gameObject.SetActive(true);
-        if (_countdownCoroutine != null) StopCoroutine(_countdownCoroutine);
-        _countdownCoroutine = StartCoroutine(CountdownRoutine());
-    }
-
-    private IEnumerator CountdownRoutine()
-    {
-        string[] counts = { "3", "2", "1", "GO!" };
-
-        foreach (var c in counts)
-        {
-            countdownText.text = c;
-            countdownText.transform.localScale = Vector3.one * 1.5f;
-
-            float t = 0;
-            while (t < 0.5f)
+            if (result != JudgeResult.Miss)
             {
-                t += Time.deltaTime;
-                countdownText.transform.localScale = Vector3.Lerp(Vector3.one * 1.5f, Vector3.one, t * 2);
-                yield return null;
+                PlaySfx(successSfx);
+                SetAnimation(successFrames, false);
             }
-            yield return new WaitForSeconds(0.2f);
+            else
+            {
+                PlaySfx(missSfx);
+                SetAnimation(missFrames, false);
+            }
+
         }
 
-        countdownText.gameObject.SetActive(false);
+        protected override void OnAnimationComplete()
+        {
+            _isLocked = false;
+            base.OnAnimationComplete();
+        }
     }
 }

@@ -1,0 +1,226 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d04876fa1117aa34b9eea9b52f8b6fae, type: 3}
+  m_Name: STAGE 1-1
+  m_EditorClassIdentifier: 
+  masterTrack: {fileID: 8300000, guid: 9589fa5c2e3aba84e80ecc416fb92106, type: 3}
+  bpm: 120
+  backgroundPrefab: {fileID: 720462673943707363, guid: 0fb462abafbf73d41ba5bff37ef50682, type: 3}
+  playerPrefab: {fileID: 5785236905550326125, guid: 66970a3a53113574690cdccde17e0490, type: 3}
+  notePrefab: {fileID: 4856286443119890342, guid: 840398d0e341ff945810479a0a2a52ab, type: 3}
+  perfectWindow: 0.12
+  greatWindow: 0.21
+  goodWindow: 0.27
+  missWindow: 0.34
+  playStartTime: 4
+  endPosition: 60
+  actions:
+  - beat: 9
+    type: 3
+    role: 0
+    duration: 0
+    targetID: 
+  - beat: 11
+    type: 3
+    role: 0
+    duration: 0
+    targetID: 
+  - beat: 13
+    type: 3
+    role: 0
+    duration: 0
+    targetID: 
+  - beat: 17
+    type: 3
+    role: 0
+    duration: 0
+    targetID: 
+  - beat: 19
+    type: 3
+    role: 0
+    duration: 0
+    targetID: 
+  - beat: 21
+    type: 3
+    role: 0
+    duration: 0
+    targetID: 
+  - beat: 26
+    type: 3
+    role: 0
+    duration: 0
+    targetID: 
+  - beat: 27
+    type: 3
+    role: 0
+    duration: 0
+    targetID: 
+  - beat: 30
+    type: 3
+    role: 0
+    duration: 0
+    targetID: 
+  - beat: 31
+    type: 3
+    role: 0
+    duration: 0
+    targetID: 
+  - beat: 34
+    type: 3
+    role: 0
+    duration: 0
+    targetID: 
+  - beat: 35
+    type: 3
+    role: 0
+    duration: 0
+    targetID: 
+  - beat: 41
+    type: 3
+    role: 0
+    duration: 0
+    targetID: 
+  - beat: 41.5
+    type: 3
+    role: 0
+    duration: 0
+    targetID: 
+  - beat: 45
+    type: 3
+    role: 0
+    duration: 0
+    targetID: 
+  - beat: 45.5
+    type: 3
+    role: 0
+    duration: 0
+    targetID: 
+  - beat: 49
+    type: 3
+    role: 0
+    duration: 0
+    targetID: 
+  - beat: 49.5
+    type: 3
+    role: 0
+    duration: 0
+    targetID: 
+  - beat: 57
+    type: 3
+    role: 0
+    duration: 0
+    targetID: 
+  - beat: 59
+    type: 3
+    role: 0
+    duration: 0
+    targetID: 
+  - beat: 59.5
+    type: 3
+    role: 0
+    duration: 0
+    targetID: 
+  - beat: 61
+    type: 3
+    role: 0
+    duration: 0
+    targetID: 
+  - beat: 63
+    type: 3
+    role: 0
+    duration: 0
+    targetID: 
+  - beat: 63.5
+    type: 3
+    role: 0
+    duration: 0
+    targetID: 
+  - beat: 65
+    type: 3
+    role: 0
+    duration: 0
+    targetID: 
+  - beat: 67
+    type: 3
+    role: 0
+    duration: 0
+    targetID: 
+  - beat: 67.5
+    type: 3
+    role: 0
+    duration: 0
+    targetID: 
+  - beat: 73
+    type: 3
+    role: 0
+    duration: 0
+    targetID: 
+  - beat: 75
+    type: 3
+    role: 0
+    duration: 0
+    targetID: 
+  - beat: 77
+    type: 3
+    role: 0
+    duration: 0
+    targetID: 
+  - beat: 79
+    type: 3
+    role: 0
+    duration: 0
+    targetID: 
+  - beat: 79.5
+    type: 3
+    role: 0
+    duration: 0
+    targetID: 
+  - beat: 81
+    type: 3
+    role: 0
+    duration: 0
+    targetID: 
+  - beat: 83
+    type: 3
+    role: 0
+    duration: 0
+    targetID: 
+  - beat: 83.5
+    type: 3
+    role: 0
+    duration: 0
+    targetID: 
+  - beat: 90
+    type: 3
+    role: 0
+    duration: 0
+    targetID: 
+  - beat: 91
+    type: 3
+    role: 0
+    duration: 0
+    targetID: 
+  - beat: 97
+    type: 3
+    role: 0
+    duration: 0
+    targetID: 
+  - beat: 101
+    type: 3
+    role: 0
+    duration: 0
+    targetID: 
+  - beat: 105
+    type: 3
+    role: 0
+    duration: 0
+    targetID: 
