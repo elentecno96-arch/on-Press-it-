@@ -60,15 +60,17 @@ namespace Project.Rhythm.Note
         private async UniTask SuccessRoutine()
         {
             targetImage.sprite = painSprite;
+
+            await UniTask.Delay(500);
+
             if (actionFrames != null && actionFrames.Length > 0)
             {
                 foreach (var s in actionFrames)
                 {
                     targetImage.sprite = s;
-                    await UniTask.Delay(100);
+                    await UniTask.Delay(150);
                 }
             }
-
             PlaySfx(spitSfx);
             Spit(mineralPrefabs);
 

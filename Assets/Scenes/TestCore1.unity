@@ -145,7 +145,7 @@ PrefabInstance:
     - target: {fileID: 42250896098913657, guid: f1832f0cb2a14dd4e852cfe418feadf6, type: 3}
       propertyPath: testStageData
       value: 
-      objectReference: {fileID: 11400000, guid: 5c81803f925b2de4a881b898a89cf78b, type: 2}
+      objectReference: {fileID: 11400000, guid: a73673ac1abaac04b9e4f9d4ac4d202b, type: 2}
     - target: {fileID: 42250896098913657, guid: f1832f0cb2a14dd4e852cfe418feadf6, type: 3}
       propertyPath: noteAppearDuration
       value: 1.5

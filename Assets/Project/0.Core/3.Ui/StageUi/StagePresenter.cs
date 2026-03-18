@@ -31,6 +31,11 @@ namespace Project.Rhythm.Presentation
 
             GameObject bgObj = view.CreateBackground(_stageData.backgroundPrefab);
             _environment = bgObj.GetComponent<Stage3Environment>();
+
+            if (_environment != null)
+            {
+                _environment.SetBpm(_stageData.bpm);
+            }
             //view.CreateBackground(_stageData.backgroundPrefab);
             GameObject playerObj = view.CreatePlayer(_stageData.playerPrefab);
 
@@ -77,7 +82,10 @@ namespace Project.Rhythm.Presentation
             //판정 연출 용
             Debug.Log($"<color=white>[Visual Effect]</color> {result}");
         }
-        public void StartCountdown() => _environment?.StartCountdown();
+        public void StartCountdown(float targetBeat)
+        {
+            _environment?.StartCountdown(targetBeat);
+        }
         public void StopCountdown() => _environment?.StopCountdown();
     }
 }

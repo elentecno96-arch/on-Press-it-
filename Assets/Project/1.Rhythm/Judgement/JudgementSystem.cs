@@ -64,12 +64,29 @@ namespace Project.Rhythm.Judgement
             if (_judgeQueue.Count == 0) return;
 
             var target = _judgeQueue.Peek();
-            if (target.action.type == PatternType.Hold) return;  //홀드 패턴 무시 
+
+            if (target.action.type == PatternType.Hold || target.action.type == PatternType.Slide) return;
 
             float absDiff = Mathf.Abs(stageTime - target.targetTime);
             if (absDiff > _missWin) return;
 
             ApplyResult(target, CalculateResult(absDiff));
+        }
+
+        public void ProcessSlide(float stageTime)
+        {
+            if (_judgeQueue.Count == 0) return;
+
+            var target = _judgeQueue.Peek();
+
+            if (target.action.type != PatternType.Slide) return;
+
+            float absDiff = Mathf.Abs(stageTime - target.targetTime);
+
+            if (absDiff <= _missWin)
+            {
+                ApplyResult(target, CalculateResult(absDiff));
+            }
         }
 
 

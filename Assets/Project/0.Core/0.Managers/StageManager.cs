@@ -50,10 +50,8 @@ namespace Project.Core.Managers
             presenter.Initialize(_activeStageData);
             _noteSpawner = new NoteSpawnSystem(presenter);
 
-            // 1. 입력 컨트롤러 생성 및 단일 구독 관리
             _inputController = new RhythmInputController(_judgementSystem, () => CurrentTime);
 
-            // Initialize에서만 한 번 구독합니다.
             _inputController.OnInputTriggered += InputTriggered;
 
             BindSystems();
@@ -79,9 +77,9 @@ namespace Project.Core.Managers
 
         private void BindSystems()
         {
-            _eventSystem.OnCountdownTriggered += () =>
+            _eventSystem.OnCountdownTriggered += (targetBeat) =>
             {
-                presenter.StartCountdown();
+                presenter.StartCountdown(targetBeat);
             };
 
             _judgementSystem.OnJudged += (result, note) =>

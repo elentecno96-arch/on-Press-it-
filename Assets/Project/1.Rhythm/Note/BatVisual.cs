@@ -12,6 +12,7 @@ namespace Project.Rhythm.Note
     public class BatVisual : BaseRhythmVisual
     {
         [SerializeField] private float fallSpeed = 2500f;
+        private const float BASE_SCALE = 1.5f;
 
         private Vector2 _fallDirection = new Vector2(-0.4f, -1.2f).normalized;
         private bool _isFalling;
@@ -25,6 +26,8 @@ namespace Project.Rhythm.Note
             {
                 targetImage.sprite = idleFrames[Random.Range(0, idleFrames.Length)];
             }
+
+            transform.localScale = new Vector3(BASE_SCALE, BASE_SCALE, 1f);
         }
 
         protected override void Update()
@@ -48,11 +51,13 @@ namespace Project.Rhythm.Note
 
             float targetScale;
 
+
             if (progress <= 0.7f)
             {
-                float t = progress / 0.5f;
-                targetScale = Mathf.Lerp(0.05f, 0.25f, t * t);
+                float t = progress / 0.7f;
+                targetScale = Mathf.Lerp(0.5f, 0.8f, t * t);
             }
+
             else
             {
                 if (!_isBatSpawned)
@@ -62,9 +67,10 @@ namespace Project.Rhythm.Note
                     if (actionFrames != null && actionFrames.Length > 0)
                         targetImage.sprite = actionFrames[Random.Range(0, actionFrames.Length)];
                 }
-                float t = (progress - 0.5f) / 0.5f;
+
+                float t = (progress - 0.7f) / 0.3f;
                 float acceleratedT = t * t * t;
-                targetScale = Mathf.Lerp(0.25f, 1.0f, acceleratedT);
+                targetScale = Mathf.Lerp(0.8f, 1.0f, acceleratedT);
             }
 
             if (progress > 1.0f)
@@ -73,7 +79,8 @@ namespace Project.Rhythm.Note
                 targetScale = Mathf.Lerp(1.0f, 3.0f, t);
             }
 
-            transform.localScale = new Vector3(targetScale, targetScale, 1f);
+            float finalScale = targetScale * BASE_SCALE;
+            transform.localScale = new Vector3(finalScale, finalScale, 1f);
         }
 
         public override void PlayAction(PatternType type)
@@ -82,9 +89,9 @@ namespace Project.Rhythm.Note
             {
                 PlaySfx(actionSfx); // signalSfx
                 targetImage.color = Color.red;
-                transform.DOScale(Vector3.one * 1.2f, 0.1f).OnComplete(() => {
+                transform.DOScale(Vector3.one * (BASE_SCALE * 1.2f), 0.1f).OnComplete(() => {
                     targetImage.color = Color.white;
-                    transform.DOScale(Vector3.one * 1.0f, 0.1f);
+                    transform.DOScale(Vector3.one * BASE_SCALE, 0.1f);
                 });
             }
         }
@@ -118,8 +125,10 @@ namespace Project.Rhythm.Note
         {
             base.ResetVisual();
             _isFalling = false;
+            _isBatSpawned = false;
             targetImage.rectTransform.localRotation = Quaternion.identity;
             targetImage.color = Color.white;
+            transform.localScale = new Vector3(BASE_SCALE, BASE_SCALE, 1f);
         }
     }
 }

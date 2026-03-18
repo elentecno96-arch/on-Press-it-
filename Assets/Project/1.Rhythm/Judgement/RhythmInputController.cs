@@ -36,6 +36,7 @@ namespace Project.Rhythm.Judgement
         private void PointerDown(Vector2 pos)
         {
             float currentTime = _getCurrentTime();
+
             _judgement.ProcessTap(currentTime);
             _judgement.ProcessHoldDown(currentTime);
 
@@ -53,7 +54,7 @@ namespace Project.Rhythm.Judgement
         {
             float currentTime = _getCurrentTime();
 
-            _judgement.ProcessTap(currentTime);
+            _judgement.ProcessSlide(currentTime);
 
             OnInputTriggered?.Invoke(PatternType.Slide);
         }
