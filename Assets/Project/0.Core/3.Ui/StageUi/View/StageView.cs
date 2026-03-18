@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Project.Core.Ui.StageUi.View
@@ -11,6 +12,7 @@ namespace Project.Core.Ui.StageUi.View
         [SerializeField] private Transform noteRoot;
         [SerializeField] private Transform touchRoot;
 
+        //private readonly List<StageLayer> _layers = new();
         public Transform NoteRoot => noteRoot;
 
         public void Clear()
