@@ -24,33 +24,18 @@ MonoBehaviour:
   playStartTime: 4
   endPosition: 60
   actions:
-  - beat: 9
+  - beat: 8.75
     type: 2
     role: 0
     duration: 7
     targetID: Stage3_Stone
-  - beat: 16.75
+  - beat: 24.5
     type: 2
     role: 0
     duration: 7
-    targetID: Stage3_Stone
-  - beat: 24.75
-    type: 2
-    role: 0
-    duration: 6.75
-    targetID: Stage3_Stone
-  - beat: 32.75
-    type: 2
-    role: 0
-    duration: 6.5
     targetID: Stage3_Stone
   - beat: 40.5
     type: 2
     role: 0
-    duration: 7.75
-    targetID: Stage3_Stone
-  - beat: 48.5
-    type: 2
-    role: 0
-    duration: 6.75
+    duration: 7
     targetID: Stage3_Stone

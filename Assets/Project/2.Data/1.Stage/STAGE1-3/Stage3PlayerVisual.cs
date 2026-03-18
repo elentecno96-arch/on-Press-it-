@@ -25,23 +25,26 @@ namespace Project.Rhythm.Player
         {
             if (_isLocked) return;
 
-            if (_isHolding)
+            if (progress > 0f && progress < 1.0f)
             {
+                _isHolding = true;
+
                 if (playerHoldSlider != null)
                 {
                     if (!playerHoldSlider.gameObject.activeSelf) playerHoldSlider.gameObject.SetActive(true);
                     playerHoldSlider.value = progress;
                 }
 
-                float shakeStrength = 1.5f + (progress * 4f);
+                float shakeStrength = 2f + (progress * 6f);
                 targetImage.rectTransform.anchoredPosition = new Vector2(
                     Random.Range(-shakeStrength, shakeStrength),
                     Random.Range(-shakeStrength, shakeStrength)
                 );
-            }
-            else
-            {
-                targetImage.rectTransform.anchoredPosition = Vector2.zero;
+
+                if (_currentAnimation != actionFrames)
+                {
+                    SetAnimation(actionFrames, true);
+                }
             }
         }
 
@@ -60,20 +63,20 @@ namespace Project.Rhythm.Player
 
         public override void StopHoldAction()
         {
-            if (!_isHolding) return;
             _isHolding = false;
-
             if (playerHoldSlider != null) playerHoldSlider.gameObject.SetActive(false);
+            targetImage.rectTransform.anchoredPosition = Vector2.zero;
 
-            SetAnimation(idleFrames, true);
+            if (!_isLocked) SetAnimation(idleFrames, true);
         }
 
         public override void PlayAction(JudgeResult result)
         {
             _isHolding = false;
-            _isLocked = true; 
+            _isLocked = true;
 
             if (playerHoldSlider != null) playerHoldSlider.gameObject.SetActive(false);
+            targetImage.rectTransform.anchoredPosition = Vector2.zero;
 
             if (result != JudgeResult.Miss)
             {
@@ -85,12 +88,23 @@ namespace Project.Rhythm.Player
                 PlaySfx(missSfx);
                 SetAnimation(missFrames, false);
             }
+        }
 
+        public override void ResetVisual()
+        {
+            _isJudged = false;
+            _isLocked = false;
+            _isHolding = false;
+            if (playerHoldSlider != null) playerHoldSlider.gameObject.SetActive(false);
+            targetImage.rectTransform.anchoredPosition = Vector2.zero;
+            SetAnimation(idleFrames, true);
+            base.ResetVisual();
         }
 
         protected override void OnAnimationComplete()
         {
             _isLocked = false;
+            _isJudged = false;
             base.OnAnimationComplete();
         }
     }
