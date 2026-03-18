@@ -275,18 +275,6 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6001325415240130538, guid: 57ddb7c1702a2c1499f1e26c55ad5ca7, type: 3}
-      propertyPath: m_LocalScale.x
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 6001325415240130538, guid: 57ddb7c1702a2c1499f1e26c55ad5ca7, type: 3}
-      propertyPath: m_LocalScale.y
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 6001325415240130538, guid: 57ddb7c1702a2c1499f1e26c55ad5ca7, type: 3}
-      propertyPath: m_LocalScale.z
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 6001325415240130538, guid: 57ddb7c1702a2c1499f1e26c55ad5ca7, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
       objectReference: {fileID: 0}
@@ -352,6 +340,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1984895597}
     m_Modifications:
+    - target: {fileID: 89569105784710806, guid: a8963c77122ffc24f8f0931914655e19, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 5210297425766736668, guid: a8963c77122ffc24f8f0931914655e19, type: 3}
       propertyPath: m_Pivot.x
       value: 0.5
@@ -447,6 +439,10 @@ PrefabInstance:
     - target: {fileID: 5423663527400355075, guid: a8963c77122ffc24f8f0931914655e19, type: 3}
       propertyPath: m_Name
       value: StageInfo
+      objectReference: {fileID: 0}
+    - target: {fileID: 5423663527400355075, guid: a8963c77122ffc24f8f0931914655e19, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -1101,6 +1097,10 @@ PrefabInstance:
     - target: {fileID: 6282709215385251199, guid: 9f2a003aeede5334aa7564a4a5d7bd27, type: 3}
       propertyPath: m_AnchoredPosition.y
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6360510945144973186, guid: 9f2a003aeede5334aa7564a4a5d7bd27, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: -225
       objectReference: {fileID: 0}
     - target: {fileID: 6522696796778486764, guid: 9f2a003aeede5334aa7564a4a5d7bd27, type: 3}
       propertyPath: m_AnchorMax.y
