@@ -107,7 +107,7 @@ MonoBehaviour:
   actionSfx: {fileID: 0}
   successSfx: {fileID: 0}
   missSfx: {fileID: 0}
-  holdSlider: {fileID: 6205804885159339676}
+  holdSlider: {fileID: 0}
   painSprite: {fileID: 21300000, guid: a74ec067345e1ec4eb7fa11c270a8ac0, type: 3}
   mineralPrefabs:
   - {fileID: 8057853699161348283, guid: 68a096751058abf4db3c40fc986f13c8, type: 3}

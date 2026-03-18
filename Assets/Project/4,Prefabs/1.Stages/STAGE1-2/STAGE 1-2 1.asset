@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d04876fa1117aa34b9eea9b52f8b6fae, type: 3}
-  m_Name: STAGE 1-2
+  m_Name: STAGE 1-2 1
   m_EditorClassIdentifier: 
   masterTrack: {fileID: 8300000, guid: f862af8b09cb72849ad88f4300165523, type: 3}
   bpm: 120
@@ -24,32 +24,32 @@ MonoBehaviour:
   playStartTime: 4
   endPosition: 60
   actions:
-  - beat: 8
+  - beat: 8.25
     type: 1
     role: 1
     duration: 0
     targetID: Stage3_Stone
-  - beat: 10
+  - beat: 10.25
     type: 1
     role: 0
     duration: 0
     targetID: 
-  - beat: 12
+  - beat: 12.25
     type: 1
     role: 1
     duration: 0
     targetID: Stage3_Stone
-  - beat: 14
+  - beat: 14.25
     type: 1
     role: 0
     duration: 0
     targetID: 
-  - beat: 16
+  - beat: 16.25
     type: 1
     role: 1
     duration: 0
     targetID: Stage3_Stone
-  - beat: 18
+  - beat: 18.25
     type: 1
     role: 0
     duration: 0
@@ -69,12 +69,12 @@ MonoBehaviour:
     role: 0
     duration: 0
     targetID: 
-  - beat: 22.5
+  - beat: 22.75
     type: 1
     role: 0
     duration: 0
     targetID: 
-  - beat: 24
+  - beat: 24.25
     type: 1
     role: 1
     duration: 0
@@ -84,22 +84,22 @@ MonoBehaviour:
     role: 1
     duration: 0
     targetID: Stage3_Stone
-  - beat: 26
+  - beat: 26.25
     type: 1
     role: 0
     duration: 0
     targetID: 
-  - beat: 26.5
+  - beat: 26.75
     type: 1
     role: 0
     duration: 0
     targetID: 
-  - beat: 28
+  - beat: 28.25
     type: 1
     role: 1
     duration: 0
     targetID: Stage3_Stone
-  - beat: 28.5
+  - beat: 28.75
     type: 1
     role: 1
     duration: 0
@@ -109,22 +109,22 @@ MonoBehaviour:
     role: 1
     duration: 0
     targetID: Stage3_Stone
-  - beat: 30
+  - beat: 30.25
     type: 1
     role: 0
     duration: 0
     targetID: 
-  - beat: 30.5
+  - beat: 30.75
     type: 1
     role: 0
     duration: 0
     targetID: 
-  - beat: 31
+  - beat: 31.25
     type: 1
     role: 0
     duration: 0
     targetID: 
-  - beat: 32
+  - beat: 32.25
     type: 1
     role: 1
     duration: 0
@@ -134,17 +134,17 @@ MonoBehaviour:
     role: 1
     duration: 0
     targetID: Stage3_Stone
-  - beat: 33
+  - beat: 33.25
     type: 1
     role: 1
     duration: 0
     targetID: Stage3_Stone
-  - beat: 34
+  - beat: 34.25
     type: 1
     role: 0
     duration: 0
     targetID: 
-  - beat: 34.5
+  - beat: 34.75
     type: 1
     role: 0
     duration: 0
@@ -169,22 +169,22 @@ MonoBehaviour:
     role: 1
     duration: 0
     targetID: Stage3_Stone
-  - beat: 54
+  - beat: 54.25
     type: 1
     role: 0
     duration: 0
     targetID: 
-  - beat: 54.5
+  - beat: 54.75
     type: 1
     role: 0
     duration: 0
     targetID: 
-  - beat: 55
+  - beat: 55.25
     type: 1
     role: 0
     duration: 0
     targetID: 
-  - beat: 56
+  - beat: 56.25
     type: 1
     role: 1
     duration: 0
@@ -194,12 +194,12 @@ MonoBehaviour:
     role: 1
     duration: 0
     targetID: Stage3_Stone
-  - beat: 57
+  - beat: 57.25
     type: 1
     role: 1
     duration: 0
     targetID: Stage3_Stone
-  - beat: 58
+  - beat: 58.25
     type: 1
     role: 0
     duration: 0
@@ -214,7 +214,7 @@ MonoBehaviour:
     role: 0
     duration: 0
     targetID: 
-  - beat: 60
+  - beat: 60.25
     type: 1
     role: 1
     duration: 0
@@ -224,12 +224,12 @@ MonoBehaviour:
     role: 0
     duration: 0
     targetID: 
-  - beat: 62
+  - beat: 62.25
     type: 1
     role: 1
     duration: 0
     targetID: Stage3_Stone
-  - beat: 63
+  - beat: 63.25
     type: 1
     role: 0
     duration: 0
@@ -294,7 +294,7 @@ MonoBehaviour:
     role: 1
     duration: 0
     targetID: Stage3_Stone
-  - beat: 74
+  - beat: 74.25
     type: 1
     role: 1
     duration: 0
@@ -314,12 +314,12 @@ MonoBehaviour:
     role: 0
     duration: 0
     targetID: 
-  - beat: 77.5
+  - beat: 77.75
     type: 1
     role: 0
     duration: 0
     targetID: 
-  - beat: 78
+  - beat: 78.25
     type: 1
     role: 0
     duration: 0
@@ -344,7 +344,7 @@ MonoBehaviour:
     role: 0
     duration: 0
     targetID: 
-  - beat: 84
+  - beat: 84.25
     type: 1
     role: 1
     duration: 0
@@ -354,32 +354,32 @@ MonoBehaviour:
     role: 1
     duration: 0
     targetID: Stage3_Stone
-  - beat: 86
+  - beat: 86.25
     type: 1
     role: 0
     duration: 0
     targetID: 
-  - beat: 86.5
+  - beat: 86.75
     type: 1
     role: 0
     duration: 0
     targetID: 
-  - beat: 88
+  - beat: 88.25
     type: 1
     role: 1
     duration: 0
     targetID: Stage3_Stone
-  - beat: 90
+  - beat: 90.25
     type: 1
     role: 0
     duration: 0
     targetID: 
-  - beat: 92
+  - beat: 92.25
     type: 1
     role: 1
     duration: 0
     targetID: Stage3_Stone
-  - beat: 94
+  - beat: 94.25
     type: 1
     role: 0
     duration: 0
@@ -389,7 +389,7 @@ MonoBehaviour:
     role: 1
     duration: 0
     targetID: Stage3_Stone
-  - beat: 97
+  - beat: 96.5
     type: 1
     role: 1
     duration: 0
