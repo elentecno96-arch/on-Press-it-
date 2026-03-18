@@ -225,7 +225,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   countdownText: {fileID: 5587072075152540044}
-  stepDuration: 1
+  stepDuration: 0.75
   audioSource: {fileID: 0}
   countSfx: {fileID: 0}
   holdSignalSfx: {fileID: 0}
