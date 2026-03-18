@@ -23,9 +23,10 @@ namespace Project.Rhythm.Event
         private int _currentIndex;
         private float _secondsPerBeat;
         private int _nextAutoCountIndex; // 카운트다운용 인덱스 별도 관리
-        private const float COUNTDOWN_LEAD_TIME = 3.0f; // 3초 전 알림
+        private const float BEAT_LEAD_TIME = 2.0f; 
+        private float _lastTriggeredBeat = -1f;
 
-        public event Action OnCountdownTriggered;
+        public event Action<float> OnCountdownTriggered;
         public event Action<RhythmAction, float, float> OnSpawnTriggered;
 
         public void Initialize(StageData data, float defaultAppearDuration)
@@ -64,23 +65,26 @@ namespace Project.Rhythm.Event
         {
             if (stageTime < 0) return;
 
-            while (_nextAutoCountIndex < _events.Count)
+            if (_nextAutoCountIndex < _events.Count)
             {
                 var evt = _events[_nextAutoCountIndex];
 
                 if (evt.action.type == PatternType.Hold && evt.action.role == ActionRole.Hit)
                 {
-                    if (stageTime >= evt.targetHitTime - COUNTDOWN_LEAD_TIME)
-                    {
-                        OnCountdownTriggered?.Invoke();
-                        _nextAutoCountIndex++;
-                        continue;
-                    }
-                    break; 
-                }
-                _nextAutoCountIndex++;
-            }
+                    float countdownStartTime = evt.targetHitTime - (BEAT_LEAD_TIME * _secondsPerBeat);
 
+                    if (stageTime >= countdownStartTime && _lastTriggeredBeat < evt.action.beat)
+                    {
+                        OnCountdownTriggered?.Invoke(evt.action.beat);
+                        _lastTriggeredBeat = evt.action.beat;
+                        _nextAutoCountIndex++;
+                    }
+                }
+                else
+                {
+                    _nextAutoCountIndex++;
+                }
+            }
             while (_currentIndex < _events.Count)
             {
                 EventData evt = _events[_currentIndex];

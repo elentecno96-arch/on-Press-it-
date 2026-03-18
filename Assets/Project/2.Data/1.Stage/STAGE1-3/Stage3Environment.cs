@@ -12,14 +12,17 @@ namespace Project.Data.Stage.STAGE3
     {
         [SerializeField] private TextMeshProUGUI countdownText;
 
-        [SerializeField] private float stepDuration = 0.75f;
-
         [SerializeField] private AudioSource audioSource;
         [SerializeField] private AudioClip countSfx;      // 3, 2, 1
         [SerializeField] private AudioClip holdSignalSfx; // HOLD!
 
         private Coroutine _countCoroutine;
-        private readonly string[] _countdownSteps = { "3", "2", "1", "HOLD!" };
+        private readonly string[] _countdownSteps = { "READY", "HOLD!" };
+        private float _bpm = 120f;
+        private float _beatDuration = 0.5f;
+
+        private const float PULSE_FADE_SPEED = 5f; // 페이드 아웃 속도
+        private readonly int _underlayDilationId = Shader.PropertyToID("_UnderlayDilation");
 
         private void Awake()
         {
@@ -37,11 +40,23 @@ namespace Project.Data.Stage.STAGE3
             }
         }
 
-        public void StartCountdown()
+        public void SetBpm(float bpm)
+        {
+            if (bpm <= 0)
+            {
+                bpm = 120f;
+            }
+            _beatDuration = 60f / bpm;
+        }
+
+        public void StartCountdown(float targetBeat)
         {
             if (countdownText == null) return;
             if (_countCoroutine != null) StopCoroutine(_countCoroutine);
-            _countCoroutine = StartCoroutine(CountdownRoutine());
+
+            countdownText.text = string.Empty;
+            countdownText.transform.localScale = Vector3.one;
+            _countCoroutine = StartCoroutine(TargetBeatSyncRoutine(targetBeat));
         }
 
         public void StopCountdown()
@@ -59,43 +74,52 @@ namespace Project.Data.Stage.STAGE3
             }
         }
 
-        private IEnumerator CountdownRoutine()
+        private IEnumerator TargetBeatSyncRoutine(float targetBeat)
         {
             countdownText.gameObject.SetActive(true);
 
-            foreach (var step in _countdownSteps)
-            {
-                countdownText.text = step;
+            float currentMusicBeat = (StageManager.CurrentTime * _bpm) / 60f;
+            float beatGap = targetBeat - currentMusicBeat;
 
-                if (step == "HOLD!")
+            int startIndex = 2 - Mathf.CeilToInt(beatGap);
+            startIndex = Mathf.Clamp(startIndex, 0, 1);
+
+            for (int i = startIndex; i < _countdownSteps.Length; i++)
+            {
+                countdownText.text = _countdownSteps[i];
+
+                if (_countdownSteps[i] == "HOLD!")
                 {
-                    countdownText.color = Color.red;
-                    PlaySfx(holdSignalSfx); 
+                    countdownText.color = Color.red; 
+                    PlaySfx(holdSignalSfx);
                 }
                 else
                 {
-                    countdownText.color = Color.white;
-                    PlaySfx(countSfx);      
+                    countdownText.color = Color.white; 
+                    PlaySfx(countSfx);
                 }
+                Material mat = countdownText.fontMaterial;
+                mat.SetFloat(_underlayDilationId, 1.0f);
 
-                float elapsed = 0f;
-                float animDuration = stepDuration * 0.7f;
-                float waitDuration = stepDuration * 0.3f;
+                float currentStepStartBeat = targetBeat - (1 - i);
+                float nextStepStartBeat = currentStepStartBeat + 1f;
 
-                while (elapsed < animDuration)
+                while (true)
                 {
-                    elapsed += Time.deltaTime;
-                    float progress = elapsed / animDuration;
+                    float nowBeat = (StageManager.CurrentTime * _bpm) / 60f;
+                    if (nowBeat >= nextStepStartBeat) break;
 
-                    countdownText.transform.localScale = Vector3.Lerp(Vector3.one * 1.6f, Vector3.one, progress);
+                    float progress = Mathf.Clamp01(nowBeat - currentStepStartBeat);
+
+                    float dilation = Mathf.Lerp(1.0f, 0.0f, progress * PULSE_FADE_SPEED);
+                    mat.SetFloat(_underlayDilationId, dilation);
+
                     Color c = countdownText.color;
-                    c.a = Mathf.Lerp(0.5f, 1f, progress);
+                    c.a = Mathf.Lerp(1.0f, 0.3f, progress);
                     countdownText.color = c;
 
                     yield return null;
                 }
-
-                yield return new WaitForSeconds(waitDuration);
             }
 
             countdownText.gameObject.SetActive(false);
