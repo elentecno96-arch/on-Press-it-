@@ -13,6 +13,7 @@ namespace Project.Core.Managers
     {
         public event Action OnLoadingStarted;
         public event Action OnLoadingFinished;
+        public event Action<float> OnProgressUpdated;
 
         private const float LOAD_THRESHOLD = 0.9f;
         [SerializeField] private int fadeDurationMs = 500;
@@ -62,12 +63,21 @@ namespace Project.Core.Managers
             var op = SceneManager.LoadSceneAsync(sceneName);
             op.allowSceneActivation = false;
 
-            await UniTask.WaitUntil(() => op.progress >= LOAD_THRESHOLD);
+            while (op.progress < LOAD_THRESHOLD)
+            {
+                float normalizedProgress = op.progress / LOAD_THRESHOLD;
+                OnProgressUpdated?.Invoke(normalizedProgress);
+
+                await UniTask.Yield();
+            }
+
+            OnProgressUpdated?.Invoke(1.0f);
+
+            await UniTask.Delay(200);
 
             op.allowSceneActivation = true;
             await UniTask.WaitUntil(() => op.isDone);
-
-            await UniTask.NextFrame(); 
+            await UniTask.NextFrame();
         }
     }
 }
