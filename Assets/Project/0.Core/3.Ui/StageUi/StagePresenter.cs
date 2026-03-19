@@ -120,7 +120,17 @@ namespace Project.Rhythm.Presentation
 
         public ITouchVisual GetTouchVisual() => _playerTouchVisual;
 
-        public GameObject SpawnNote() => stageView.CreateNote(_stageData.notePrefab);
+        public GameObject SpawnNote()
+        {
+            GameObject noteObj = stageView.CreateNote(_stageData.notePrefab);
+
+            if (noteObj != null)
+            {
+                noteObj.transform.SetAsFirstSibling();
+            }
+
+            return noteObj;
+        }
 
         public void ShowJudgeEffect(JudgeResult result)
         {
