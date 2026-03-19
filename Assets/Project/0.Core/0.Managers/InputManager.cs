@@ -66,9 +66,16 @@ namespace Project.Core.Managers
         private void OnDisable()
         {
             Touch.onFingerDown -= OnFingerDown;
-            Touch.onFingerMove -= OnFingerMove;
+            Touch.onFingerMove -= OnFingerMove; 
             Touch.onFingerUp -= OnFingerUp;
+
             EnhancedTouchSupport.Disable();
+
+            OnPointerDown = null;
+            OnSlideAction = null;
+            OnPointerUp = null;
+
+            Debug.Log("<color=red>[InputManager]</color> 모든 시스템 콜백 및 내부 이벤트를 초기화했습니다.");
         }
 
 #if UNITY_EDITOR || DEVELOPMENT_BUILD

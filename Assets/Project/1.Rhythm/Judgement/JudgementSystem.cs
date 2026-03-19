@@ -30,6 +30,7 @@ namespace Project.Rhythm.Judgement
         //private const float MISS_WINDOW = 0.34f;
 
         private readonly Queue<JudgeData> _judgeQueue = new();
+        private readonly Dictionary<JudgeResult, int> _judgeCounts = new(); // 결과창을 위한 판정 저장소
         private float _secondsPerBeat;
         private JudgeData? _activeHoldNote = null;
 
@@ -41,6 +42,12 @@ namespace Project.Rhythm.Judgement
             _secondsPerBeat = 60f / data.bpm;
             _judgeQueue.Clear();
             _activeHoldNote = null;
+
+            _judgeCounts.Clear();
+            foreach (JudgeResult res in Enum.GetValues(typeof(JudgeResult)))
+            {
+                _judgeCounts[res] = 0;
+            }
 
             //초기 임시 할당
             _perfectWin = 0.12f;
@@ -145,6 +152,8 @@ namespace Project.Rhythm.Judgement
 
         private void LogAndNotify(JudgeResult result, Note.Note note)
         {
+            _judgeCounts[result]++;
+
             PrintJudgeLog(result);
             OnJudged?.Invoke(result, note);
         }
@@ -184,6 +193,7 @@ namespace Project.Rhythm.Judgement
         }
 
         public Note.Note GetCurrentHoldNote() => _activeHoldNote?.note;
+        public int GetCount(JudgeResult result) => _judgeCounts.TryGetValue(result, out int count) ? count : 0;
 
         /// <summary>
         /// 판정 로그 확인용

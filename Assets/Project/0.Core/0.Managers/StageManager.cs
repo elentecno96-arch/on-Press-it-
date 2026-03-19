@@ -43,11 +43,16 @@ namespace Project.Core.Managers
         public async UniTask Initialize()
         {
             if (_isInitialized) return;
-
+            Debug.Log("스테이지 매니저 초기화 시작");
+            //데이터 주입
             _activeStageData = GameManager.Instance.CurrentStageData ?? testStageData;
 
+            //시스템 초기화
             InitializeSystems(_activeStageData);
+
+            //비주얼 초기화
             presenter.Initialize(_activeStageData);
+
             _noteSpawner = new NoteSpawnSystem(presenter);
 
             _inputController = new RhythmInputController(_judgementSystem, () => CurrentTime);
@@ -57,6 +62,8 @@ namespace Project.Core.Managers
             BindSystems();
 
             _isInitialized = true;
+
+            Debug.Log("스테이지 매니저 초기화 완료");
 
             await UniTask.CompletedTask;
         }
@@ -92,6 +99,7 @@ namespace Project.Core.Managers
             {
                 presenter.GetTouchVisual()?.PlayAction(result);
                 note?.OnJudged(result);
+                presenter.ShowJudgeEffect(result); //판정 연출 ( 미구현 )
             };
 
             _eventSystem.OnSpawnTriggered += (action, hitTime, duration) =>
@@ -130,6 +138,8 @@ namespace Project.Core.Managers
 
             CurrentTime = _audioTimeline.GetStageTime();
             if (CurrentTime < 0f) return;
+
+            presenter.UpdateUI(CurrentTime); //프로세스 바 
 
             _eventSystem.Process(CurrentTime);
             _judgementSystem.UpdateHoldCheck(InputManager.Instance.IsPressing, CurrentTime);
@@ -173,6 +183,14 @@ namespace Project.Core.Managers
                 _audioTimeline.StartTimeline();
 
                 await UniTask.WaitUntil(() => _audioTimeline.GetStageTime() >= data.endPosition, cancellationToken: token);
+
+                int p = _judgementSystem.GetCount(JudgeResult.Perfect);
+                int gr = _judgementSystem.GetCount(JudgeResult.Great);
+                int go = _judgementSystem.GetCount(JudgeResult.Good);
+                int m = _judgementSystem.GetCount(JudgeResult.Miss);
+
+                presenter.ShowResult(p, gr, go, m);
+                // ------------------------------------------
 
                 OnStageComplete?.Invoke();
             }

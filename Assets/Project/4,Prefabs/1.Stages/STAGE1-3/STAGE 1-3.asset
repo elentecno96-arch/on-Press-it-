@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d04876fa1117aa34b9eea9b52f8b6fae, type: 3}
   m_Name: STAGE 1-3
   m_EditorClassIdentifier: 
+  stageName: "\uC2A4\uD14C\uC774\uC9C0 1-3"
   masterTrack: {fileID: 8300000, guid: 48761db433c601a428cb2d9377f38374, type: 3}
   bpm: 120
   backgroundPrefab: {fileID: 8384158712217755210, guid: e9590f6f20d58c04a8535c3c6a26f48c, type: 3}
@@ -22,7 +23,7 @@ MonoBehaviour:
   goodWindow: 0.27
   missWindow: 0.34
   playStartTime: 4
-  endPosition: 60
+  endPosition: 54
   actions:
   - beat: 12
     type: 2
