@@ -62,7 +62,7 @@ namespace Project.Core.Systems.Loading
             {
                 LoadingManager.Instance.OnLoadingStarted -= LoadingStarted;
                 LoadingManager.Instance.OnLoadingFinished -= LoadingFinished;
-                LoadingManager.Instance.OnProgressUpdated += UpdateProgressValue;
+                LoadingManager.Instance.OnProgressUpdated -= UpdateProgressValue;
             }
         }
     }

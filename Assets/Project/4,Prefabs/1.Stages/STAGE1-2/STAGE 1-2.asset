@@ -18,10 +18,10 @@ MonoBehaviour:
   backgroundPrefab: {fileID: 720462673943707363, guid: 0fb462abafbf73d41ba5bff37ef50682, type: 3}
   playerPrefab: {fileID: 147689285677530342, guid: aee9f6b30452bd847bba2dfebbd3bc0f, type: 3}
   notePrefab: {fileID: 6487635070286732841, guid: 8161861888d907c41a6da7454cfc25b1, type: 3}
-  perfectWindow: 0.12
-  greatWindow: 0.21
-  goodWindow: 0.27
-  missWindow: 0.34
+  perfectWindow: 0.14
+  greatWindow: 0.23
+  goodWindow: 0.3
+  missWindow: 0.36
   playStartTime: 4
   endPosition: 54
   actions:
