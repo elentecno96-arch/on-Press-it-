@@ -1,60 +1,78 @@
+using Project.Core.Managers;
+using Project.Core.Ui.StageUi.View;
+using Project.Rhythm.Data;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class MainUiPresenter : MonoBehaviour
 {
-    [SerializeField] private MainUiView _view;
+    [Header("--- Views ---")]
+    [SerializeField] private SettingUIView _settingView;
+    [SerializeField] private StageUiView _stageView;
 
-    // [추가] 선택된 스테이지 ID를 저장할 변수 선언 (오류 해결 지점)
-    private int _selectedStageId = -1;
+    [Header("--- Stage Slots ---")]
+    [SerializeField] private List<StageSlot> _stageSlots;
+
+    private StageData _currentSelectedStage;
+    private const float DefaultVolume = 0.5f;
 
     private void OnEnable()
     {
-        // 1. 스테이지 선택 -> 정보창 오픈
-        _view.OnStageSelect += HandleStageSelect;
-        _view.OnPlayClick += HandlePlayGame;
+        _settingView.OnSettingsClick += () => _settingView.ShowSettings(true);
+        _settingView.OnSettingsCloseClick += () => _settingView.ShowSettings(false);
 
-        // [추가] 뷰의 플레이 버튼 클릭 이벤트와 핸들러 연결
-        // _view.OnPlayClick += HandlePlayGame; 
+        _settingView.OnBgmVolumeChanged += (vol) => AudioManager.Instance.SetVolume("BGM", vol);
+        _settingView.OnSfxVolumeChanged += (vol) => AudioManager.Instance.SetVolume("SFX", vol);
+        _settingView.OnResetSettingsClick += HandleResetSettings;
 
-        // 2. 설정 버튼 클릭 -> (결과 정보 + 오디오 설정) 창 오픈
-        _view.OnSettingsClick += () => _view.ShowSettings(true);
-        _view.OnSettingsCloseClick += () => _view.ShowSettings(false);
+        foreach (var slot in _stageSlots)
+        {
+            if (slot != null)
+            {
+                slot.OnSlotClicked += HandleStageSelected;
+            }
+        }
 
-        // 3. 홈 버튼 클릭 -> 모든 팝업 닫고 메인 뷰로 (초기화)
-        _view.OnHomeClick += () => _view.ResetToMain();
-    }
-
-    private void HandleStageSelect(int stageId)
-    {
-        // [수정] 넘겨받은 stageId를 변수에 저장해둡니다.
-        _selectedStageId = stageId;
-
-        _view.ShowStageInfoWindow(true);
-        Debug.Log($"스테이지 {stageId} 정보창 활성화 및 ID 저장 완료");
+        _stageView.OnPlayClick += HandlePlayGame;
+        _stageView.OnCloseClick += () => _stageView.Hide();
     }
 
     private void OnDisable()
     {
-        _view.OnStageSelect -= HandleStageSelect;
-        // _view.OnPlayClick -= HandlePlayGame;
-    }
+        if (_settingView != null)
+            _settingView.OnResetSettingsClick -= HandleResetSettings;
 
-    // 플레이 버튼을 눌렀을 때 실행될 뼈대 함수
-    private void HandlePlayGame()
-    {
-        // 이제 _selectedStageId를 인식할 수 있습니다.
-        if (_selectedStageId == -1)
+        if (_stageSlots != null)
         {
-            Debug.LogWarning("선택된 스테이지 정보가 없습니다.");
-            return;
+            foreach (var slot in _stageSlots)
+            {
+                if (slot != null) slot.OnSlotClicked -= HandleStageSelected;
+            }
         }
 
-        ExecuteStageStart(_selectedStageId);
+        if (_stageView != null)
+            _stageView.OnPlayClick -= HandlePlayGame;
     }
 
-    private void ExecuteStageStart(int stageId)
+    private void HandleResetSettings()
     {
-        // 뼈대 유지
-        Debug.Log($"[Presenter] {stageId}번 스테이지 정보를 기반으로 게임 진입을 준비합니다.");
+        AudioManager.Instance.SetVolume("BGM", DefaultVolume);
+        AudioManager.Instance.SetVolume("SFX", DefaultVolume);
+        _settingView.SetSliderValues(DefaultVolume, DefaultVolume);
+    }
+
+    private void HandleStageSelected(StageData data)
+    {
+        _currentSelectedStage = data;
+        // 이름과 설명 전달 없이 창만 띄웁니다.
+        _stageView.Show();
+    }
+
+    private void HandlePlayGame()
+    {
+        if (_currentSelectedStage != null)
+        {
+            GameManager.Instance.StartStage(_currentSelectedStage).Forget();
+        }
     }
 }
