@@ -15,6 +15,7 @@ namespace Project.Core.Managers
         public event Action OnLoadingFinished;
 
         private const float LOAD_THRESHOLD = 0.9f;
+        [SerializeField] private int fadeDurationMs = 500;
 
         public override async UniTask Initialize()
         {
@@ -23,36 +24,50 @@ namespace Project.Core.Managers
 
         public async UniTask LoadSceneAsync(string sceneName)
         {
-            OnLoadingStarted?.Invoke();
+            await BeginTransition();
 
+            await PerformSceneLoad(sceneName);
+
+            OnLoadingFinished?.Invoke();
+            await UniTask.Delay(fadeDurationMs);
+        }
+
+        public async UniTask LoadStageAsync(string sceneName)
+        {
+            await BeginTransition();
+
+            await PerformSceneLoad(sceneName);
+
+            var stageManager = UnityEngine.Object.FindFirstObjectByType<StageManager>();
+            if (stageManager != null)
+            {
+                await stageManager.Initialize();
+            }
+
+            OnLoadingFinished?.Invoke();
+            await UniTask.Delay(fadeDurationMs);
+
+            stageManager?.Play();
+        }
+
+        private async UniTask BeginTransition()
+        {
+            OnLoadingStarted?.Invoke();
+            await UniTask.Delay(fadeDurationMs);
+        }
+
+        // 실제 씬 로딩 과정
+        private async UniTask PerformSceneLoad(string sceneName)
+        {
             var op = SceneManager.LoadSceneAsync(sceneName);
             op.allowSceneActivation = false;
 
             await UniTask.WaitUntil(() => op.progress >= LOAD_THRESHOLD);
 
             op.allowSceneActivation = true;
-
             await UniTask.WaitUntil(() => op.isDone);
 
-            await InitializeStageInScene();
-
-            OnLoadingFinished?.Invoke();
-        }
-
-        private async UniTask InitializeStageInScene()
-        {
-            await UniTask.NextFrame();
-
-            var stageManager = UnityEngine.Object.FindFirstObjectByType<StageManager>();
-            if (stageManager == null)
-            {
-                Debug.LogWarning("[LoadingManager] StageManager를 찾을 수 없습니다.");
-                return;
-            }
-
-            await stageManager.Initialize();
-
-            Debug.Log("StageManager 초기화 완료 확인");
+            await UniTask.NextFrame(); 
         }
     }
 }

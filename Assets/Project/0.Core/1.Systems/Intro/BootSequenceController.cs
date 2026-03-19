@@ -198,8 +198,8 @@ namespace Project.Core.Systems.Intro
 
             _isTransitioning = true;
 
-            //GameManager.Instance.EnterGameScene("Main").Forget(); 
-            GameManager.Instance.EnterGameScene("TestCore1").Forget(); //
+            GameManager.Instance.EnterGameScene("Main").Forget(); 
+            //GameManager.Instance.EnterGameScene("TestCore1").Forget();
         }
     }
 }

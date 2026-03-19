@@ -45,9 +45,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c8a62c2b333efa147800d84e1b4e8770, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  backgroundRoot: {fileID: 8352217750445255581}
-  noteRoot: {fileID: 7586783448136435156}
-  touchRoot: {fileID: 4804115109053096566}
+  view: {fileID: 8057005833721430662}
 --- !u!1 &3856483568361695971
 GameObject:
   m_ObjectHideFlags: 0
@@ -57,6 +55,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7586783448136435156}
+  - component: {fileID: 2472795315541543653}
   m_Layer: 5
   m_Name: NoteRoot
   m_TagString: Untagged
@@ -83,6 +82,18 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &2472795315541543653
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3856483568361695971}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5da9295a352231f45827e0575736744e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &4786778101821953176
 GameObject:
   m_ObjectHideFlags: 0
@@ -92,6 +103,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4804115109053096566}
+  - component: {fileID: 2289068948226652696}
   m_Layer: 5
   m_Name: TouchVisualRoot
   m_TagString: Untagged
@@ -118,6 +130,18 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &2289068948226652696
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4786778101821953176}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5da9295a352231f45827e0575736744e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &5911761878345778084
 GameObject:
   m_ObjectHideFlags: 0
@@ -165,8 +189,9 @@ GameObject:
   - component: {fileID: 3231609072409440303}
   - component: {fileID: 3815252616446630239}
   - component: {fileID: 596458832769118346}
+  - component: {fileID: 8057005833721430662}
   m_Layer: 5
-  m_Name: Canvas
+  m_Name: StageView
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -212,7 +237,7 @@ Canvas:
   m_OverridePixelPerfect: 0
   m_SortingBucketNormalizedSize: 0
   m_VertexColorAlwaysGammaSpace: 0
-  m_AdditionalShaderChannelsFlag: 0
+  m_AdditionalShaderChannelsFlag: 25
   m_UpdateRectTransformForStandalone: 0
   m_SortingLayerID: 0
   m_SortingOrder: 0
@@ -257,3 +282,18 @@ MonoBehaviour:
   m_BlockingMask:
     serializedVersion: 2
     m_Bits: 4294967295
+--- !u!114 &8057005833721430662
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6408428489205111715}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4280f893193c8b3418653ec6de1154d7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  backgroundRoot: {fileID: 8352217750445255581}
+  noteRoot: {fileID: 7586783448136435156}
+  touchRoot: {fileID: 4804115109053096566}

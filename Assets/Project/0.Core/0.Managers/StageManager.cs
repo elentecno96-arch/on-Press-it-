@@ -57,9 +57,15 @@ namespace Project.Core.Managers
             BindSystems();
 
             _isInitialized = true;
-            StartSequence(_activeStageData, this.GetCancellationTokenOnDestroy()).Forget();
 
             await UniTask.CompletedTask;
+        }
+
+        public void Play()
+        {
+            if (!_isInitialized) return;
+
+            StartSequence(_activeStageData, this.GetCancellationTokenOnDestroy()).Forget();
         }
 
         private void InitializeSystems(StageData stageData)
