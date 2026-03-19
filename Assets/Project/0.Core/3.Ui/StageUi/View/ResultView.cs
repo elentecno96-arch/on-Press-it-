@@ -1,0 +1,45 @@
+using Project.Core.Managers;
+using Cysharp.Threading.Tasks;
+using TMPro;
+using UnityEngine;
+using UnityEngine.UI;
+
+namespace Project.Core.Ui.StageUi.View
+{
+    /// <summary>
+    /// Game씬의 결과창 Ui View
+    /// </summary>
+    public class ResultView : MonoBehaviour
+    {
+        [SerializeField] private TextMeshProUGUI perfact_T;
+        [SerializeField] private TextMeshProUGUI great_T;
+        [SerializeField] private TextMeshProUGUI good_T;
+        [SerializeField] private TextMeshProUGUI miss_T;
+
+        [SerializeField] private Button retry;
+        [SerializeField] private Button cancel;
+
+        private void Awake()
+        {
+            retry.onClick.AddListener(() => {
+                var currentData = GameManager.Instance.CurrentStageData;
+                GameManager.Instance.StartStage(currentData).Forget();
+            });
+
+            cancel.onClick.AddListener(() => {
+                LoadingManager.Instance.LoadSceneAsync("Main").Forget();
+            });
+            gameObject.SetActive(false);
+        }
+
+        public void DisplayResult(int p, int gr, int go, int m)
+        {
+            gameObject.SetActive(true);
+
+            perfact_T.text = p.ToString();
+            great_T.text = gr.ToString();
+            good_T.text = go.ToString();
+            miss_T.text = m.ToString();
+        }
+    }
+}

@@ -15,6 +15,9 @@ namespace Project.Core.Managers
         {
             Debug.Log("모든 매니저 초기화 진행");
 
+            Application.targetFrameRate = 60;
+            QualitySettings.vSyncCount = 0;
+
             await UniTask.Yield();
 
             if (IsInitialized) return;

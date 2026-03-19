@@ -65,9 +65,10 @@ namespace Project.Rhythm.Judgement
             if (input == null) return;
 
             input.OnPointerDown -= PointerDown;
-            input.OnPointerUp -= PointerUp;
+            input.OnPointerUp -= PointerUp;    
+            input.OnSlideAction -= Slide;      
 
-            Debug.Log("<color=yellow>[RhythmInputController]</color> 입력을 해제했습니다.");
+            Debug.Log("<color=yellow>[RhythmInputController]</color> 모든 입력을 안전하게 해제했습니다.");
         }
     }
 }

@@ -11,6 +11,7 @@ namespace Project.Rhythm.Data
     public class StageData : ScriptableObject
     {
         [Header("Audio")]
+        public string stageName;
         public AudioClip masterTrack;
         public float bpm;
 
