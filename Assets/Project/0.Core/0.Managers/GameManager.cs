@@ -33,11 +33,14 @@ namespace Project.Core.Managers
         }
 
         /// <summary>
-        /// 메인에서 스테이지를 클릭했을 때 호출
+        /// 외부에서 스테이지를 통해 게임씬에 이동하려고 할 때 호출
         /// </summary>
-        public void SelectStage(StageData stageData)
+        /// <param name="data"></param>
+        /// <returns></returns>
+        public async UniTaskVoid StartStage(StageData data)
         {
-            CurrentStageData = stageData;
+            CurrentStageData = data;
+            await LoadingManager.Instance.LoadStageAsync("Game");
         }
 
         public async UniTask EnterGameScene(string sceneName)

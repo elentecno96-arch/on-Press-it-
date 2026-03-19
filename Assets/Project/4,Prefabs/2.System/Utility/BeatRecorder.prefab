@@ -44,7 +44,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4d69347e337cf11459b1984c629879d6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  recordKey: 32
-  bpm: 110
+  tapKey: 32
+  slideKey: 97
+  holdKey: 100
+  signalModifierKey: 304
+  saveKey: 115
   useSnapping: 1
-  targetPatternData: {fileID: 11400000, guid: 95d8e295b42cca640afd8f17db71467d, type: 2}
+  snapDivision: 4
+  currentTargetID: Stage3_Stone
+  targetStageData: {fileID: 11400000, guid: 5c81803f925b2de4a881b898a89cf78b, type: 2}
