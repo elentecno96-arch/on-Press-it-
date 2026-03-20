@@ -19,7 +19,7 @@ namespace Project.Rhythm.Player
             {
                 PlaySfx(slideSfx != null ? slideSfx : actionSfx);
 
-                SetAnimation(actionFrames, false);
+                SetAnimation(actionFrames,actionFrameRate, false);
 
                 transform.DOComplete();
                 transform.DOPunchPosition(new Vector3(50f, 0, 0), 0.15f);
@@ -40,6 +40,8 @@ namespace Project.Rhythm.Player
             else
             {
                 PlaySfx(missSfx);
+                SetAnimation(missFrames, missFrameRate, false);
+
                 transform.DOComplete();
                 transform.DOShakePosition(0.2f, 10f);
             }
