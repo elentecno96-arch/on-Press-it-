@@ -2,6 +2,7 @@ using Cysharp.Threading.Tasks;
 using Project.Rhythm.Data.Enum;
 using Project.Rhythm.Judgement;
 using Project.Rhythm.Visual;
+using System.Threading;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -15,6 +16,8 @@ namespace Project.Rhythm.Note
         [SerializeField] private GameObject[] trashPrefabs;
         [SerializeField] private Transform mouthPos;
         [SerializeField] private AudioClip spitSfx;             // 광물 튀어나오는 소리
+
+        private CancellationTokenSource _routineCts;
 
         public override void UpdateVisual(float progress)
         {
@@ -40,7 +43,9 @@ namespace Project.Rhythm.Note
 
         public override void PlayAction(JudgeResult result)
         {
-            if (_isJudged) return;
+            CancelCurrentRoutine();
+
+            _routineCts = new CancellationTokenSource(); //새 토큰 생성
             _isJudged = true;
 
             if (holdSlider != null) holdSlider.gameObject.SetActive(false);
@@ -48,42 +53,69 @@ namespace Project.Rhythm.Note
             if (result != JudgeResult.Miss)
             {
                 PlaySfx(successSfx);
-                SuccessRoutine().Forget();
+                SuccessRoutine(_routineCts.Token).Forget();
             }
             else
             {
                 PlaySfx(missSfx);
-                FailRoutine().Forget();
+                FailRoutine(_routineCts.Token).Forget();
             }
         }
 
-        private async UniTask SuccessRoutine()
+        private async UniTask SuccessRoutine(CancellationToken token)
         {
             targetImage.sprite = painSprite;
 
-            await UniTask.Delay(500);
+            bool isCanceled = await UniTask.Delay(500, cancellationToken: token).SuppressCancellationThrow();
+            if (isCanceled) return; 
 
             if (actionFrames != null && actionFrames.Length > 0)
             {
                 foreach (var s in actionFrames)
                 {
                     targetImage.sprite = s;
-                    await UniTask.Delay(150);
+                    isCanceled = await UniTask.Delay((int)(actionFrameRate * 1000), cancellationToken: token).SuppressCancellationThrow();
+                    if (isCanceled) return;
                 }
             }
+
             PlaySfx(spitSfx);
             Spit(mineralPrefabs);
 
-            await UniTask.Delay(1000);
+            isCanceled = await UniTask.Delay(1000, cancellationToken: token).SuppressCancellationThrow();
+            if (isCanceled) return;
+
             ResetVisual();
         }
 
-        private async UniTask FailRoutine()
+        private async UniTask FailRoutine(CancellationToken token)
         {
             if (missFrames.Length > 0) targetImage.sprite = missFrames[0];
             Spit(trashPrefabs);
             await UniTask.Delay(1000);
+
+            bool isCanceled = await UniTask.Delay(1000, cancellationToken: token).SuppressCancellationThrow();
+            if (isCanceled) return;
+
             ResetVisual();
+        }
+
+        private void CancelCurrentRoutine()
+        {
+            if (_routineCts != null)
+            {
+                _routineCts.Cancel();
+                _routineCts.Dispose();
+                _routineCts = null;
+            }
+        }
+
+        public override void ResetVisual()
+        {
+            CancelCurrentRoutine();
+            _isJudged = false;
+            targetImage.rectTransform.anchoredPosition = Vector2.zero;
+            base.ResetVisual();
         }
 
         private void Spit(GameObject[] prefabs)
@@ -91,6 +123,11 @@ namespace Project.Rhythm.Note
             if (prefabs == null || prefabs.Length == 0) return;
             GameObject prefab = prefabs[UnityEngine.Random.Range(0, prefabs.Length)];
             Instantiate(prefab, mouthPos.position, Quaternion.identity, transform.parent);
+        }
+
+        private void OnDestroy()
+        {
+            CancelCurrentRoutine();
         }
 
         public override void PlayAction(PatternType type) { }

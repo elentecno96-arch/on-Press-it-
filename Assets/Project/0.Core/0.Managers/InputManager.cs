@@ -1,7 +1,9 @@
 using Cysharp.Threading.Tasks;
 using Project.Core.Utilities;
 using System;
+using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.InputSystem.EnhancedTouch;
 using Touch = UnityEngine.InputSystem.EnhancedTouch.Touch;
 
@@ -40,9 +42,33 @@ namespace Project.Core.Managers
 
         private void OnFingerDown(Finger finger)
         {
+            if (IsPointerOverUI(finger.currentTouch.screenPosition))
+            {
+                _lastInputType = "UI_TOUCHED"; //상태 기록
+                return; 
+            }
+
             _lastInputType = "DOWN";
             _isSlideProcessed = false;
             OnPointerDown?.Invoke(finger.currentTouch.screenPosition);
+        }
+
+        private bool IsPointerOverUI(Vector2 screenPosition)
+        {
+            if (EventSystem.current == null) return false;
+
+            PointerEventData eventData = new PointerEventData(EventSystem.current);
+            eventData.position = screenPosition;
+
+            List<RaycastResult> results = new List<RaycastResult>();
+            EventSystem.current.RaycastAll(eventData, results);
+
+            //foreach (var result in results) //터치 영역 디버그 확인용
+            //{
+            //    Debug.Log($"<color=yellow>[UI Blocked by]</color> {result.gameObject.name}");
+            //}
+
+            return results.Count > 0;
         }
 
         private void OnFingerMove(Finger finger)
