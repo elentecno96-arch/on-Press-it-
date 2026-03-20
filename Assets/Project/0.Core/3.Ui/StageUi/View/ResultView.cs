@@ -19,16 +19,25 @@ namespace Project.Core.Ui.StageUi.View
         [SerializeField] private Button retry;
         [SerializeField] private Button cancel;
 
+        private bool _isActionStarted = false;
+
         private void Awake()
         {
             retry.onClick.AddListener(() => {
+                if (_isActionStarted) return;
+                _isActionStarted = true;
+
                 var currentData = GameManager.Instance.CurrentStageData;
                 GameManager.Instance.StartStage(currentData).Forget();
             });
 
             cancel.onClick.AddListener(() => {
+                if (_isActionStarted) return;
+                _isActionStarted = true;
+
                 LoadingManager.Instance.LoadSceneAsync("Main").Forget();
             });
+
             gameObject.SetActive(false);
         }
 
