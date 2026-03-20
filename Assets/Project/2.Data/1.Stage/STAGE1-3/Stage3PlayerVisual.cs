@@ -43,7 +43,7 @@ namespace Project.Rhythm.Player
 
                 if (_currentAnimation != actionFrames)
                 {
-                    SetAnimation(actionFrames, true);
+                    SetAnimation(actionFrames, actionFrameRate, true);
                 }
             }
         }
@@ -57,7 +57,7 @@ namespace Project.Rhythm.Player
                 _isHolding = true;
                 PlaySfx(actionSfx);
 
-                SetAnimation(actionFrames, true);
+                SetAnimation(actionFrames, actionFrameRate, true);
             }
         }
 
@@ -67,7 +67,7 @@ namespace Project.Rhythm.Player
             if (playerHoldSlider != null) playerHoldSlider.gameObject.SetActive(false);
             targetImage.rectTransform.anchoredPosition = Vector2.zero;
 
-            if (!_isLocked) SetAnimation(idleFrames, true);
+            if (!_isLocked) SetAnimation(idleFrames, idleFrameRate, true);
         }
 
         public override void PlayAction(JudgeResult result)
@@ -81,12 +81,12 @@ namespace Project.Rhythm.Player
             if (result != JudgeResult.Miss)
             {
                 PlaySfx(successSfx);
-                SetAnimation(successFrames, false);
+                SetAnimation(successFrames, successFrameRate, false);
             }
             else
             {
                 PlaySfx(missSfx);
-                SetAnimation(missFrames, false);
+                SetAnimation(missFrames, missFrameRate, false);
             }
         }
 
@@ -97,7 +97,7 @@ namespace Project.Rhythm.Player
             _isHolding = false;
             if (playerHoldSlider != null) playerHoldSlider.gameObject.SetActive(false);
             targetImage.rectTransform.anchoredPosition = Vector2.zero;
-            SetAnimation(idleFrames, true);
+            SetAnimation(idleFrames, idleFrameRate, true);
             base.ResetVisual();
         }
 

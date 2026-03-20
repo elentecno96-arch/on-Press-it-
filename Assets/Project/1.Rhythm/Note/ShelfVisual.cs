@@ -40,7 +40,7 @@ namespace Project.Rhythm.Note
             if (result != JudgeResult.Miss)
             {
                 PlaySfx(successSfx);
-                SetAnimation(successFrames, true);
+                SetAnimation(successFrames,successFrameRate, true);
 
                 transform.DOComplete();
                 transform.DOPunchScale(Vector3.one * 0.15f, 0.2f);
@@ -48,7 +48,7 @@ namespace Project.Rhythm.Note
             else
             {
                 PlaySfx(missSfx);
-                SetAnimation(missFrames, true);
+                SetAnimation(missFrames,missFrameRate, true);
 
                 transform.DOComplete();
                 transform.DOShakePosition(0.3f, 10f);

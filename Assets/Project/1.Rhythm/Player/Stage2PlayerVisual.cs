@@ -18,7 +18,7 @@ namespace Project.Rhythm.Player
         {
             PlaySfx(grabSfx != null ? grabSfx : actionSfx);
 
-            SetAnimation(actionFrames, false);
+            SetAnimation(actionFrames,actionFrameRate, false);
 
             transform.DOComplete();
             transform.DOPunchPosition(new Vector3(0, 50f, 0), 0.15f);
