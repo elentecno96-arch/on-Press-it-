@@ -66,7 +66,7 @@ namespace Project.Rhythm.Note
         {
             targetImage.sprite = painSprite;
 
-            bool isCanceled = await UniTask.Delay(500, cancellationToken: token).SuppressCancellationThrow();
+            bool isCanceled = await UniTask.Delay(1000, cancellationToken: token).SuppressCancellationThrow();
             if (isCanceled) return; 
 
             if (actionFrames != null && actionFrames.Length > 0)
