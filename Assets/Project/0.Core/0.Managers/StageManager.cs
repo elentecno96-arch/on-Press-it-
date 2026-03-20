@@ -30,7 +30,7 @@ namespace Project.Core.Managers
         private RhythmInputController _inputController;
 
         private bool _isInitialized;
-        private StageData _activeStageData; //외부에서 받아온 SO를 캐싱용
+        private StageData _activeStageData; //외부에서 받아온 SO를
 
         public event Action OnStageStart;
         public event Action OnStageComplete;

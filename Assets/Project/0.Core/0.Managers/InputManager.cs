@@ -1,9 +1,7 @@
 using Cysharp.Threading.Tasks;
 using Project.Core.Utilities;
 using System;
-using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.EventSystems;
 using UnityEngine.InputSystem.EnhancedTouch;
 using Touch = UnityEngine.InputSystem.EnhancedTouch.Touch;
 
@@ -26,6 +24,8 @@ namespace Project.Core.Managers
         private string _lastInputType = "None";
         private bool _isSlideProcessed = false;
 
+        private bool _ignoreGameInput = false;
+
         public override UniTask Initialize()
         {
             if (IsInitialized) return UniTask.CompletedTask;
@@ -44,36 +44,20 @@ namespace Project.Core.Managers
         {
             if (IsPointerOverUI(finger.currentTouch.screenPosition))
             {
-                _lastInputType = "UI_TOUCHED"; //상태 기록
-                return; 
+                _ignoreGameInput = true;
+                _lastInputType = "UI_TOUCHED";
+                return;
             }
 
+            _ignoreGameInput = false;
             _lastInputType = "DOWN";
             _isSlideProcessed = false;
             OnPointerDown?.Invoke(finger.currentTouch.screenPosition);
         }
 
-        private bool IsPointerOverUI(Vector2 screenPosition)
-        {
-            if (EventSystem.current == null) return false;
-
-            PointerEventData eventData = new PointerEventData(EventSystem.current);
-            eventData.position = screenPosition;
-
-            List<RaycastResult> results = new List<RaycastResult>();
-            EventSystem.current.RaycastAll(eventData, results);
-
-            //foreach (var result in results) //터치 영역 디버그 확인용
-            //{
-            //    Debug.Log($"<color=yellow>[UI Blocked by]</color> {result.gameObject.name}");
-            //}
-
-            return results.Count > 0;
-        }
-
         private void OnFingerMove(Finger finger)
         {
-            if (_isSlideProcessed) return;
+            if (_ignoreGameInput || _isSlideProcessed) return;
 
             if (finger.currentTouch.delta.magnitude > SLIDE_THRESHOLD)
             {
@@ -85,8 +69,36 @@ namespace Project.Core.Managers
 
         private void OnFingerUp(Finger finger)
         {
-            _lastInputType = "UP";
-            OnPointerUp?.Invoke();
+            if (!_ignoreGameInput)
+            {
+                _lastInputType = "UP";
+                OnPointerUp?.Invoke();
+            }
+            _ignoreGameInput = false;
+        }
+
+        private bool IsPointerOverUI(Vector2 screenPosition)
+        {
+            if (UnityEngine.EventSystems.EventSystem.current == null)
+            {
+                Debug.LogWarning("<color=red>[InputManager]</color> 씬에 EventSystem이 없습니다!");
+                return false;
+            }
+
+            var eventData = new UnityEngine.EventSystems.PointerEventData(UnityEngine.EventSystems.EventSystem.current);
+            eventData.position = screenPosition;
+            var results = new System.Collections.Generic.List<UnityEngine.EventSystems.RaycastResult>();
+            UnityEngine.EventSystems.EventSystem.current.RaycastAll(eventData, results);
+
+            if (results.Count > 0)
+            {
+                foreach (var result in results)
+                {
+                    Debug.Log($"<color=yellow>[UI Hit]</color> Object Name: <b>{result.gameObject.name}</b> | Layer: {LayerMask.LayerToName(result.gameObject.layer)}");
+                }
+            }
+
+            return results.Count > 0;
         }
 
         private void OnDisable()
