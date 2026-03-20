@@ -75,7 +75,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   targetImage: {fileID: 5073292206622749941}
-  frameRate: 0.2
   idleFrames:
   - {fileID: 21300000, guid: 2e8c857ce754e74489163c5aded5e200, type: 3}
   - {fileID: 21300000, guid: def4001cb3ec88d409aab44f46ccdc0b, type: 3}
@@ -91,6 +90,10 @@ MonoBehaviour:
   missFrames:
   - {fileID: 21300000, guid: fa0b38901061cd24fba24606b9d7bc7d, type: 3}
   - {fileID: 21300000, guid: 2849dee9913297e43885f6222820fc13, type: 3}
+  idleFrameRate: 0.1
+  actionFrameRate: 0.1
+  successFrameRate: 0.1
+  missFrameRate: 0.1
   audioSource: {fileID: 3124196303754744611}
   actionSfx: {fileID: 0}
   successSfx: {fileID: 0}
@@ -110,7 +113,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_RaycastTarget: 1
+  m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:

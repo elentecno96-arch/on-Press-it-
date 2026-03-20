@@ -648,6 +648,10 @@ PrefabInstance:
       propertyPath: m_Color.a
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 4202638046899264350, guid: d8d6b0c0d093f804d9d8b649d1c363c0, type: 3}
+      propertyPath: m_RaycastTarget
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 4804115109053096566, guid: d8d6b0c0d093f804d9d8b649d1c363c0, type: 3}
       propertyPath: m_AnchorMax.x
       value: 0.5
@@ -682,6 +686,10 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5058449491488917166, guid: d8d6b0c0d093f804d9d8b649d1c363c0, type: 3}
       propertyPath: m_Color.r
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5058449491488917166, guid: d8d6b0c0d093f804d9d8b649d1c363c0, type: 3}
+      propertyPath: m_RaycastTarget
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7586783448136435156, guid: d8d6b0c0d093f804d9d8b649d1c363c0, type: 3}
