@@ -99,8 +99,8 @@ MonoBehaviour:
   - {fileID: 21300000, guid: 37295fc971018ee47827de2afd246bbd, type: 3}
   successFrames: []
   missFrames: []
-  idleFrameRate: 0.1
-  actionFrameRate: 0.1
+  idleFrameRate: 0.15
+  actionFrameRate: 0.15
   successFrameRate: 0.1
   missFrameRate: 0.1
   audioSource: {fileID: 9054497128912541829}

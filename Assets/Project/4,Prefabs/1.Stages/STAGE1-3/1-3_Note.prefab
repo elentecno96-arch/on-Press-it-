@@ -92,7 +92,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   targetImage: {fileID: 7410423325682538414}
-  frameRate: 0.2
   idleFrames:
   - {fileID: 21300000, guid: 9e6b20e62892f4f4d91c97895101f223, type: 3}
   - {fileID: 21300000, guid: 224fa5ac80c7e0243b8ba2d1a65ee3bb, type: 3}
@@ -104,6 +103,10 @@ MonoBehaviour:
   missFrames:
   - {fileID: 21300000, guid: 0880fb0e77555ad48b65705d0ed32593, type: 3}
   - {fileID: 21300000, guid: 05dde2b1de68d9047890e40ae6ac1a4f, type: 3}
+  idleFrameRate: 0.15
+  actionFrameRate: 0.15
+  successFrameRate: 0.1
+  missFrameRate: 0.15
   audioSource: {fileID: -5348424624362360109}
   actionSfx: {fileID: 0}
   successSfx: {fileID: 0}
