@@ -14,13 +14,30 @@ public class StageUiView : MonoBehaviour
     [SerializeField] private Button playButton;
     [SerializeField] private Button closeButton;
 
+    private bool _isActionStarted = false;
+
     private void Awake()
     {
         if (playButton != null)
-            playButton.onClick.AddListener(() => OnPlayClick?.Invoke());
+        {
+            playButton.onClick.AddListener(() =>
+            {
+                if (_isActionStarted) return;
+                _isActionStarted = true;
+
+                OnPlayClick?.Invoke();
+            });
+        }
 
         if (closeButton != null)
-            closeButton.onClick.AddListener(() => OnCloseClick?.Invoke());
+        {
+            closeButton.onClick.AddListener(() =>
+            {
+                if (_isActionStarted) return;
+
+                OnCloseClick?.Invoke();
+            });
+        }
 
         Hide();
     }
@@ -28,6 +45,8 @@ public class StageUiView : MonoBehaviour
     // 매개변수 없이 창만 활성화하도록 수정
     public void Show()
     {
+        _isActionStarted = false;
+
         if (infoWindow != null)
             infoWindow.SetActive(true);
     }
