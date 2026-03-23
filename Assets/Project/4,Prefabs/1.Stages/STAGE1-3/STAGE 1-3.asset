@@ -15,9 +15,11 @@ MonoBehaviour:
   stageName: "\uC2A4\uD14C\uC774\uC9C0 1-3"
   masterTrack: {fileID: 8300000, guid: 48761db433c601a428cb2d9377f38374, type: 3}
   bpm: 120
-  backgroundPrefab: {fileID: 8384158712217755210, guid: e9590f6f20d58c04a8535c3c6a26f48c, type: 3}
-  playerPrefab: {fileID: 6624654381867523225, guid: 9b8592670ee001546af040c8696aaa88, type: 3}
-  notePrefab: {fileID: 1971174222979983983, guid: 06bfb19af13f0674c9f8bb9bc3e2ef1b, type: 3}
+  themeResources:
+  - theme: 2
+    backgroundPrefab: {fileID: 8384158712217755210, guid: e9590f6f20d58c04a8535c3c6a26f48c, type: 3}
+    playerPrefab: {fileID: 6624654381867523225, guid: 9b8592670ee001546af040c8696aaa88, type: 3}
+    notePrefab: {fileID: 1971174222979983983, guid: 06bfb19af13f0674c9f8bb9bc3e2ef1b, type: 3}
   perfectWindow: 0.14
   greatWindow: 0.23
   goodWindow: 0.3
@@ -85,3 +87,4 @@ MonoBehaviour:
     role: 0
     duration: 7
     targetID: Stage3_Stone
+  patterns: []

@@ -23,12 +23,6 @@ namespace Project.Rhythm.Judgement
         /// </summary>
         private float _perfectWin, _greatWin, _goodWin, _missWin;
 
-        //StageData로 위치 변경 예정
-        //private const float PERFECT_WINDOW = 0.12f;
-        //private const float GREAT_WINDOW = 0.21f;
-        //private const float GOOD_WINDOW = 0.27f;
-        //private const float MISS_WINDOW = 0.34f;
-
         private readonly Queue<JudgeData> _judgeQueue = new();
         private readonly Dictionary<JudgeResult, int> _judgeCounts = new(); // 결과창을 위한 판정 저장소
         private float _secondsPerBeat;
@@ -50,12 +44,17 @@ namespace Project.Rhythm.Judgement
             }
 
             //초기 임시 할당
-            _perfectWin = 0.12f;
-            _greatWin = 0.21f;
-            _goodWin = 0.27f;
-            _missWin = 0.34f;
+            _perfectWin = data.perfectWindow;
+            _greatWin = data.greatWindow;
+            _goodWin = data.goodWindow;
+            _missWin = data.missWindow;
         }
 
+        /// <summary>
+        /// 판정 대기열에 등록
+        /// </summary>
+        /// <param name="action"></param>
+        /// <param name="note"></param>
         public void RegisterNote(RhythmAction action, Note.Note note)
         {
             _judgeQueue.Enqueue(new JudgeData
@@ -66,6 +65,10 @@ namespace Project.Rhythm.Judgement
             });
         }
 
+        /// <summary>
+        /// 일반 탭 노트 판정 처리
+        /// </summary>
+        /// <param name="stageTime"></param>
         public void ProcessTap(float stageTime)
         {
             if (_judgeQueue.Count == 0) return;
@@ -113,7 +116,10 @@ namespace Project.Rhythm.Judgement
             }
         }
 
-
+        /// <summary>
+        /// 홀드 노트를 뗄 때의 판정 처리
+        /// </summary>
+        /// <param name="stageTime"></param>
         public void ProcessHoldUp(float stageTime)
         {
             if (!_activeHoldNote.HasValue) return;
@@ -166,6 +172,10 @@ namespace Project.Rhythm.Judgement
             return JudgeResult.Miss;
         }
 
+        /// <summary>
+        /// 시간에 따른 Miss 판정 강제 처리
+        /// </summary>
+        /// <param name="stageTime"></param>
         public void CheckMiss(float stageTime)
         {
             while (_judgeQueue.Count > 0)

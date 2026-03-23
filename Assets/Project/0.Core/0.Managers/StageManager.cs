@@ -1,7 +1,9 @@
 using Cysharp.Threading.Tasks;
+using Project.Core.Ui.GlobalUi;
 using Project.Rhythm;
 using Project.Rhythm.Data;
 using Project.Rhythm.Data.Enum;
+using Project.Rhythm.Data.Struct;
 using Project.Rhythm.Event;
 using Project.Rhythm.Judgement;
 using Project.Rhythm.Note;
@@ -38,6 +40,11 @@ namespace Project.Core.Managers
         private readonly List<Note> _activeNotes = new();
         public static float CurrentTime { get; private set; }
 
+        private List<(float time, StageThemeType theme)> _themeQueue = new();
+        private int _themeIndex = 0;
+
+        private bool _isThemeChanging = false;
+
         public async UniTask Initialize()
         {
             if (_isInitialized) return;
@@ -50,6 +57,8 @@ namespace Project.Core.Managers
 
             //비주얼 초기화
             presenter.Initialize(_activeStageData);
+
+            BuildThemeQueue(_activeStageData);
 
             _noteSpawner = new NoteSpawnSystem(presenter);
 
@@ -139,7 +148,10 @@ namespace Project.Core.Managers
 
             presenter.UpdateUI(CurrentTime); //프로세스 바 
 
+            ProcessThemeChange();
+
             _eventSystem.Process(CurrentTime);
+
             _judgementSystem.UpdateHoldCheck(InputManager.Instance.IsPressing, CurrentTime);
             _judgementSystem.CheckMiss(CurrentTime);
 
@@ -193,6 +205,50 @@ namespace Project.Core.Managers
                 OnStageComplete?.Invoke();
             }
             catch (OperationCanceledException) { }
+        }
+
+        private void BuildThemeQueue(StageData data)
+        {
+            _themeQueue.Clear();
+            _themeIndex = 0;
+
+            if (data.themeEvents == null) return;
+
+            foreach (var evt in data.themeEvents)
+            {
+                float time = evt.beat * (60f / data.bpm);
+                _themeQueue.Add((time, evt.theme));
+            }
+        }
+
+        private void ProcessThemeChange()
+        {
+            if (_themeIndex >= _themeQueue.Count)
+                return;
+
+            var next = _themeQueue[_themeIndex];
+
+            float triggerTime = next.time - 0.4f;
+
+            if (CurrentTime >= triggerTime)
+            {
+                ChangeThemeWithFade(next.theme).Forget();
+                _themeIndex++;
+            }
+        }
+
+        private async UniTaskVoid ChangeThemeWithFade(StageThemeType theme)
+        {
+            if (_isThemeChanging) return;
+            _isThemeChanging = true;
+
+            await GlobalUIPresenter.Instance.FadeIn(1f);
+
+            presenter.ChangeTheme(theme);
+
+            await GlobalUIPresenter.Instance.FadeOut(0f);
+
+            _isThemeChanging = false;
         }
 
         private void OnDestroy()

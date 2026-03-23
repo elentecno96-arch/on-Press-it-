@@ -90,7 +90,7 @@ MonoBehaviour:
   missFrames:
   - {fileID: 21300000, guid: fa0b38901061cd24fba24606b9d7bc7d, type: 3}
   - {fileID: 21300000, guid: 2849dee9913297e43885f6222820fc13, type: 3}
-  idleFrameRate: 0.1
+  idleFrameRate: 0.3
   actionFrameRate: 0.1
   successFrameRate: 0.1
   missFrameRate: 0.1

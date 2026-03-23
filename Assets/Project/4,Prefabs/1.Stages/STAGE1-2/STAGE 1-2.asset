@@ -15,9 +15,11 @@ MonoBehaviour:
   stageName: "\uC2A4\uD14C\uC774\uC9C0 1-2"
   masterTrack: {fileID: 8300000, guid: f862af8b09cb72849ad88f4300165523, type: 3}
   bpm: 120
-  backgroundPrefab: {fileID: 720462673943707363, guid: 0fb462abafbf73d41ba5bff37ef50682, type: 3}
-  playerPrefab: {fileID: 147689285677530342, guid: aee9f6b30452bd847bba2dfebbd3bc0f, type: 3}
-  notePrefab: {fileID: 6487635070286732841, guid: 8161861888d907c41a6da7454cfc25b1, type: 3}
+  themeResources:
+  - theme: 1
+    backgroundPrefab: {fileID: 720462673943707363, guid: 0fb462abafbf73d41ba5bff37ef50682, type: 3}
+    playerPrefab: {fileID: 147689285677530342, guid: aee9f6b30452bd847bba2dfebbd3bc0f, type: 3}
+    notePrefab: {fileID: 6487635070286732841, guid: 8161861888d907c41a6da7454cfc25b1, type: 3}
   perfectWindow: 0.14
   greatWindow: 0.23
   goodWindow: 0.3
@@ -405,3 +407,4 @@ MonoBehaviour:
     role: 0
     duration: 0
     targetID: 
+  patterns: []

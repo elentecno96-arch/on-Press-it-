@@ -34,6 +34,7 @@ namespace Project.Rhythm.Event
             _events.Clear();
             _currentIndex = 0;
             _nextAutoCountIndex = 0;
+            _lastTriggeredBeat = -1f;
 
             if (data == null || data.bpm <= 0) return;
 
@@ -55,6 +56,7 @@ namespace Project.Rhythm.Event
                     duration = duration
                 });
             }
+
             _events.Sort((a, b) => a.spawnTriggerTime.CompareTo(b.spawnTriggerTime));
         }
 
@@ -99,6 +101,7 @@ namespace Project.Rhythm.Event
         {
             _currentIndex = 0;
             _nextAutoCountIndex = 0;
+            _lastTriggeredBeat = -1f;
         }
     }
 }

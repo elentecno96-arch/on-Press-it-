@@ -15,10 +15,8 @@ namespace Project.Rhythm.Data
         public AudioClip masterTrack;
         public float bpm;
 
-        [Header("Prefabs (Visual)")]    
-        public GameObject backgroundPrefab;     // 배경용 프리팹 (가장 뒤)
-        public GameObject playerPrefab;         // 플레이어 비주얼 프리팹 (가장 앞)
-        public GameObject notePrefab;           // 노트 프리팹
+        [Header("Theme Resources")]
+        public List<ThemeResource> themeResources;
 
         public float perfectWindow = 0.12f;
         public float greatWindow = 0.21f;
@@ -26,10 +24,16 @@ namespace Project.Rhythm.Data
         public float missWindow = 0.34f;
 
         [Header("Timing")]
-        public float playStartTime;       // 곡 시작 오프셋
-        public float endPosition;         // 곡 종료 시점 (StageTime 기준)
+        public float playStartTime;
+        public float endPosition;
 
-        [Header("Patterns")]
+        [Header("Actions (Runtime)")]
         public List<RhythmAction> actions = new();
+
+        [Header("Theme Events (Runtime)")]
+        public List<ThemeEvent> themeEvents = new();
+
+        [Header("Patterns (Editor Only)")]
+        public List<PatternData> patterns = new();
     }
 }
