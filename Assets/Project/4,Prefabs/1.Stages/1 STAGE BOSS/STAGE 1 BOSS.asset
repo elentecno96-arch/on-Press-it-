@@ -1,0 +1,41 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d04876fa1117aa34b9eea9b52f8b6fae, type: 3}
+  m_Name: STAGE 1 BOSS
+  m_EditorClassIdentifier: 
+  stageName: STAGE 1 BOSS
+  masterTrack: {fileID: 8300000, guid: a3a4f324f8e3c8e4bba4c9466b1ef561, type: 3}
+  bpm: 110
+  themeResources:
+  - theme: 0
+    backgroundPrefab: {fileID: 720462673943707363, guid: 0fb462abafbf73d41ba5bff37ef50682, type: 3}
+    playerPrefab: {fileID: 5785236905550326125, guid: 66970a3a53113574690cdccde17e0490, type: 3}
+    notePrefab: {fileID: 4856286443119890342, guid: 840398d0e341ff945810479a0a2a52ab, type: 3}
+  - theme: 1
+    backgroundPrefab: {fileID: 720462673943707363, guid: 0fb462abafbf73d41ba5bff37ef50682, type: 3}
+    playerPrefab: {fileID: 147689285677530342, guid: aee9f6b30452bd847bba2dfebbd3bc0f, type: 3}
+    notePrefab: {fileID: 6487635070286732841, guid: 8161861888d907c41a6da7454cfc25b1, type: 3}
+  - theme: 2
+    backgroundPrefab: {fileID: 8384158712217755210, guid: e9590f6f20d58c04a8535c3c6a26f48c, type: 3}
+    playerPrefab: {fileID: 6624654381867523225, guid: 9b8592670ee001546af040c8696aaa88, type: 3}
+    notePrefab: {fileID: 1971174222979983983, guid: 06bfb19af13f0674c9f8bb9bc3e2ef1b, type: 3}
+  perfectWindow: 0.12
+  greatWindow: 0.21
+  goodWindow: 0.27
+  missWindow: 0.34
+  playStartTime: 0
+  endPosition: 180
+  actions: []
+  themeEvents:
+  - beat: 0
+    theme: 0
+  patterns: []

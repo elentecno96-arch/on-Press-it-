@@ -10,7 +10,7 @@ namespace Project.Core.Ui.GlobalUi.View
     public class GlobalFadeView : MonoBehaviour
     {
         [SerializeField] private CanvasGroup fadeGroup;
-        [SerializeField] private float fadeDuration = 0.4f;
+        [SerializeField] private float fadeDuration = 0.2f;
 
         private Tween _fadeTween;
 
