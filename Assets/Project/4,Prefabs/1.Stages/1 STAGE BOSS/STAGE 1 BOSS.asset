@@ -15,6 +15,7 @@ MonoBehaviour:
   stageName: STAGE 1 BOSS
   masterTrack: {fileID: 8300000, guid: d04ca2a4e3f58754e92957054615ad8d, type: 3}
   bpm: 120
+  stageIndex: 4
   themeResources:
   - theme: 0
     backgroundPrefab: {fileID: 720462673943707363, guid: 0fb462abafbf73d41ba5bff37ef50682, type: 3}

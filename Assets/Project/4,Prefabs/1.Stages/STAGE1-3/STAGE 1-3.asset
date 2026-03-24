@@ -15,6 +15,7 @@ MonoBehaviour:
   stageName: "\uC2A4\uD14C\uC774\uC9C0 1-3"
   masterTrack: {fileID: 8300000, guid: 48761db433c601a428cb2d9377f38374, type: 3}
   bpm: 120
+  stageIndex: 3
   themeResources:
   - theme: 2
     backgroundPrefab: {fileID: 8384158712217755210, guid: e9590f6f20d58c04a8535c3c6a26f48c, type: 3}

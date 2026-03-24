@@ -84,6 +84,7 @@ namespace Project.Rhythm.Note
                 HandleRetire();
             }
         }
+
         public void OnJudged(JudgeResult result)
         {
             if (_isJudged) return;
