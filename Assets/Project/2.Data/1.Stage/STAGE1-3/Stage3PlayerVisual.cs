@@ -101,6 +101,27 @@ namespace Project.Rhythm.Player
             base.ResetVisual();
         }
 
+        protected override void OnDisable()
+        {
+            base.OnDisable();
+
+            _isLocked = false;
+            _isHolding = false;
+            _isJudged = false;
+
+            if (playerHoldSlider != null)
+            {
+                playerHoldSlider.gameObject.SetActive(false);
+            }
+
+            targetImage.rectTransform.anchoredPosition = Vector2.zero;
+
+            if (idleFrames != null && idleFrames.Length > 0)
+            {
+                targetImage.sprite = idleFrames[0];
+            }
+        }
+
         protected override void OnAnimationComplete()
         {
             _isLocked = false;

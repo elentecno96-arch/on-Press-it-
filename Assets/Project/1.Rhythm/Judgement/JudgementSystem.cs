@@ -19,14 +19,19 @@ namespace Project.Rhythm.Judgement
             public Note.Note note;
             public float targetTime;
         }
+
         private float _perfectWin, _greatWin, _goodWin, _missWin;
+
         private readonly Queue<JudgeData> _judgeQueue = new();
         private readonly Dictionary<JudgeResult, int> _judgeCounts = new();
         private float _secondsPerBeat;
         private JudgeData? _activeHoldNote = null;
         private int _currentStageIndex;
+
         public event Action<JudgeResult, Note.Note> OnJudged;
+
         public bool IsHolding => _activeHoldNote.HasValue;
+
         public void Initialize(StageData data)
         {
             _currentStageIndex = data.stageIndex;
@@ -59,10 +64,23 @@ namespace Project.Rhythm.Judgement
                       $"Score: {score} | Perfect:{_judgeCounts[JudgeResult.Perfect]} Great:{_judgeCounts[JudgeResult.Great]} " +
                       $"Good:{_judgeCounts[JudgeResult.Good]} Miss:{_judgeCounts[JudgeResult.Miss]}");
         }
+
+
         public void RegisterNote(RhythmAction action, Note.Note note)
         {
-            _judgeQueue.Enqueue(new JudgeData { action = action, note = note, targetTime = action.beat * _secondsPerBeat });
+            if (note == null) return;
+
+            if (note.Judged) return;
+
+            _judgeQueue.Enqueue(new JudgeData
+            {
+                action = action,
+                note = note,
+                targetTime = action.beat * _secondsPerBeat
+            });
         }
+
+
         public void ProcessTap(float stageTime)
         {
             if (_judgeQueue.Count == 0) return;
@@ -71,10 +89,12 @@ namespace Project.Rhythm.Judgement
             float absDiff = Mathf.Abs(stageTime - target.targetTime);
             if (absDiff <= _missWin) ApplyResult(target, CalculateResult(absDiff));
         }
+
         public Project.Rhythm.Note.Note GetCurrentHoldNote()
         {
             return _activeHoldNote?.note;
         }
+
         public void ProcessSlide(float stageTime)
         {
             if (_judgeQueue.Count == 0) return;
@@ -85,6 +105,7 @@ namespace Project.Rhythm.Judgement
                 if (absDiff <= _missWin) ApplyResult(target, CalculateResult(absDiff));
             }
         }
+
         public void ProcessHoldDown(float stageTime)
         {
             if (_judgeQueue.Count == 0 || _activeHoldNote.HasValue) return;
@@ -127,6 +148,18 @@ namespace Project.Rhythm.Judgement
             // PrintJudgeLog(result);
             OnJudged?.Invoke(result, note);
         }
+
+        public void ForceCompleteAll()
+        {
+            if (_currentHoldNote != null)
+            {
+                _currentHoldNote.ForceComplete();
+                _currentHoldNote = null;
+            }
+
+            _registeredNotes.Clear();
+        }
+
         private JudgeResult CalculateResult(float absDiff)
         {
             if (absDiff <= _perfectWin) return JudgeResult.Perfect;
@@ -139,11 +172,65 @@ namespace Project.Rhythm.Judgement
             while (_judgeQueue.Count > 0 && stageTime > _judgeQueue.Peek().targetTime + _missWin)
                 ApplyResult(_judgeQueue.Peek(), JudgeResult.Miss);
         }
+
         public float GetHoldProgress(float stageTime)
         {
             if (!_activeHoldNote.HasValue) return 0f;
             return Mathf.Clamp01((stageTime - _activeHoldNote.Value.targetTime) / (_activeHoldNote.Value.action.duration * _secondsPerBeat));
         }
+
+        public void Reset()
+        {
+            _judgeQueue.Clear();
+            _activeHoldNote = null;
+
+            _judgeCounts.Clear();
+            foreach (JudgeResult res in Enum.GetValues(typeof(JudgeResult)))
+            {
+                _judgeCounts[res] = 0;
+            }
+        }
+
+        public void SyncToTime(float stageTime)
+        {
+            while (_judgeQueue.Count > 0)
+            {
+                var target = _judgeQueue.Peek();
+
+                if (stageTime > target.targetTime + _missWin)
+                {
+                    _judgeQueue.Dequeue();
+                }
+                else break;
+            }
+
+            if (_activeHoldNote.HasValue)
+            {
+                var hold = _activeHoldNote.Value;
+                float endTime = hold.targetTime + (hold.action.duration * _secondsPerBeat);
+
+                if (stageTime > endTime + _missWin)
+                {
+                    _activeHoldNote = null;
+                }
+            }
+        }
+
+        public void ForceCompleteAll()
+        {
+            while (_judgeQueue.Count > 0)
+            {
+                var target = _judgeQueue.Dequeue();
+                LogAndNotify(JudgeResult.Miss, target.note);
+            }
+
+            if (_activeHoldNote.HasValue)
+            {
+                LogAndNotify(JudgeResult.Miss, _activeHoldNote.Value.note);
+                _activeHoldNote = null;
+            }
+        }
+
         public int GetCount(JudgeResult result) => _judgeCounts[result];
         private void PrintJudgeLog(JudgeResult result) // 개별 판정 로그
         {
