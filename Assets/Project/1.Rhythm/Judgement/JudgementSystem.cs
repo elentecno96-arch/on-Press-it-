@@ -61,7 +61,16 @@ namespace Project.Rhythm.Judgement
         }
         public void RegisterNote(RhythmAction action, Note.Note note)
         {
-            _judgeQueue.Enqueue(new JudgeData { action = action, note = note, targetTime = action.beat * _secondsPerBeat });
+            if (note == null) return;
+
+            if (note.Judged) return; 
+
+            _judgeQueue.Enqueue(new JudgeData
+            {
+                action = action,
+                note = note,
+                targetTime = action.beat * _secondsPerBeat
+            });
         }
         public void ProcessTap(float stageTime)
         {
@@ -144,8 +153,67 @@ namespace Project.Rhythm.Judgement
             if (!_activeHoldNote.HasValue) return 0f;
             return Mathf.Clamp01((stageTime - _activeHoldNote.Value.targetTime) / (_activeHoldNote.Value.action.duration * _secondsPerBeat));
         }
-        public int GetCount(JudgeResult result) => _judgeCounts[result];
-        private void PrintJudgeLog(JudgeResult result) // 개별 판정 로그
+
+        public void Reset()
+        {
+            _judgeQueue.Clear();
+            _activeHoldNote = null;
+
+            _judgeCounts.Clear();
+            foreach (JudgeResult res in Enum.GetValues(typeof(JudgeResult)))
+            {
+                _judgeCounts[res] = 0;
+            }
+        }
+
+        public void SyncToTime(float stageTime)
+        {
+            while (_judgeQueue.Count > 0)
+            {
+                var target = _judgeQueue.Peek();
+
+                if (stageTime > target.targetTime + _missWin)
+                {
+                    _judgeQueue.Dequeue();
+                }
+                else break;
+            }
+
+            if (_activeHoldNote.HasValue)
+            {
+                var hold = _activeHoldNote.Value;
+                float endTime = hold.targetTime + (hold.action.duration * _secondsPerBeat);
+
+                if (stageTime > endTime + _missWin)
+                {
+                    _activeHoldNote = null;
+                }
+            }
+        }
+
+        public void ForceCompleteAll()
+        {
+            while (_judgeQueue.Count > 0)
+            {
+                var target = _judgeQueue.Dequeue();
+                LogAndNotify(JudgeResult.Miss, target.note);
+            }
+
+            if (_activeHoldNote.HasValue)
+            {
+                LogAndNotify(JudgeResult.Miss, _activeHoldNote.Value.note);
+                _activeHoldNote = null;
+            }
+        }
+
+        public Note.Note GetCurrentHoldNote() => _activeHoldNote?.note;
+        public int GetCount(JudgeResult result) => _judgeCounts.TryGetValue(result, out int count) ? count : 0;
+
+        /// <summary>
+        /// 판정 로그 확인용
+        /// </summary>
+        /// <param name="result"></param>
+        private void PrintJudgeLog(JudgeResult result)
         {
             string color = result switch { JudgeResult.Perfect => "cyan", JudgeResult.Great => "green", JudgeResult.Good => "yellow", _ => "red" };
             Debug.Log($"<color={color}>[{result}]</color>");

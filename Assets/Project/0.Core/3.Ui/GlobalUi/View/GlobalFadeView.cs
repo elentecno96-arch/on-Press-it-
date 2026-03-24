@@ -20,7 +20,7 @@ namespace Project.Core.Ui.GlobalUi.View
             gameObject.SetActive(false);
         }
 
-        public async UniTask PlayFade(float targetAlpha)
+        public async UniTask PlayFade(float targetAlpha, float duration = -1f)
         {
             _fadeTween?.Kill();
 
@@ -29,7 +29,9 @@ namespace Project.Core.Ui.GlobalUi.View
                 gameObject.SetActive(true);
             }
 
-            _fadeTween = fadeGroup.DOFade(targetAlpha, fadeDuration);
+            float finalDuration = (duration < 0) ? fadeDuration : duration;
+
+            _fadeTween = fadeGroup.DOFade(targetAlpha, finalDuration);
             await _fadeTween.ToUniTask();
 
             if (targetAlpha <= 0)

@@ -77,30 +77,18 @@ namespace Project.Rhythm.Presentation
 
         public void ChangeTheme(StageThemeType theme)
         {
-            Debug.Log($"[ChangeTheme 호출됨] {theme}");
+            if (_currentTheme == theme) return;
 
-            if (_currentTheme == theme)
-            {
-                Debug.Log("이미 같은 테마라서 리턴됨");
-                return;
-            }
-
-            // 이전 비활성화
+            // [수정] 이전 테마 자원 비활성화
             if (_backgroundMap.TryGetValue(_currentTheme, out var prevBg))
                 prevBg.SetActive(false);
 
             if (_playerMap.TryGetValue(_currentTheme, out var prevPlayer))
                 prevPlayer.SetActive(false);
 
-            // 새 테마 활성화
             if (_backgroundMap.TryGetValue(theme, out var newBg))
             {
                 newBg.SetActive(true);
-                CachePersistentNotes(newBg);
-            }
-            else
-            {
-                Debug.LogError($"[Presenter] Background 없음: {theme}");
             }
 
             if (_playerMap.TryGetValue(theme, out var newPlayer))
@@ -108,12 +96,37 @@ namespace Project.Rhythm.Presentation
                 newPlayer.SetActive(true);
                 _currentTouchVisual = newPlayer.GetComponentInChildren<ITouchVisual>();
             }
-            else
-            {
-                Debug.LogError($"[Presenter] Player 없음: {theme}");
-            }
 
             _currentTheme = theme;
+        }
+
+        public Note.Note GetOrSpawnPersistent(string id)
+        {
+            if (string.IsNullOrEmpty(id)) return null;
+            int key = id.GetHashCode();
+
+            if (_fixedNoteMap.TryGetValue(key, out var existingNote))
+            {
+                if (existingNote != null)
+                {
+                    if (!existingNote.gameObject.activeSelf) existingNote.gameObject.SetActive(true);
+                    return existingNote;
+                }
+                _fixedNoteMap.Remove(key);
+            }
+
+            GameObject prefab = GetCurrentNotePrefab();
+            if (prefab == null) return null;
+
+            GameObject obj = stageView.CreateNote(prefab);
+            if (obj != null && obj.TryGetComponent<Note.Note>(out var note))
+            {
+                _fixedNoteMap.Add(key, note);
+                Debug.Log($"[Presenter] Persistent Note '{id}' 최초 스폰 완료");
+                return note;
+            }
+
+            return null;
         }
 
 
@@ -185,29 +198,9 @@ namespace Project.Rhythm.Presentation
             if (prefab == null) return null;
 
             var obj = stageView.CreateNote(prefab);
-
             if (obj != null)
                 obj.transform.SetAsFirstSibling();
             return obj;
-        }
-
-        private void CachePersistentNotes(GameObject bgRoot)
-        {
-            _fixedNoteMap.Clear();
-
-            var notes = bgRoot.GetComponentsInChildren<Note.Note>(true);
-
-            foreach (var note in notes)
-            {
-                if (note.IsPersistent && !string.IsNullOrEmpty(note.NoteID))
-                {
-                    int key = note.NoteID.GetHashCode();
-                    if (!_fixedNoteMap.ContainsKey(key))
-                    {
-                        _fixedNoteMap.Add(key, note);
-                    }
-                }
-            }
         }
 
         public Note.Note GetFixedNote(string id) =>

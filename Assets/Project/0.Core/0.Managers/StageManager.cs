@@ -95,32 +95,63 @@ namespace Project.Core.Managers
 
             _eventSystem.OnSpawnTriggered += (action, hitTime, duration) =>
             {
-                Project.Rhythm.Note.Note note = null;
-
-                if (!string.IsNullOrEmpty(action.targetID))
+                switch (action.noteType)
                 {
-                    note = presenter.GetFixedNote(action.targetID);
-                    if (note != null)
-                    {
-                        note.ResetJudgedState();
-                        note.InitializePersistent(CurrentTime, duration);
-                    }
-                }
+                    case NoteType.Signal:
+                        HandleSignal(action);
+                        return;
 
-                if (note == null)
-                {
-                    var noteObj = _noteSpawner.GetOrSpawn(action, CurrentTime, duration);
-                    note = noteObj?.GetComponent<Project.Rhythm.Note.Note>();
-                }
+                    case NoteType.Persistent:
+                        HandlePersistent(action,hitTime, duration);
+                        return;
 
-                if (note == null) return;
-
-                _judgementSystem.RegisterNote(action, note);
-                if (!note.IsPersistent && !_activeNotes.Contains(note))
-                {
-                    _activeNotes.Add(note);
+                    case NoteType.Runtime:
+                        HandleRuntime(action, duration);
+                        return;
                 }
             };
+        }
+
+        private void HandleRuntime(RhythmAction action, float duration)
+        {
+            var noteObj = _noteSpawner.GetOrSpawn(action, CurrentTime, duration);
+            var note = noteObj?.GetComponent<Note>();
+
+            if (note == null) return;
+
+            _judgementSystem.RegisterNote(action, note);
+
+            if (!_activeNotes.Contains(note))
+                _activeNotes.Add(note);
+        }
+
+        private void HandlePersistent(RhythmAction action, float hitTime, float duration)
+        {
+            Note note = presenter.GetOrSpawnPersistent(action.targetID);
+
+            if (note == null)
+            {
+                Debug.LogError($"Persistent Note 생성/조회 실패: {action.targetID}");
+                return;
+            }
+            note.gameObject.SetActive(true);
+
+            note.ResetJudgedState();
+            note.InitializePersistent(CurrentTime, duration);
+
+            _judgementSystem.RegisterNote(action, note);
+
+            if (!_activeNotes.Contains(note))
+                _activeNotes.Add(note);
+        }
+
+        private void HandleSignal(RhythmAction action)
+        {
+            if (action.noteType == NoteType.Persistent)
+            {
+                var note = presenter.GetFixedNote(action.targetID);
+                note?.PlaySignal();
+            }
         }
 
         private void Update()
@@ -207,7 +238,10 @@ namespace Project.Core.Managers
         {
             if (_themeIndex >= _themeQueue.Count) return;
             var next = _themeQueue[_themeIndex];
-            if (CurrentTime >= next.time - 0.4f)
+
+            float triggerTime = next.time - 0.1f;
+
+            if (CurrentTime >= triggerTime)
             {
                 ChangeThemeWithFade(next.theme).Forget();
                 _themeIndex++;
@@ -218,10 +252,40 @@ namespace Project.Core.Managers
         {
             if (_isThemeChanging) return;
             _isThemeChanging = true;
-            await GlobalUIPresenter.Instance.FadeIn(1f);
+
+            InputManager.Instance.SetBlockInput(true);
+
+            await GlobalUIPresenter.Instance.FadeIn(0.1f);
+
+            _judgementSystem.ForceCompleteAll();
+            ClearAllNotes();
+
             presenter.ChangeTheme(theme);
-            await GlobalUIPresenter.Instance.FadeOut(0f);
+            _eventSystem.SyncToTime(CurrentTime);
+
+            await GlobalUIPresenter.Instance.FadeOut(0.1f);
+
+            InputManager.Instance.SetBlockInput(false);
             _isThemeChanging = false;
+        }
+
+        private void ClearAllNotes()
+        {
+            for (int i = _activeNotes.Count - 1; i >= 0; i--)
+            {
+                var note = _activeNotes[i];
+                if (note == null) continue;
+
+                if (note.IsPersistent)
+                {
+                    note.gameObject.SetActive(false);
+                    continue;
+                }
+
+                Destroy(note.gameObject);
+            }
+
+            _activeNotes.RemoveAll(n => n == null || !n.IsPersistent);
         }
 
         private void OnDestroy()

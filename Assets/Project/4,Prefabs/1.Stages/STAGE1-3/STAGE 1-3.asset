@@ -33,60 +33,72 @@ MonoBehaviour:
     role: 0
     duration: 3
     targetID: Stage3_Stone
+    noteType: 1
   - beat: 20
     type: 2
     role: 0
     duration: 2
     targetID: Stage3_Stone
+    noteType: 1
   - beat: 32
     type: 2
     role: 0
     duration: 3
     targetID: Stage3_Stone
+    noteType: 1
   - beat: 36
     type: 2
     role: 0
     duration: 2
     targetID: Stage3_Stone
+    noteType: 1
   - beat: 44
     type: 2
     role: 0
     duration: 2
     targetID: Stage3_Stone
+    noteType: 1
   - beat: 52
     type: 2
     role: 0
     duration: 1
     targetID: Stage3_Stone
+    noteType: 1
   - beat: 54
     type: 2
     role: 0
     duration: 1
     targetID: Stage3_Stone
+    noteType: 1
   - beat: 60
     type: 2
     role: 0
     duration: 3
     targetID: Stage3_Stone
+    noteType: 1
   - beat: 68
     type: 2
     role: 0
     duration: 1
     targetID: Stage3_Stone
+    noteType: 1
   - beat: 70
     type: 2
     role: 0
     duration: 1
     targetID: Stage3_Stone
+    noteType: 1
   - beat: 76
     type: 2
     role: 0
     duration: 2
     targetID: Stage3_Stone
+    noteType: 1
   - beat: 88
     type: 2
     role: 0
     duration: 7
     targetID: Stage3_Stone
+    noteType: 1
   themeEvents: []
   patterns: []

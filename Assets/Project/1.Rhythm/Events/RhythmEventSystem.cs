@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using Project.Rhythm.Data.Struct;
 using Project.Rhythm.Data.Enum;
+using UnityEngine;
 
 namespace Project.Rhythm.Event
 {
@@ -42,6 +43,7 @@ namespace Project.Rhythm.Event
 
             foreach (var action in data.actions)
             {
+                //Debug.Log($"Action Beat: {action.beat}"); //인덱스 확인용 로그
                 if (action.type == PatternType.None) continue;
 
                 float hitTime = action.beat * _secondsPerBeat;
@@ -97,11 +99,28 @@ namespace Project.Rhythm.Event
             }
         }
 
-        public void Reset()
+        public void SyncToTime(float stageTime)
         {
             _currentIndex = 0;
             _nextAutoCountIndex = 0;
             _lastTriggeredBeat = -1f;
+
+            while (_currentIndex < _events.Count && _events[_currentIndex].targetHitTime < stageTime)
+            {
+                _currentIndex++;
+            }
+
+            while (_currentIndex < _events.Count && _events[_currentIndex].spawnTriggerTime < stageTime)
+            {
+                var evt = _events[_currentIndex];
+                OnSpawnTriggered?.Invoke(evt.action, evt.targetHitTime, evt.duration);
+                _currentIndex++;
+            }
+
+            while (_nextAutoCountIndex < _events.Count && _events[_nextAutoCountIndex].targetHitTime < stageTime)
+            {
+                _nextAutoCountIndex++;
+            }
         }
     }
 }

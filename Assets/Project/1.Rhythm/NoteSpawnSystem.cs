@@ -1,4 +1,5 @@
 using Project.Rhythm.Data.Struct;
+using Project.Rhythm.Note;
 using Project.Rhythm.Presentation;
 using UnityEngine;
 
@@ -19,24 +20,28 @@ namespace Project.Rhythm
 
         public Note.Note GetOrSpawn(RhythmAction action, float spawnTime, float appearDuration)
         {
-            if (!string.IsNullOrEmpty(action.targetID))
+            if (action.noteType != NoteType.Runtime)
             {
-                return _presenter.GetFixedNote(action.targetID);
+                Debug.LogError("Runtime 노트만 Spawn 가능");
+                return null;
             }
 
-            // 2. 일반적인 노트 생성 로직
             GameObject obj = _presenter.SpawnNote();
             if (obj == null) return null;
 
             if (obj.TryGetComponent<Note.Note>(out var note))
             {
-
                 note.Setup(spawnTime, appearDuration);
                 return note;
             }
+
             return null;
         }
 
+        public void Reset()
+        {
+
+        }
         /// <summary>
         /// 정적 노트를 위한 함수
         /// </summary>

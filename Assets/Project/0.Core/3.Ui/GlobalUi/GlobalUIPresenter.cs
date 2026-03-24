@@ -56,14 +56,14 @@ namespace Project.Core.Ui.GlobalUi
             loadingView.UpdateProgress(val, 0f).Forget();
         }
 
-        public async UniTask FadeIn(float value)
+        public async UniTask FadeIn(float duration)
         {
-            await fadeView.PlayFade(value);
+            await fadeView.PlayFade(FADE_IN_VALUE, duration);
         }
 
-        public async UniTask FadeOut(float value)
+        public async UniTask FadeOut(float duration)
         {
-            await fadeView.PlayFade(value);
+            await fadeView.PlayFade(FADE_OUT_VALUE, duration);
         }
 
         public async UniTask UpdateProgress(float val, float dur) => await loadingView.UpdateProgress(val, dur);
