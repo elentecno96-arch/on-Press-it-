@@ -97,11 +97,28 @@ namespace Project.Rhythm.Event
             }
         }
 
-        public void Reset()
+        public void SyncToTime(float stageTime)
         {
             _currentIndex = 0;
             _nextAutoCountIndex = 0;
             _lastTriggeredBeat = -1f;
+
+            while (_currentIndex < _events.Count && _events[_currentIndex].targetHitTime < stageTime)
+            {
+                _currentIndex++;
+            }
+
+            while (_currentIndex < _events.Count && _events[_currentIndex].spawnTriggerTime < stageTime)
+            {
+                var evt = _events[_currentIndex];
+                OnSpawnTriggered?.Invoke(evt.action, evt.targetHitTime, evt.duration);
+                _currentIndex++;
+            }
+
+            while (_nextAutoCountIndex < _events.Count && _events[_nextAutoCountIndex].targetHitTime < stageTime)
+            {
+                _nextAutoCountIndex++;
+            }
         }
     }
 }

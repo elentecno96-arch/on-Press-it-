@@ -1,10 +1,19 @@
 using Project.Core.Managers;
+using Project.Rhythm.Data.Enum;
 using Project.Rhythm.Interface;
 using Project.Rhythm.Judgement;
 using UnityEngine;
 
 namespace Project.Rhythm.Note
 {
+
+    public enum NoteType
+    {
+        Runtime,
+        Persistent,
+        Signal
+    }
+
     /// <summary>
     /// 리듬 이벤트용 노트 오브젝트
     /// (타이밍과 상태만 관리)
@@ -14,15 +23,18 @@ namespace Project.Rhythm.Note
         private ITouchVisual _visual;
         private RectTransform _rectTransform;
 
-        [SerializeField] private bool isPersistent;
         [SerializeField] private string noteID;
-        public bool IsPersistent => isPersistent;
         public string NoteID => noteID;
+
+        [SerializeField] private NoteType noteType;
+        public NoteType Type => noteType;
+        public bool IsPersistent => noteType == NoteType.Persistent;
+
         public float SpawnTime { get; private set; }
         public float AppearDuration { get; private set; }
 
         private bool _isJudged;
-        private bool isRandomPos;
+        public bool Judged => _isJudged;
 
         private void Awake()
         {
@@ -30,44 +42,49 @@ namespace Project.Rhythm.Note
             _rectTransform = GetComponent<RectTransform>();
         }
 
-        public void Setup(float spawnTime, float appearDuration, bool isRandomPos = false)
+        public void Setup(float spawnTime, float appearDuration)
         {
+            if (noteType != NoteType.Runtime)
+            {
+                Debug.LogError($"[Note] Setup 잘못 호출됨: {noteType}");
+                return;
+            }
+
             SpawnTime = spawnTime;
             AppearDuration = appearDuration;
             _isJudged = false;
-
-            if (_rectTransform != null)
-            {
-                if (isRandomPos)
-                {
-                    float rx = Random.Range(-400f, 400f);
-                    float ry = Random.Range(-200f, 200f);
-                    _rectTransform.anchoredPosition = new Vector2(rx, ry);
-                }
-                else
-                {
-                    _rectTransform.anchoredPosition = Vector2.zero;
-                }
-
-                Vector3 lp = _rectTransform.localPosition;
-                lp.z = 0f;
-                _rectTransform.localPosition = lp;
-            }
         }
 
         public void InitializePersistent(float spawnTime, float appearDuration)
         {
+            if (noteType != NoteType.Persistent)
+            {
+                Debug.LogError($"[Note] InitializePersistent 잘못 호출됨: {noteType}");
+                return;
+            }
+
             SpawnTime = spawnTime;
             AppearDuration = appearDuration;
             _isJudged = false;
         }
 
+        public void SetPosition(Vector2 pos)
+        {
+            if (_rectTransform == null) return;
+
+            _rectTransform.anchoredPosition = pos;
+
+            Vector3 lp = _rectTransform.localPosition;
+            lp.z = 0f;
+            _rectTransform.localPosition = lp;
+        }
+
         public void UpdateNote(float currentTime)
         {
-            if (isPersistent) return;
+            if (noteType != NoteType.Runtime) return;
 
             float elapsed = currentTime - SpawnTime;
-            float progress = elapsed / AppearDuration;
+            float progress = (currentTime - SpawnTime) / AppearDuration;
 
             _visual?.UpdateVisual(progress);
 
@@ -81,31 +98,36 @@ namespace Project.Rhythm.Note
             // 홀드 게이지를 채우거나 이펙트를 재생하는 로직
             Debug.Log($"Hold Progress: {progress}");
         }
-        public void PlaySignalEffect()
-        {
-            // ITouchVisual에 Signal용 액션을 추가하거나 특정 트리거를 실행
-            // _visual?.PlayAction(PatternType.Signal); // 가상의 연출 타입
-        }
+
 
         public void OnJudged(JudgeResult result)
         {
-            if (_isJudged) return;
+            if (_isJudged && IsPersistent == false) return;
+
+            if (this == null || gameObject == null) return;
+
             _isJudged = true;
-
             _visual?.PlayAction(result);
-        }
-
-        private void HandleRetire()
-        {
-            if (isPersistent) return; 
-            Destroy(gameObject);
         }
 
         public void ResetJudgedState()
         {
             _isJudged = false;
-            // 비주얼도 초기 상태로 리셋 (정적 노트 재사용 시 필수)
-            // _visual?.ResetVisual(); 
+        }
+
+        public void PlaySignal()
+        {
+            _isJudged = false;
+            if (noteType != NoteType.Signal) return;
+
+            _visual?.PlayAction(PatternType.None);
+        }
+
+        private void HandleRetire()
+        {
+            if (noteType != NoteType.Runtime) return;
+
+            Destroy(gameObject);
         }
     }
 }

@@ -47,6 +47,28 @@ namespace Project.Rhythm.Player
             }
         }
 
+        public override void ResetVisual()
+        {
+            base.ResetVisual();
+            transform.DOKill();
+            transform.localPosition = Vector3.zero;
+            transform.localScale = Vector3.one;
+        }
+
+        protected override void OnDisable()
+        {
+            base.OnDisable();
+
+            transform.DOKill();
+
+            _isHolding = false;
+            _isJudged = false;
+
+            transform.localPosition = Vector3.zero;
+            transform.localScale = Vector3.one;
+            transform.localRotation = Quaternion.identity;
+        }
+
         public override void UpdateVisual(float progress) { }
     }
 }
