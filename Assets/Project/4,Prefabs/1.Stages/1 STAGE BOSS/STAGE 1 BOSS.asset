@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: STAGE 1 BOSS
   m_EditorClassIdentifier: 
   stageName: STAGE 1 BOSS
-  masterTrack: {fileID: 8300000, guid: 0a738c5a3e54bdb44b7072975388763d, type: 3}
+  masterTrack: {fileID: 8300000, guid: 40f3f6daee3c4cc47883c90261fdee88, type: 3}
   bpm: 120
   stageIndex: 4
   themeResources:
@@ -185,13 +185,13 @@ MonoBehaviour:
     role: 0
     duration: 1
     targetID: Stage3_Stone
-    noteType: 2
+    noteType: 1
   - beat: 70
     type: 2
     role: 0
     duration: 1
     targetID: Stage3_Stone
-    noteType: 2
+    noteType: 1
   - beat: 80
     type: 1
     role: 1
@@ -257,7 +257,7 @@ MonoBehaviour:
     role: 1
     duration: 0
     targetID: 
-    noteType: 0
+    noteType: 2
   - beat: 89.5
     type: 1
     role: 1
@@ -374,12 +374,6 @@ MonoBehaviour:
     noteType: 0
   - beat: 134
     type: 1
-    role: 0
-    duration: 0
-    targetID: 
-    noteType: 0
-  - beat: 137
-    type: 3
     role: 0
     duration: 0
     targetID: 

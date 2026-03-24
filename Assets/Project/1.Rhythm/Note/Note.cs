@@ -86,7 +86,7 @@ namespace Project.Rhythm.Note
 
             _visual?.UpdateVisual(progress);
 
-            if (progress >= 2f)
+            if (progress >= 1.5f)
             {
                 HandleRetire();
             }

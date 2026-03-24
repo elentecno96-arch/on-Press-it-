@@ -17,6 +17,7 @@ namespace Project.Rhythm.Note
             if (progress <= 1.0f)
             {
                 targetScale = Mathf.Lerp(0.05f, 1.0f, progress);
+                targetImage.color = Color.white;
             }
             else
             {
