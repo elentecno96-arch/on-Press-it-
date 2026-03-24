@@ -15,6 +15,7 @@ MonoBehaviour:
   stageName: "\uC2A4\uD14C\uC774\uC9C0 1-2"
   masterTrack: {fileID: 8300000, guid: f862af8b09cb72849ad88f4300165523, type: 3}
   bpm: 120
+  stageIndex: 2
   themeResources:
   - theme: 1
     backgroundPrefab: {fileID: 720462673943707363, guid: 0fb462abafbf73d41ba5bff37ef50682, type: 3}
@@ -407,4 +408,5 @@ MonoBehaviour:
     role: 0
     duration: 0
     targetID: 
+  themeEvents: []
   patterns: []

@@ -76,7 +76,11 @@ namespace Project.Rhythm.Note
                 HandleRetire();
             }
         }
-
+        public void UpdateHoldProgress(float progress)
+        {
+            // 홀드 게이지를 채우거나 이펙트를 재생하는 로직
+            Debug.Log($"Hold Progress: {progress}");
+        }
         public void PlaySignalEffect()
         {
             // ITouchVisual에 Signal용 액션을 추가하거나 특정 트리거를 실행
@@ -95,11 +99,6 @@ namespace Project.Rhythm.Note
         {
             if (isPersistent) return; 
             Destroy(gameObject);
-        }
-
-        public void UpdateHoldProgress(float progress)
-        {
-            _visual?.UpdateVisual(progress);
         }
 
         public void ResetJudgedState()
