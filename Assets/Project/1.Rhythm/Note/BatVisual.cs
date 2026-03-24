@@ -14,6 +14,9 @@ namespace Project.Rhythm.Note
         [SerializeField] private float fallSpeed = 2500f;
         private const float BASE_SCALE = 1.5f;
 
+        private const float SIGNAL_HOLD_END = 0.6f; // 0.6까지 고정
+        private const float BAT_TRANSFORM_START = 0.7f; // 0.7에 변신
+
         private Vector2 _fallDirection = new Vector2(-0.4f, -1.2f).normalized;
         private bool _isFalling;
         private bool _isBatSpawned;
@@ -21,13 +24,17 @@ namespace Project.Rhythm.Note
         protected override void Awake()
         {
             base.Awake();
+            RandomSignalSprite();
 
+            transform.localScale = new Vector3(BASE_SCALE, BASE_SCALE, 1f);
+        }
+
+        private void RandomSignalSprite()
+        {
             if (idleFrames != null && idleFrames.Length > 0)
             {
                 targetImage.sprite = idleFrames[Random.Range(0, idleFrames.Length)];
             }
-
-            transform.localScale = new Vector3(BASE_SCALE, BASE_SCALE, 1f);
         }
 
         protected override void Update()
@@ -49,13 +56,16 @@ namespace Project.Rhythm.Note
         {
             if (_isFalling || _isJudged) return;
 
-            float targetScale;
+            float targetScale = 1.0f; 
 
-
-            if (progress <= 0.7f)
+            if (progress <= SIGNAL_HOLD_END)
             {
-                float t = progress / 0.7f;
-                targetScale = Mathf.Lerp(0.5f, 0.8f, t * t);
+                targetScale = 0.5f; 
+            }
+
+            else if (progress <= BAT_TRANSFORM_START)
+            {
+                targetScale = 0.5f;
             }
 
             else
@@ -67,15 +77,14 @@ namespace Project.Rhythm.Note
                     if (actionFrames != null && actionFrames.Length > 0)
                         targetImage.sprite = actionFrames[Random.Range(0, actionFrames.Length)];
                 }
-
-                float t = (progress - 0.7f) / 0.3f;
+                float t = (progress - BAT_TRANSFORM_START) / (1.0f - BAT_TRANSFORM_START);
                 float acceleratedT = t * t * t;
-                targetScale = Mathf.Lerp(0.8f, 1.0f, acceleratedT);
+                targetScale = Mathf.Lerp(0.5f, 1.0f, acceleratedT);
             }
 
             if (progress > 1.0f)
             {
-                float t = (progress - 1.0f) / 1.0f;
+                float t = (progress - 1.0f);
                 targetScale = Mathf.Lerp(1.0f, 3.0f, t);
             }
 
@@ -87,11 +96,11 @@ namespace Project.Rhythm.Note
         {
             if (type == PatternType.Signal)
             {
-                PlaySfx(actionSfx); // signalSfx
+                PlaySfx(actionSfx);
                 targetImage.color = Color.red;
-                transform.DOScale(Vector3.one * (BASE_SCALE * 1.2f), 0.1f).OnComplete(() => {
+                transform.DOScale(Vector3.one * (BASE_SCALE * 0.6f), 0.1f).OnComplete(() => {
                     targetImage.color = Color.white;
-                    transform.DOScale(Vector3.one * BASE_SCALE, 0.1f);
+                    transform.DOScale(Vector3.one * (BASE_SCALE * 0.5f), 0.1f);
                 });
             }
         }
@@ -126,6 +135,23 @@ namespace Project.Rhythm.Note
             base.ResetVisual();
             _isFalling = false;
             _isBatSpawned = false;
+            targetImage.rectTransform.localRotation = Quaternion.identity;
+            targetImage.color = Color.white;
+            transform.localScale = new Vector3(BASE_SCALE, BASE_SCALE, 1f);
+        }
+
+        protected override void OnDisable()
+        {
+            base.OnDisable();
+
+            transform.DOKill();
+            targetImage.DOKill();
+
+            _isFalling = false;
+            _isBatSpawned = false;
+            _isJudged = false;
+
+            targetImage.rectTransform.anchoredPosition = Vector2.zero;
             targetImage.rectTransform.localRotation = Quaternion.identity;
             targetImage.color = Color.white;
             transform.localScale = new Vector3(BASE_SCALE, BASE_SCALE, 1f);

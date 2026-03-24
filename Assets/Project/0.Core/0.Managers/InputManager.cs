@@ -16,9 +16,10 @@ namespace Project.Core.Managers
 
         public event Action<Vector2> OnPointerDown; // Tap/Hold 시작 통합
         public event Action<Vector2> OnSlideAction;
-        public event Action OnPointerUp;  
+        public event Action OnPointerUp;
+        private bool _isInputBlocked = false;
 
-        public bool IsPressing => Touch.activeTouches.Count > 0;
+        public bool IsPressing => !_isInputBlocked && Touch.activeTouches.Count > 0;
 
         private const float SLIDE_THRESHOLD = 50f;
         private string _lastInputType = "None";
@@ -42,6 +43,8 @@ namespace Project.Core.Managers
 
         private void OnFingerDown(Finger finger)
         {
+            if (_isInputBlocked) return;
+
             if (IsPointerOverUI(finger.currentTouch.screenPosition))
             {
                 _ignoreGameInput = true;
@@ -57,7 +60,7 @@ namespace Project.Core.Managers
 
         private void OnFingerMove(Finger finger)
         {
-            if (_ignoreGameInput || _isSlideProcessed) return;
+            if (_isInputBlocked || _ignoreGameInput || _isSlideProcessed) return;
 
             if (finger.currentTouch.delta.magnitude > SLIDE_THRESHOLD)
             {
@@ -69,7 +72,7 @@ namespace Project.Core.Managers
 
         private void OnFingerUp(Finger finger)
         {
-            if (!_ignoreGameInput)
+            if (!_isInputBlocked && !_ignoreGameInput)
             {
                 _lastInputType = "UP";
                 OnPointerUp?.Invoke();
@@ -99,6 +102,22 @@ namespace Project.Core.Managers
             }
 
             return results.Count > 0;
+        }
+
+        /// <summary>
+        /// 인풋 초기화 및 차단 설정
+        /// </summary>
+        /// <param name="block"></param>
+        public void SetBlockInput(bool block)
+        {
+            _isInputBlocked = block;
+            if (block)
+            {
+                OnPointerUp?.Invoke();
+                _lastInputType = "BLOCKED";
+                _isSlideProcessed = false;
+                _ignoreGameInput = false;
+            }
         }
 
         private void OnDisable()

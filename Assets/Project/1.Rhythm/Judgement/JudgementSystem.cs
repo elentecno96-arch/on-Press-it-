@@ -57,6 +57,10 @@ namespace Project.Rhythm.Judgement
         /// <param name="note"></param>
         public void RegisterNote(RhythmAction action, Note.Note note)
         {
+            if (note == null) return;
+
+            if (note.Judged) return; 
+
             _judgeQueue.Enqueue(new JudgeData
             {
                 action = action,
@@ -200,6 +204,58 @@ namespace Project.Rhythm.Judgement
 
             float elapsed = stageTime - startTime;
             return Mathf.Clamp01(elapsed / durationTime);
+        }
+
+        public void Reset()
+        {
+            _judgeQueue.Clear();
+            _activeHoldNote = null;
+
+            _judgeCounts.Clear();
+            foreach (JudgeResult res in Enum.GetValues(typeof(JudgeResult)))
+            {
+                _judgeCounts[res] = 0;
+            }
+        }
+
+        public void SyncToTime(float stageTime)
+        {
+            while (_judgeQueue.Count > 0)
+            {
+                var target = _judgeQueue.Peek();
+
+                if (stageTime > target.targetTime + _missWin)
+                {
+                    _judgeQueue.Dequeue();
+                }
+                else break;
+            }
+
+            if (_activeHoldNote.HasValue)
+            {
+                var hold = _activeHoldNote.Value;
+                float endTime = hold.targetTime + (hold.action.duration * _secondsPerBeat);
+
+                if (stageTime > endTime + _missWin)
+                {
+                    _activeHoldNote = null;
+                }
+            }
+        }
+
+        public void ForceCompleteAll()
+        {
+            while (_judgeQueue.Count > 0)
+            {
+                var target = _judgeQueue.Dequeue();
+                LogAndNotify(JudgeResult.Miss, target.note);
+            }
+
+            if (_activeHoldNote.HasValue)
+            {
+                LogAndNotify(JudgeResult.Miss, _activeHoldNote.Value.note);
+                _activeHoldNote = null;
+            }
         }
 
         public Note.Note GetCurrentHoldNote() => _activeHoldNote?.note;
