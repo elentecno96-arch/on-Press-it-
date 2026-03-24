@@ -42,19 +42,6 @@ namespace Project.Rhythm.Player
             }
         }
 
-        protected override void OnDisable()
-        {
-            base.OnDisable();
-
-            transform.DOKill();
-
-            transform.localPosition = Vector3.zero;
-            transform.localScale = Vector3.one;
-            transform.localRotation = Quaternion.identity;
-
-            _isJudged = false;
-        }
-
         public override void UpdateVisual(float progress) { }
     }
 }

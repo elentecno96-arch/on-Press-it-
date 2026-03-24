@@ -1,7 +1,6 @@
-using Project.Rhythm.Data.Enum;
-using Project.Rhythm.Note;
 using System;
 using UnityEngine;
+using Project.Rhythm.Data.Enum;
 
 namespace Project.Rhythm.Data.Struct
 {
@@ -26,6 +25,5 @@ namespace Project.Rhythm.Data.Struct
 
         [Tooltip("특정 노트를 지정하고 싶을 때 사용 (정적 노트 ID)")]
         public string targetID;
-        [SerializeField] public NoteType noteType;
     }
 }

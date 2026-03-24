@@ -1,11 +1,10 @@
-using DG.Tweening;
 using Project.Core.Managers;
 using Project.Rhythm.Data.Enum;
 using Project.Rhythm.Interface;
 using Project.Rhythm.Judgement;
-using System.Threading;
 using UnityEngine;
 using UnityEngine.UI;
+using DG.Tweening;
 
 namespace Project.Rhythm.Visual
 {
@@ -35,8 +34,6 @@ namespace Project.Rhythm.Visual
         protected bool _isJudged;
         protected bool _isLooping;
         protected bool _isHolding;
-
-        protected CancellationTokenSource _visualCts;
 
         protected virtual void Awake()
         {
@@ -119,28 +116,6 @@ namespace Project.Rhythm.Visual
             _isJudged = false;
             transform.DOKill();
             SetAnimation(idleFrames, idleFrameRate, true);
-        }
-
-        protected virtual void OnDisable()
-        {
-            ClearVisualCts();
-        }
-
-        protected void ClearVisualCts()
-        {
-            if (_visualCts != null)
-            {
-                _visualCts.Cancel();
-                _visualCts.Dispose();
-                _visualCts = null;
-            }
-        }
-
-        protected CancellationToken RefreshToken()
-        {
-            ClearVisualCts();
-            _visualCts = new CancellationTokenSource();
-            return _visualCts.Token;
         }
 
         public virtual void UpdateVisual(float progress) { }

@@ -107,26 +107,5 @@ namespace Project.Rhythm.Player
             _isJudged = false;
             base.OnAnimationComplete();
         }
-
-        protected override void OnDisable()
-        {
-            base.OnDisable();
-
-            _isLocked = false;
-            _isHolding = false;
-            _isJudged = false;
-
-            if (playerHoldSlider != null)
-            {
-                playerHoldSlider.gameObject.SetActive(false);
-            }
-
-            targetImage.rectTransform.anchoredPosition = Vector2.zero;
-
-            if (idleFrames != null && idleFrames.Length > 0)
-            {
-                targetImage.sprite = idleFrames[0];
-            }
-        }
     }
 }
