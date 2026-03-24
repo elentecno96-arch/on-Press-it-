@@ -2,6 +2,7 @@ using Cysharp.Threading.Tasks;
 using Project.Core.Utilities;
 using UnityEngine;
 using UnityEngine.Audio;
+using System;
 namespace Project.Core.Managers
 {
     /// <summary>
@@ -19,13 +20,22 @@ namespace Project.Core.Managers
               
         public AudioMixerGroup BGMGroup => bgmGroup;
         public AudioMixerGroup  SFXGroup => sfxGroup;
-        
-
-        // 수정
+                
         private float _bgmVolume = 0.5f; // 기본값
         private float _sfxVolume = 0.5f;
         public float BgmVolume => _bgmVolume;
         public float SfxVolume => _sfxVolume;
+
+        public event Action<float, float> OnRequestAudioSave;
+
+        public void AudioSaveSettings()
+        {
+            // 누군가(PlayerManager 등)가 이 이벤트를 구독하고 있다면 데이터를 쏴줍니다.
+            // 직접 PlayerManager를 참조하지 않으므로 코드 에러가 발생하지 않습니다.
+            OnRequestAudioSave?.Invoke(_bgmVolume, _sfxVolume);
+
+            Debug.Log($"[AudioManager] 저장 신호 발송: BGM({_bgmVolume}), SFX({_sfxVolume})");
+        }
         public override async UniTask Initialize()
         {
             await UniTask.Yield();
@@ -42,18 +52,14 @@ namespace Project.Core.Managers
         /// 믹서 볼륨 설정 (volume은 0~1 사이 값)
         /// </summary>
         public void SetVolume(string parameterName, float volume)
-        {
-            /*
-            float dB = volume > 0 ? Mathf.Log10(volume) * 20 : -80f;
-            mainMixer.SetFloat(parameterName, dB);
-            */
-            //수정
+        {           
             if (parameterName == "BGM") _bgmVolume = volume;
             else if (parameterName == "SFX") _sfxVolume = volume;
 
             float dB = volume > 0 ? Mathf.Log10(volume) * 20 : -80f;
             mainMixer.SetFloat(parameterName, dB);
         }
+
 
         public void PlayBGM(AudioClip clip, bool loop = true)
         {

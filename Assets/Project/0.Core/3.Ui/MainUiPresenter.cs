@@ -12,9 +12,28 @@ public class MainUiPresenter : MonoBehaviour
 
     [Header("--- Stage Slots ---")]
     [SerializeField] private List<StageSlot> _stageSlots;
+    [SerializeField] private AudioClip _mainBgmClip;
 
     private StageData _currentSelectedStage;
     private const float DefaultVolume = 0.5f;
+
+    private void Start()
+    {
+        // 시작 시 AudioManager에 저장된 값을 UI 슬라이더에 세팅
+        if (AudioManager.Instance != null && _settingView != null)
+        {
+            _settingView.SetSliderValues(
+                AudioManager.Instance.BgmVolume,
+                AudioManager.Instance.SfxVolume
+            );
+        }
+
+        // 배경음 재생
+        if (_mainBgmClip != null && AudioManager.Instance != null)
+        {
+            AudioManager.Instance.PlayBGM(_mainBgmClip);
+        }
+    }
 
     private void OnEnable()
     {
@@ -48,6 +67,7 @@ public class MainUiPresenter : MonoBehaviour
                 AudioManager.Instance.SfxVolume
             );
         }
+
     }
     private void OnDisable()
     {
@@ -63,7 +83,18 @@ public class MainUiPresenter : MonoBehaviour
         }
 
         if (_stageView != null)
+        {
             _stageView.OnPlayClick -= HandlePlayGame;
+        }
+
+        _settingView.OnSettingsCloseClick += () =>
+        {
+            // 1. 설정창을 닫습니다.
+            _settingView.ShowSettings(false);
+
+            // 2. [추가] 오디오 매니저에게 저장 신호를 보내라고 명령합니다.
+            AudioManager.Instance.AudioSaveSettings();
+        };
     }
 
     private void HandleResetSettings()
