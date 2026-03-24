@@ -14,6 +14,7 @@ namespace Project.Rhythm.Data
         public string stageName;
         public AudioClip masterTrack;
         public float bpm;
+        public int stageIndex;
 
         [Header("Theme Resources")]
         public List<ThemeResource> themeResources;
