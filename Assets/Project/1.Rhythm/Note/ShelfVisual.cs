@@ -70,19 +70,5 @@ namespace Project.Rhythm.Note
             if (targetImage != null) targetImage.color = Color.white;
             transform.localScale = Vector3.one;
         }
-
-        protected override void OnDisable()
-        {
-            base.OnDisable();
-
-            transform.DOKill();
-            targetImage.DOKill();
-
-            _isJudged = false;
-
-            if (targetImage != null) targetImage.color = Color.white;
-            transform.localScale = Vector3.one;
-            transform.localPosition = Vector3.zero;
-        }
     }
 }

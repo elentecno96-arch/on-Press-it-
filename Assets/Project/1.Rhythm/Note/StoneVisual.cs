@@ -45,7 +45,7 @@ namespace Project.Rhythm.Note
         {
             CancelCurrentRoutine();
 
-            var token = RefreshToken();
+            _routineCts = new CancellationTokenSource(); //새 토큰 생성
             _isJudged = true;
 
             if (holdSlider != null) holdSlider.gameObject.SetActive(false);
@@ -53,12 +53,12 @@ namespace Project.Rhythm.Note
             if (result != JudgeResult.Miss)
             {
                 PlaySfx(successSfx);
-                SuccessRoutine(token).Forget();
+                SuccessRoutine(_routineCts.Token).Forget();
             }
             else
             {
                 PlaySfx(missSfx);
-                FailRoutine(token).Forget();
+                FailRoutine(_routineCts.Token).Forget();
             }
         }
 
@@ -74,7 +74,7 @@ namespace Project.Rhythm.Note
                 foreach (var s in actionFrames)
                 {
                     targetImage.sprite = s;
-                    isCanceled = await UniTask.Delay((int)(actionFrameRate * 500), cancellationToken: token).SuppressCancellationThrow();
+                    isCanceled = await UniTask.Delay((int)(actionFrameRate * 1000), cancellationToken: token).SuppressCancellationThrow();
                     if (isCanceled) return;
                 }
             }
@@ -120,18 +120,9 @@ namespace Project.Rhythm.Note
 
         private void Spit(GameObject[] prefabs)
         {
-            if (!gameObject.activeInHierarchy) return;
             if (prefabs == null || prefabs.Length == 0) return;
             GameObject prefab = prefabs[UnityEngine.Random.Range(0, prefabs.Length)];
             Instantiate(prefab, mouthPos.position, Quaternion.identity, transform.parent);
-        }
-
-        protected override void OnDisable()
-        {
-            base.OnDisable(); 
-
-            if (holdSlider != null) holdSlider.gameObject.SetActive(false);
-            targetImage.rectTransform.anchoredPosition = Vector2.zero;
         }
 
         private void OnDestroy()
