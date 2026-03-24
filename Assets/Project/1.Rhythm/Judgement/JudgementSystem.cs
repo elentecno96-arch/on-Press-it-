@@ -5,7 +5,6 @@ using Project.Rhythm.Data.Struct;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.SocialPlatforms.Impl;
 
 namespace Project.Rhythm.Judgement
 {

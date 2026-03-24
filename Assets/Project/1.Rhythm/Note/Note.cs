@@ -1,4 +1,3 @@
-using Project.Core.Managers;
 using Project.Rhythm.Data.Enum;
 using Project.Rhythm.Interface;
 using Project.Rhythm.Judgement;
@@ -83,7 +82,6 @@ namespace Project.Rhythm.Note
         {
             if (noteType != NoteType.Runtime) return;
 
-            float elapsed = currentTime - SpawnTime;
             float progress = (currentTime - SpawnTime) / AppearDuration;
 
             _visual?.UpdateVisual(progress);
@@ -120,7 +118,8 @@ namespace Project.Rhythm.Note
             _isJudged = false;
             if (noteType != NoteType.Signal) return;
 
-            _visual?.PlayAction(PatternType.None);
+            _visual?.PlayAction(PatternType.Signal);
+            //_visual?.PlayAction(PatternType.None);
         }
 
         private void HandleRetire()
