@@ -37,7 +37,7 @@ namespace Project.Core.Managers
         public event Action OnStageStart;
         public event Action OnStageComplete;
 
-        private readonly List<Project.Rhythm.Note.Note> _activeNotes = new(); // 네임스페이스 명시
+        private readonly List<Note> _activeNotes = new(); // 네임스페이스 명시
         public static float CurrentTime { get; private set; }
 
         private List<(float time, StageThemeType theme)> _themeQueue = new();
@@ -109,8 +109,7 @@ namespace Project.Core.Managers
                         HandleRuntime(action, duration);
                         return;
                 }
-            }
-                ;
+            };  
         }
 
         private void HandleRuntime(RhythmAction action, float duration)

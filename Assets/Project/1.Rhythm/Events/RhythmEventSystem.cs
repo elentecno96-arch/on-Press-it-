@@ -108,11 +108,20 @@ namespace Project.Rhythm.Event
                 _currentIndex++;
             }
 
-            while (_currentIndex < _events.Count && _events[_currentIndex].spawnTriggerTime < stageTime)
+            int spawnCheckIndex = 0;
+            while (spawnCheckIndex < _events.Count)
             {
-                var evt = _events[_currentIndex];
-                OnSpawnTriggered?.Invoke(evt.action, evt.targetHitTime, evt.duration);
-                _currentIndex++;
+                var evt = _events[spawnCheckIndex];
+
+                if (evt.spawnTriggerTime <= stageTime && evt.targetHitTime >= stageTime)
+                {
+                    OnSpawnTriggered?.Invoke(evt.action, evt.targetHitTime, evt.duration);
+                }
+
+                spawnCheckIndex++;
+
+                if (evt.spawnTriggerTime > stageTime + 2.0f) 
+                    break;
             }
 
             while (_nextAutoCountIndex < _events.Count && _events[_nextAutoCountIndex].targetHitTime < stageTime)
