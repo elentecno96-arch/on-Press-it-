@@ -148,6 +148,18 @@ namespace Project.Rhythm.Judgement
             // PrintJudgeLog(result);
             OnJudged?.Invoke(result, note);
         }
+
+        public void ForceCompleteAll()
+        {
+            if (_currentHoldNote != null)
+            {
+                _currentHoldNote.ForceComplete();
+                _currentHoldNote = null;
+            }
+
+            _registeredNotes.Clear();
+        }
+
         private JudgeResult CalculateResult(float absDiff)
         {
             if (absDiff <= _perfectWin) return JudgeResult.Perfect;
