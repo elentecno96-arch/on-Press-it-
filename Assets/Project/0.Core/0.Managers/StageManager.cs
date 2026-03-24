@@ -154,7 +154,6 @@ namespace Project.Core.Managers
 
         private void Update()
         {
-            if (!_isInitialized) return;
             if (!_isInitialized || _isThemeChanging) return;
 
             CurrentTime = _audioTimeline.GetStageTime();
