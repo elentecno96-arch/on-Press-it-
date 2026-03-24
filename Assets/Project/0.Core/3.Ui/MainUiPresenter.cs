@@ -24,6 +24,8 @@ public class MainUiPresenter : MonoBehaviour
         _settingView.OnBgmVolumeChanged += (vol) => AudioManager.Instance.SetVolume("BGM", vol);
         _settingView.OnSfxVolumeChanged += (vol) => AudioManager.Instance.SetVolume("SFX", vol);
         _settingView.OnResetSettingsClick += HandleResetSettings;
+        // [추가] 씬이 시작될 때 AudioManager의 현재 값을 UI에 반영
+        SyncUiWithAudio();
 
         foreach (var slot in _stageSlots)
         {
@@ -36,7 +38,17 @@ public class MainUiPresenter : MonoBehaviour
         _stageView.OnPlayClick += HandlePlayGame;
         _stageView.OnCloseClick += () => _stageView.Hide();
     }
-
+    // [추가] 씬이 시작될 때 AudioManager의 현재 값을 UI에 반영
+    private void SyncUiWithAudio()
+    {
+        if (AudioManager.Instance != null && _settingView != null)
+        {
+            _settingView.SetSliderValues(
+                AudioManager.Instance.BgmVolume,
+                AudioManager.Instance.SfxVolume
+            );
+        }
+    }
     private void OnDisable()
     {
         if (_settingView != null)

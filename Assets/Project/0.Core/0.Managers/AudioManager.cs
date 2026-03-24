@@ -16,10 +16,16 @@ namespace Project.Core.Managers
 
         [Header("BGM Source")]
         [SerializeField] private AudioSource musicSource;
-
+              
         public AudioMixerGroup BGMGroup => bgmGroup;
-        public AudioMixerGroup SFXGroup => sfxGroup;
+        public AudioMixerGroup  SFXGroup => sfxGroup;
+        
 
+        // 수정
+        private float _bgmVolume = 0.5f; // 기본값
+        private float _sfxVolume = 0.5f;
+        public float BgmVolume => _bgmVolume;
+        public float SfxVolume => _sfxVolume;
         public override async UniTask Initialize()
         {
             await UniTask.Yield();
@@ -37,6 +43,14 @@ namespace Project.Core.Managers
         /// </summary>
         public void SetVolume(string parameterName, float volume)
         {
+            /*
+            float dB = volume > 0 ? Mathf.Log10(volume) * 20 : -80f;
+            mainMixer.SetFloat(parameterName, dB);
+            */
+            //수정
+            if (parameterName == "BGM") _bgmVolume = volume;
+            else if (parameterName == "SFX") _sfxVolume = volume;
+
             float dB = volume > 0 ? Mathf.Log10(volume) * 20 : -80f;
             mainMixer.SetFloat(parameterName, dB);
         }
