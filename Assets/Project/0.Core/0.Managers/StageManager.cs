@@ -186,7 +186,7 @@ namespace Project.Core.Managers
             if (type == PatternType.None) visual?.StopHoldAction();
             else visual?.PlayAction(type);
         }
-
+        // StageManager.cs 내의 StartSequence 메서드 중 결과 처리 부분
         private async UniTask StartSequence(StageData data, CancellationToken token)
         {
             try
@@ -196,26 +196,35 @@ namespace Project.Core.Managers
 
                 OnStageStart?.Invoke();
                 _audioTimeline.StartTimeline();
-
                 await UniTask.WaitUntil(() => _audioTimeline.GetStageTime() >= data.endPosition, cancellationToken: token);
 
-                // ★ [기록 저장 핵심 추가]
-                // 1. 점수 계산 및 PlayerManager 저장 실행
+                // [수정된 부분] 1. 점수 계산 및 저장 (기존 메서드 명칭 사용)
                 _judgementSystem.FinalizeAndSaveResult();
 
-                // 2. UI 표시를 위한 데이터 가져오기
+                // 2. 데이터 수집
                 int p = _judgementSystem.GetCount(JudgeResult.Perfect);
-                int gr = _judgementSystem.GetCount(JudgeResult.Great);
-                int go = _judgementSystem.GetCount(JudgeResult.Good);
-                int m = _judgementSystem.GetCount(JudgeResult.Miss);
+                int totalNoteCount = data.actions.Count;
 
-                presenter.ShowResult(p, gr, go, m);
+                // 3. 최초 클리어 여부 확인
+                bool isFirstClear = false;
+                var record = PlayerManager.Instance.Data.stageRecords.Find(r => r.stageIndex == data.stageIndex);
+                if (record == null || record.bestScore <= 0) isFirstClear = true;
+
+                // 4. 업적 매니저 호출
+                if (AchievementManager.Instance != null)
+                {
+                    AchievementManager.Instance.CheckStageAchievements(data, p, isFirstClear);
+                }
+
+                // 5. 결과창 표시
+                presenter.ShowResult(p, _judgementSystem.GetCount(JudgeResult.Great),
+                                     _judgementSystem.GetCount(JudgeResult.Good),
+                                     _judgementSystem.GetCount(JudgeResult.Miss));
 
                 OnStageComplete?.Invoke();
             }
             catch (OperationCanceledException) { }
         }
-
         private void BuildThemeQueue(StageData data)
         {
             _themeQueue.Clear();
