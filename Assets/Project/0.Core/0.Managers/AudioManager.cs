@@ -68,10 +68,23 @@ namespace Project.Core.Managers
 
         public void PlayBGM(AudioClip clip, bool loop = true)
         {
-            if (musicSource.clip == clip) return;
+            if (clip == null) return;
+
+            // 1. 이미 같은 음악이 재생 중이라면 중복 재생 방지
+            if (musicSource.clip == clip && musicSource.isPlaying) return;
+
+            // 2. 새로운 음악을 재생하기 전에 기존 소리를 정지
+            musicSource.Stop();
+
             musicSource.clip = clip;
             musicSource.loop = loop;
             musicSource.Play();
+
+            Debug.Log($"[BGM 재생] {clip.name}");
+        }
+        public void StopBGM()
+        {
+            if (musicSource != null) musicSource.Stop();
         }
     }
 }
