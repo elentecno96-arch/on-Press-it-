@@ -29,19 +29,6 @@ namespace Project.Core.Managers
 
         public event Action<float, float> OnRequestAudioSave;
 
-        public void AudioSaveSettings()
-        {
-            // 데이터 보호를 위해 현재 상태를 로그로 남기고 이벤트를 발생시킵니다.
-            if (OnRequestAudioSave != null)
-            {
-                OnRequestAudioSave.Invoke(_bgmVolume, _sfxVolume);
-                Debug.Log($"[AudioManager] 저장 신호 발송 완료: BGM({_bgmVolume}), SFX({_sfxVolume})");
-            }
-            else
-            {
-                Debug.LogWarning("[AudioManager] 저장 이벤트를 구독하는 매니저가 없습니다.");
-            }
-        }
         public override async UniTask Initialize()
         {
             await UniTask.Yield();
@@ -94,10 +81,6 @@ namespace Project.Core.Managers
         // =========================================================================
         // 아래는 기존 로직을 건드리지 않고 추가된 저장 관련 기능입니다.
         // =========================================================================
-        public event Action<float, float> OnRequestAudioSave;
-
-        private float _bgmVolume = 1.0f;
-        private float _sfxVolume = 1.0f;
 
         /// <summary>
         /// PlayerManager 등 구독자에게 현재 볼륨 데이터를 발송합니다.
