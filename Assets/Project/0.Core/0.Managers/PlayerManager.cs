@@ -2,7 +2,6 @@ using Cysharp.Threading.Tasks;
 using Project.Core.Utilities;
 using System.IO;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 
 namespace Project.Core.Managers
@@ -11,13 +10,29 @@ namespace Project.Core.Managers
     public class StageSaveData
     {
         public int stageIndex;
-        public float bestScore; // 최고 판정 점수
+        public float bestScore;
     }
+
+    [System.Serializable]
+    public class AchievementData
+    {
+        public string id;
+        public string title;
+        public bool isUnlocked;
+        public string unlockDate;
+    }
+
     [System.Serializable]
     public class PlayerData
     {
         public List<StageSaveData> stageRecords = new List<StageSaveData>();
+        public List<AchievementData> achievements = new List<AchievementData>();
+
+        // 오디오 설정을 저장하기 위한 변수 추가 (기본값 1.0f)
+        public float bgmVolume = 1.0f;
+        public float sfxVolume = 1.0f;
     }
+
     public class PlayerManager : BaseSingleton<PlayerManager>
     {
         private string SavePath => Path.Combine(Application.persistentDataPath, "PlayerSave.json");
@@ -26,11 +41,28 @@ namespace Project.Core.Managers
         public override async UniTask Initialize()
         {
             if (IsInitialized) return;
-            Load(); // 초기화 시 데이터 로드
+            Load();
+
+            // AudioManager의 이벤트를 구독하여 데이터 수신 대기
+            // AudioManager.Instance가 존재할 때만 이벤트를 연결합니다.
+            if (AudioManager.Instance != null)
+            {
+                AudioManager.Instance.OnRequestAudioSave += UpdateAudioSettings;
+            }
+
             await UniTask.Yield();
             IsInitialized = true;
         }
-        // 최고 점수 갱신 및 저장
+        // AudioManager로부터 전달받은 볼륨 정보를 데이터에 반영하고 저장
+        private void UpdateAudioSettings(float bgm, float sfx)
+        {
+            Data.bgmVolume = bgm;
+            Data.sfxVolume = sfx;
+
+            Save();
+            Debug.Log($"[PlayerManager] 오디오 설정 저장 완료: BGM({bgm}), SFX({sfx})");
+        }
+
         public void SaveBestScore(int index, float score)
         {
             var record = Data.stageRecords.Find(s => s.stageIndex == index);
@@ -42,87 +74,37 @@ namespace Project.Core.Managers
             {
                 record.bestScore = score;
             }
-            else return; // 기존 점수가 더 높으면 무시
+            else return;
 
-            File.WriteAllText(SavePath, JsonUtility.ToJson(Data, true));
+            Save();
             Debug.Log($"[저장완료] 스테이지 {index} : {score}");
         }
-        // 콘솔에 기록 출력
-        public void PrintRecord(int index)
-        {
-            var record = Data.stageRecords.Find(s => s.stageIndex == index);
-            string result = record != null ? record.bestScore.ToString() : "기록 없음";
-            Debug.Log($"<color=yellow>[최고기록]</color> 스테이지 {index} : {result}");
-        }
-        /// <summary>
-        /// 특정 스테이지의 기록을 갱신하고 저장합니다. (기존보다 높을 때만)
-        /// </summary>
-        public void UpdateStageRecord(int stageIndex, float newScore)
-        {
-            var record = Data.stageRecords.Find(s => s.stageIndex == stageIndex);
-
-            if (record == null)
-            {
-                Data.stageRecords.Add(new StageSaveData { stageIndex = stageIndex, bestScore = newScore });
-            }
-            else
-            {
-                // [중요] 기존 점수보다 높을 때만 갱신
-                if (newScore > record.bestScore)
-                {
-                    record.bestScore = newScore;
-                }
-                else
-                {
-                    return; // 갱신 불필요 시 저장 생략
-                }
-            }
-            Save();
-        }
-        /// <summary>
-        /// 특정 스테이지의 기록을 콘솔에 출력합니다.
-        /// </summary>
-        public void PrintStageRecord(int stageIndex)
-        {
-            var record = Data.stageRecords.Find(s => s.stageIndex == stageIndex);
-            if (record != null)
-            {
-                Debug.Log($"<color=white>[PlayerManager]</color> <b>스테이지 {stageIndex}</b> 최고 기록: <color=yellow>{record.bestScore}</color>");
-            }
-            else
-            {
-                Debug.Log($"<color=orange>[PlayerManager]</color> 스테이지 {stageIndex}의 기록이 존재하지 않습니다.");
-            }
-        }
-        private void Save()
+        public void Save()
         {
             try
             {
                 string json = JsonUtility.ToJson(Data, true);
                 File.WriteAllText(SavePath, json);
-                Debug.Log($"[PlayerManager] 저장 완료: {SavePath}");
             }
-            catch (System.Exception e)
-            {
-                Debug.LogError($"[PlayerManager] 저장 실패: {e.Message}");
-            }
+            catch (System.Exception e) { Debug.LogError($"[Save 실패] {e.Message}"); }
         }
         private void Load()
         {
-            if (!File.Exists(SavePath))
-            {
-                Data = new PlayerData();
-                return;
-            }
+            if (!File.Exists(SavePath)) return;
             try
             {
                 string json = File.ReadAllText(SavePath);
                 Data = JsonUtility.FromJson<PlayerData>(json);
             }
-            catch (System.Exception e)
+            catch { Data = new PlayerData(); }
+        }
+        // 메모리 누수 방지를 위해 오브젝트 파괴 시 이벤트 구독 해제
+        private void OnDisable()
+        {
+            // 싱글톤 인스턴스가 존재할 때만 구독 해제
+            if (AudioManager.Instance != null)
             {
-                Debug.LogError($"[PlayerManager] 로드 실패: {e.Message}");
-                Data = new PlayerData();
+                AudioManager.Instance.OnRequestAudioSave -= UpdateAudioSettings;
             }
         }
     }
