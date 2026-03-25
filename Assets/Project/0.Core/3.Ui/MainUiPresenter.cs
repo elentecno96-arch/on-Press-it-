@@ -1,6 +1,8 @@
+using Cysharp.Threading.Tasks;
 using Project.Core.Managers;
 using Project.Core.Ui.StageUi.View;
 using Project.Rhythm.Data;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -26,7 +28,17 @@ public class MainUiPresenter : MonoBehaviour
         // [초기화] 씬이 시작될 때 현재 저장된 오디오 설정을 UI에 동기화
         SyncUiWithAudio();
 
-        // [배경음] 씬 진입 시 배경음악 재생 (Start에서 한 번만 실행)
+        // 2. 0.5초 대기 후 배경음 재생 (비동기 실행)
+        PlayMainBgmWithDelay(1.0f).Forget();
+    }
+
+    /// 지정된 시간만큼 대기한 후 메인 배경음악을 재생합니다.
+    private async UniTaskVoid PlayMainBgmWithDelay(float delaySeconds)
+    {
+        // 1.0초(1000ms) 동안 대기
+        await UniTask.Delay(TimeSpan.FromSeconds(delaySeconds));
+
+        // 대기 후 AudioManager를 통해 재생
         if (_mainBgmClip != null && AudioManager.Instance != null)
         {
             AudioManager.Instance.PlayBGM(_mainBgmClip);
@@ -137,6 +149,7 @@ public class MainUiPresenter : MonoBehaviour
     {
         if (_currentSelectedStage != null)
         {
+            AudioManager.Instance.StopBGM();
             // GameManager를 통해 스테이지 시작 (비동기 Task 실행)
             GameManager.Instance.StartStage(_currentSelectedStage).Forget();
         }
