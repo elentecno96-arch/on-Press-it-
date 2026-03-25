@@ -1,6 +1,7 @@
 using System;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 public class StageUiView : MonoBehaviour
 {
@@ -12,12 +13,13 @@ public class StageUiView : MonoBehaviour
 
     [Header("--- Buttons ---")]
     [SerializeField] private Button playButton;
-    [SerializeField] private Button closeButton;
+    [SerializeField] private Button closeButton;    
 
     private bool _isActionStarted = false;
 
     private void Awake()
     {
+        // 기존 플레이 버튼 로직
         if (playButton != null)
         {
             playButton.onClick.AddListener(() =>
@@ -29,6 +31,7 @@ public class StageUiView : MonoBehaviour
             });
         }
 
+        // 기존 닫기 버튼 로직
         if (closeButton != null)
         {
             closeButton.onClick.AddListener(() =>
@@ -37,7 +40,7 @@ public class StageUiView : MonoBehaviour
 
                 OnCloseClick?.Invoke();
             });
-        }
+        }      
 
         Hide();
     }
@@ -55,5 +58,5 @@ public class StageUiView : MonoBehaviour
     {
         if (infoWindow != null)
             infoWindow.SetActive(false);
-    }
+    }   
 }

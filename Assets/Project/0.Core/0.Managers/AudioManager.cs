@@ -2,12 +2,12 @@ using Cysharp.Threading.Tasks;
 using Project.Core.Utilities;
 using UnityEngine;
 using UnityEngine.Audio;
-using System; // Action »ç¿ëÀ» À§ÇØ Ãß°¡µÇ¾ú½À´Ï´Ù.
+using System; // Action ì‚¬ìš©ì„ ìœ„í•´ ì¶”ê°€ë˜ì—ˆìŠµë‹ˆë‹¤.
 
 namespace Project.Core.Managers
 {
     /// <summary>
-    /// Àü¿ª ¿Àµğ¿À ´ã´ç ¸ÅÁöÀú
+    /// ì „ì—­ ì˜¤ë””ì˜¤ ë‹´ë‹¹ ë§¤ì§€ì €
     /// </summary>
     public class AudioManager : BaseSingleton<AudioManager>
     {
@@ -18,16 +18,36 @@ namespace Project.Core.Managers
 
         [Header("BGM Source")]
         [SerializeField] private AudioSource musicSource;
-
+              
         public AudioMixerGroup BGMGroup => bgmGroup;
-        public AudioMixerGroup SFXGroup => sfxGroup;
+        public AudioMixerGroup  SFXGroup => sfxGroup;
+                
+        private float _bgmVolume = 0.5f; // ê¸°ë³¸ê°’
+        private float _sfxVolume = 0.5f;
+        public float BgmVolume => _bgmVolume;
+        public float SfxVolume => _sfxVolume;
 
+        public event Action<float, float> OnRequestAudioSave;
+
+        public void AudioSaveSettings()
+        {
+            // ë°ì´í„° ë³´í˜¸ë¥¼ ìœ„í•´ í˜„ì¬ ìƒíƒœë¥¼ ë¡œê·¸ë¡œ ë‚¨ê¸°ê³  ì´ë²¤íŠ¸ë¥¼ ë°œìƒì‹œí‚µë‹ˆë‹¤.
+            if (OnRequestAudioSave != null)
+            {
+                OnRequestAudioSave.Invoke(_bgmVolume, _sfxVolume);
+                Debug.Log($"[AudioManager] ì €ì¥ ì‹ í˜¸ ë°œì†¡ ì™„ë£Œ: BGM({_bgmVolume}), SFX({_sfxVolume})");
+            }
+            else
+            {
+                Debug.LogWarning("[AudioManager] ì €ì¥ ì´ë²¤íŠ¸ë¥¼ êµ¬ë…í•˜ëŠ” ë§¤ë‹ˆì €ê°€ ì—†ìŠµë‹ˆë‹¤.");
+            }
+        }
         public override async UniTask Initialize()
         {
             await UniTask.Yield();
             var playerdata = PlayerManager.Instance.Data;
             AudioSetting(playerdata);
-            Debug.Log("AudioManager: ¹Í¼­ ¿¬°á ¹× ÃÊ±âÈ­ ¿Ï·á");
+            Debug.Log("AudioManager: ë¯¹ì„œ ì—°ê²° ë° ì´ˆê¸°í™” ì™„ë£Œ");
         }
         public void AudioSetting(PlayerData playerData)
         {
@@ -39,22 +59,40 @@ namespace Project.Core.Managers
             source.outputAudioMixerGroup = isBGM ? bgmGroup : sfxGroup;
         }
         /// <summary>
-        /// ¹Í¼­ º¼·ı ¼³Á¤ (volumeÀº 0~1 »çÀÌ °ª)
+        /// ë¯¹ì„œ ë³¼ë¥¨ ì„¤ì • (volumeì€ 0~1 ì‚¬ì´ ê°’)
         /// </summary>
         public void SetVolume(string parameterName, float volume)
-        {
-            float dB = Mathf.Log10(volume) * 20;
+        {           
+            if (parameterName == "BGM") _bgmVolume = volume;
+            else if (parameterName == "SFX") _sfxVolume = volume;
+
+            float dB = volume > 0 ? Mathf.Log10(volume) * 20 : -80f;
             mainMixer.SetFloat(parameterName, dB);
         }
+
+
         public void PlayBGM(AudioClip clip, bool loop = true)
         {
-            if (musicSource.clip == clip) return;
+            if (clip == null) return;
+
+            // 1. ì´ë¯¸ ê°™ì€ ìŒì•…ì´ ì¬ìƒ ì¤‘ì´ë¼ë©´ ì¤‘ë³µ ì¬ìƒ ë°©ì§€
+            if (musicSource.clip == clip && musicSource.isPlaying) return;
+
+            // 2. ìƒˆë¡œìš´ ìŒì•…ì„ ì¬ìƒí•˜ê¸° ì „ì— ê¸°ì¡´ ì†Œë¦¬ë¥¼ ì •ì§€
+            musicSource.Stop();
+
             musicSource.clip = clip;
             musicSource.loop = loop;
             musicSource.Play();
+
+            Debug.Log($"[BGM ì¬ìƒ] {clip.name}");
+        }
+        public void StopBGM()
+        {
+            if (musicSource != null) musicSource.Stop();
         }
         // =========================================================================
-        // ¾Æ·¡´Â ±âÁ¸ ·ÎÁ÷À» °Çµå¸®Áö ¾Ê°í Ãß°¡µÈ ÀúÀå °ü·Ã ±â´ÉÀÔ´Ï´Ù.
+        // ì•„ë˜ëŠ” ê¸°ì¡´ ë¡œì§ì„ ê±´ë“œë¦¬ì§€ ì•Šê³  ì¶”ê°€ëœ ì €ì¥ ê´€ë ¨ ê¸°ëŠ¥ì…ë‹ˆë‹¤.
         // =========================================================================
         public event Action<float, float> OnRequestAudioSave;
 
@@ -62,20 +100,20 @@ namespace Project.Core.Managers
         private float _sfxVolume = 1.0f;
 
         /// <summary>
-        /// PlayerManager µî ±¸µ¶ÀÚ¿¡°Ô ÇöÀç º¼·ı µ¥ÀÌÅÍ¸¦ ¹ß¼ÛÇÕ´Ï´Ù.
+        /// PlayerManager ë“± êµ¬ë…ìì—ê²Œ í˜„ì¬ ë³¼ë¥¨ ë°ì´í„°ë¥¼ ë°œì†¡í•©ë‹ˆë‹¤.
         /// </summary>
         public void AudioSaveSettings()
         {
-            // mainMixer¿¡¼­ ÇöÀç °ªÀ» °¡Á®¿Í ¾÷µ¥ÀÌÆ® (±âÁ¸ SetVolume ·ÎÁ÷À» ¼öÁ¤ÇÏÁö ¾Ê±â À§ÇÔ)
+            // mainMixerì—ì„œ í˜„ì¬ ê°’ì„ ê°€ì ¸ì™€ ì—…ë°ì´íŠ¸ (ê¸°ì¡´ SetVolume ë¡œì§ì„ ìˆ˜ì •í•˜ì§€ ì•Šê¸° ìœ„í•¨)
             mainMixer.GetFloat("BGM", out float bgmDB);
             mainMixer.GetFloat("SFX", out float sfxDB);
 
-            // dB¸¦ ´Ù½Ã 0~1 °ªÀ¸·Î ¿ª»êÇÏ¿© ÀúÀå¿ë º¯¼ö¿¡ ÇÒ´ç
+            // dBë¥¼ ë‹¤ì‹œ 0~1 ê°’ìœ¼ë¡œ ì—­ì‚°í•˜ì—¬ ì €ì¥ìš© ë³€ìˆ˜ì— í• ë‹¹
             _bgmVolume = Mathf.Pow(10, bgmDB / 20f);
             _sfxVolume = Mathf.Pow(10, sfxDB / 20f);
 
             OnRequestAudioSave?.Invoke(_bgmVolume, _sfxVolume);
-            Debug.Log($"[AudioManager] ÀúÀå ½ÅÈ£ ¹ß¼Û: BGM({_bgmVolume}), SFX({_sfxVolume})");
+            Debug.Log($"[AudioManager] ì €ì¥ ì‹ í˜¸ ë°œì†¡: BGM({_bgmVolume}), SFX({_sfxVolume})");
         }
     }
 }
