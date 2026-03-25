@@ -30,11 +30,16 @@ namespace Project.Core.Managers
 
         public void AudioSaveSettings()
         {
-            // 누군가(PlayerManager 등)가 이 이벤트를 구독하고 있다면 데이터를 쏴줍니다.
-            // 직접 PlayerManager를 참조하지 않으므로 코드 에러가 발생하지 않습니다.
-            OnRequestAudioSave?.Invoke(_bgmVolume, _sfxVolume);
-
-            Debug.Log($"[AudioManager] 저장 신호 발송: BGM({_bgmVolume}), SFX({_sfxVolume})");
+            // 데이터 보호를 위해 현재 상태를 로그로 남기고 이벤트를 발생시킵니다.
+            if (OnRequestAudioSave != null)
+            {
+                OnRequestAudioSave.Invoke(_bgmVolume, _sfxVolume);
+                Debug.Log($"[AudioManager] 저장 신호 발송 완료: BGM({_bgmVolume}), SFX({_sfxVolume})");
+            }
+            else
+            {
+                Debug.LogWarning("[AudioManager] 저장 이벤트를 구독하는 매니저가 없습니다.");
+            }
         }
         public override async UniTask Initialize()
         {
