@@ -16,9 +16,10 @@ namespace Project.Core.Managers
         [SerializeField] private AudioMixerGroup bgmGroup;
         [SerializeField] private AudioMixerGroup sfxGroup;
 
-        [Header("BGM Source")]
+        [Header("Audio Sources")]
         [SerializeField] private AudioSource musicSource;
-              
+        [SerializeField] private AudioSource sfxSource;
+
         public AudioMixerGroup BGMGroup => bgmGroup;
         public AudioMixerGroup  SFXGroup => sfxGroup;
                 
@@ -29,11 +30,21 @@ namespace Project.Core.Managers
 
         public event Action<float, float> OnRequestAudioSave;
 
+        protected override void Awake()
+        {
+            base.Awake();
+            // 씬이 바뀌어도 파괴되지 않게 설정 (선택 사항이지만 추천)
+            DontDestroyOnLoad(gameObject);
+        }
+
         public override async UniTask Initialize()
         {
-            await UniTask.Yield();
-            var playerdata = PlayerManager.Instance.Data;
-            AudioSetting(playerdata);
+            // PlayerManager 체크 로직 추가 (안전성)
+            if (PlayerManager.Instance != null && PlayerManager.Instance.Data != null)
+            {
+                AudioSetting(PlayerManager.Instance.Data);
+            }
+
             Debug.Log("AudioManager: 믹서 연결 및 초기화 완료");
         }
         public void AudioSetting(PlayerData playerData)
@@ -78,6 +89,16 @@ namespace Project.Core.Managers
         {
             if (musicSource != null) musicSource.Stop();
         }
+
+        /// [중요] 효과음 재생 (MainUiPresenter에서 호출하는 함수)
+        /// </summary>
+        public void PlaySFX(AudioClip clip, float volumeScale = 0.1f)
+        {
+            if (clip == null || sfxSource == null) return;
+            // PlayOneShot을 써야 여러 효과음이 겹쳐서 들립니다.
+            sfxSource.PlayOneShot(clip, volumeScale);
+        }
+
         // =========================================================================
         // 아래는 기존 로직을 건드리지 않고 추가된 저장 관련 기능입니다.
         // =========================================================================

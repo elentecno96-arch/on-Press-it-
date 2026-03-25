@@ -1186,7 +1186,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5423663527400355075, guid: a8963c77122ffc24f8f0931914655e19, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -1981,6 +1981,10 @@ PrefabInstance:
     - target: {fileID: 3076892732956729434, guid: 0a028af5a777774429ad52908e2dd19b, type: 3}
       propertyPath: m_Name
       value: SettingUiView
+      objectReference: {fileID: 0}
+    - target: {fileID: 3076892732956729434, guid: 0a028af5a777774429ad52908e2dd19b, type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6387219018177198325, guid: 0a028af5a777774429ad52908e2dd19b, type: 3}
       propertyPath: m_LocalPosition.x
