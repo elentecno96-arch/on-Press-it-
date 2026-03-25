@@ -2,6 +2,7 @@ using Cysharp.Threading.Tasks;
 using Project.Core.Utilities;
 using Project.Rhythm.Data;
 using UnityEngine;
+using UnityEngine.SocialPlatforms.Impl;
 
 namespace Project.Core.Managers
 {
@@ -30,6 +31,7 @@ namespace Project.Core.Managers
             //전역 매니저 기본 초기화
             await PlayerManager.Instance.Initialize();
             await AudioManager.Instance.Initialize();
+            await AchievementManager.Instance.Initialize();
 
             Debug.Log("모든 매니저 초기화 진행 완료");
             IsInitialized = true;
