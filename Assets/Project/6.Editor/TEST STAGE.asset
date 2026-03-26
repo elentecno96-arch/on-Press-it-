@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d04876fa1117aa34b9eea9b52f8b6fae, type: 3}
+  m_Name: TEST STAGE
+  m_EditorClassIdentifier: 
+  stageName: "\uD14C\uC2A4\uD2B8 \uC2A4\uD14C\uC774\uC9C0"
+  masterTrack: {fileID: 8300000, guid: 0a738c5a3e54bdb44b7072975388763d, type: 3}
+  bpm: 120
+  stageIndex: 4
+  themeResources: []
+  perfectWindow: 0.12
+  greatWindow: 0.21
+  goodWindow: 0.27
+  missWindow: 0.34
+  playStartTime: 0
+  endPosition: 0
+  actions: []
+  themeEvents: []
+  patterns: []
