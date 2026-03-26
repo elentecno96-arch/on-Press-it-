@@ -37,7 +37,7 @@ namespace Project.Core.Managers
         public event Action OnStageStart;
         public event Action OnStageComplete;
 
-        private readonly List<Note> _activeNotes = new(); // 네임스페이스 명시
+        private readonly List<Note> _activeNotes = new();
         public static float CurrentTime { get; private set; }
 
         private List<(float time, StageThemeType theme)> _themeQueue = new();
@@ -109,7 +109,7 @@ namespace Project.Core.Managers
                         HandleRuntime(action, duration);
                         return;
                 }
-            };  
+            };
         }
 
         private void HandleRuntime(RhythmAction action, float duration)
@@ -151,7 +151,6 @@ namespace Project.Core.Managers
             note?.PlaySignal();
         }
 
-
         private void Update()
         {
             if (!_isInitialized || _isThemeChanging) return;
@@ -186,7 +185,7 @@ namespace Project.Core.Managers
             if (type == PatternType.None) visual?.StopHoldAction();
             else visual?.PlayAction(type);
         }
-        // StageManager.cs 내의 StartSequence 메서드 중 결과 처리 부분
+
         private async UniTask StartSequence(StageData data, CancellationToken token)
         {
             try
@@ -198,25 +197,29 @@ namespace Project.Core.Managers
                 _audioTimeline.StartTimeline();
                 await UniTask.WaitUntil(() => _audioTimeline.GetStageTime() >= data.endPosition, cancellationToken: token);
 
-                // [수정된 부분] 1. 점수 계산 및 저장 (기존 메서드 명칭 사용)
+                // --- [수정 구간: 순서 변경] ---
+                // 1. 점수 저장 전, 최초 클리어 여부를 미리 계산합니다.
+                bool isFirstClear = false;
+                if (PlayerManager.Instance != null && PlayerManager.Instance.Data != null)
+                {
+                    var record = PlayerManager.Instance.Data.stageRecords.Find(r => r.stageIndex == data.stageIndex);
+                    // 기록이 없거나 베스트 점수가 0이면 최초 클리어입니다.
+                    if (record == null || record.bestScore <= 0) isFirstClear = true;
+                }
+
+                // 2. 이제 점수를 최종 계산하고 저장합니다.
                 _judgementSystem.FinalizeAndSaveResult();
 
-                // 2. 데이터 수집
+                // 3. 데이터 수집
                 int p = _judgementSystem.GetCount(JudgeResult.Perfect);
-                int totalNoteCount = data.actions.Count;
 
-                // 3. 최초 클리어 여부 확인
-                bool isFirstClear = false;
-                var record = PlayerManager.Instance.Data.stageRecords.Find(r => r.stageIndex == data.stageIndex);
-                if (record == null || record.bestScore <= 0) isFirstClear = true;
-
-                // 4. 업적 매니저 호출
+                // 4. 업적 매니저 호출 (미리 계산한 isFirstClear로 전달합니다)
                 if (AchievementManager.Instance != null)
                 {
                     AchievementManager.Instance.CheckStageAchievements(data, p, isFirstClear);
                 }
+                // -----------------------------
 
-                // 5. 결과창 표시
                 presenter.ShowResult(p, _judgementSystem.GetCount(JudgeResult.Great),
                                      _judgementSystem.GetCount(JudgeResult.Good),
                                      _judgementSystem.GetCount(JudgeResult.Miss));
@@ -236,7 +239,6 @@ namespace Project.Core.Managers
                 _themeQueue.Add((time, evt.theme));
             }
         }
-
         private void ProcessThemeChange()
         {
             if (_themeIndex >= _themeQueue.Count) return;
@@ -247,28 +249,21 @@ namespace Project.Core.Managers
                 _themeIndex++;
             }
         }
-
         private async UniTaskVoid ChangeThemeWithFade(StageThemeType theme)
         {
             if (_isThemeChanging) return;
             _isThemeChanging = true;
 
             InputManager.Instance.SetBlockInput(true);
-
             await GlobalUIPresenter.Instance.FadeIn(0.1f);
 
             _judgementSystem.ForceCompleteAll();
-
             ClearAllNotes();
-
             presenter.ChangeTheme(theme);
-
             _eventSystem.SyncToTime(CurrentTime);
 
             await GlobalUIPresenter.Instance.FadeOut(0.1f);
-
             InputManager.Instance.SetBlockInput(false);
-
             _isThemeChanging = false;
         }
 
