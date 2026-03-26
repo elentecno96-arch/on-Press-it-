@@ -47,6 +47,7 @@ namespace Project.Core.Managers
             }
 
             Debug.Log("AudioManager: 믹서 연결 및 초기화 완료");
+            IsInitialized = true;
         }
         public void AudioSetting(PlayerData playerData)
         {
