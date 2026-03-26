@@ -33,7 +33,7 @@ MonoBehaviour:
     role: 0
     duration: 3
     targetID: Stage3_Stone
-    noteType: 0
+    noteType: 1
   - beat: 20
     type: 2
     role: 0
