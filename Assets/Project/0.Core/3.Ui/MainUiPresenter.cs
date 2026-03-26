@@ -94,18 +94,25 @@ public class MainUiPresenter : MonoBehaviour
 
     private void HandleResetSettings()
     {
-        // 1. 리셋 과정 시작 (이벤트에 의한 효과음 차단)
-        _isSyncing = true;
+        try
+        {
+            // 1. 리셋 과정 시작 (이벤트에 의한 효과음 차단)
+            _isSyncing = true;
 
-        _soundView.PlaySfxC(); // 리셋 버튼 클릭 자체의 소리 (필요하다면 유지)
-        _soundView.SetVolume("BGM", DefaultVolume);
-        _soundView.SetVolume("SFX", DefaultVolume);
+            _soundView.PlaySfxC(); // 리셋 버튼 클릭 자체의 소리 (필요하다면 유지)
+            _soundView.SetVolume("BGM", DefaultVolume);
+            _soundView.SetVolume("SFX", DefaultVolume);
 
-        // 이 함수 호출로 인해 HandleSfxVolumeChanged가 실행되지만, 
-        // _isSyncing이 true라 소리는 나지 않습니다.
-        _settingView.SetSliderValues(DefaultVolume, DefaultVolume);
+            // 이 함수 호출로 인해 HandleSfxVolumeChanged가 실행되지만, 
+            // _isSyncing이 true라 소리는 나지 않습니다.
+            _settingView.SetSliderValues(DefaultVolume, DefaultVolume);
+        }
 
-
+        finally
+        {
+            // 어떤 상황에서도(에러가 나더라도) 다시 소리가 나도록 보장합니다.
+            _isSyncing = false;
+        }
     }
     public void HandleBgmVolumeChanged(float vol)
     {
