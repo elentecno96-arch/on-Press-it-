@@ -22,11 +22,16 @@ public class MainUiPresenter : MonoBehaviour
     private StageData _currentSelectedStage;                        // 현재 유저가 클릭한 스테이지 데이터
     private const float DefaultVolume = 0.5f;                       // 초기화용 기본 볼륨 값
 
+    private bool _isSyncing = false;
     private async void Start()
     {
         await UniTask.WaitUntil(() => AudioManager.Instance != null);
 
+        // 1. 초기화 시작 (소리 차단)
+        _isSyncing = true;
         SyncUiWithAudio();
+        _isSyncing = false; // 2. 초기화 완료 (차단 해제)
+
         _soundView.PlayMainBgmWithDelay(1.0f).Forget();
     }
 
@@ -89,10 +94,18 @@ public class MainUiPresenter : MonoBehaviour
 
     private void HandleResetSettings()
     {
-        _soundView.PlaySfxC();
+        // 1. 리셋 과정 시작 (이벤트에 의한 효과음 차단)
+        _isSyncing = true;
+
+        _soundView.PlaySfxC(); // 리셋 버튼 클릭 자체의 소리 (필요하다면 유지)
         _soundView.SetVolume("BGM", DefaultVolume);
         _soundView.SetVolume("SFX", DefaultVolume);
+
+        // 이 함수 호출로 인해 HandleSfxVolumeChanged가 실행되지만, 
+        // _isSyncing이 true라 소리는 나지 않습니다.
         _settingView.SetSliderValues(DefaultVolume, DefaultVolume);
+
+
     }
     public void HandleBgmVolumeChanged(float vol)
     {
@@ -102,7 +115,12 @@ public class MainUiPresenter : MonoBehaviour
     public void HandleSfxVolumeChanged(float vol)
     {
         _soundView.SetVolume("SFX", vol);
-        _soundView.PlaySfxC(); 
+
+        // [중요] 동기화나 리셋 중이 아닐 때(사용자가 직접 조작할 때)만 효과음 재생
+        if (!_isSyncing)
+        {
+            _soundView.PlaySfxC();
+        }
     }
 
     private void OpenSettings()

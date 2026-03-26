@@ -93,7 +93,7 @@ namespace Project.Core.Managers
 
         /// [중요] 효과음 재생 (MainUiPresenter에서 호출하는 함수)
         /// </summary>
-        public void PlaySFX(AudioClip clip, float volumeScale = 0.1f)
+        public void PlaySFX(AudioClip clip, float volumeScale = 0.0f)
         {
             if (clip == null || sfxSource == null) return;
             // PlayOneShot을 써야 여러 효과음이 겹쳐서 들립니다.

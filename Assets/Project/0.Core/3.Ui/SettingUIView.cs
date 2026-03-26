@@ -1,7 +1,6 @@
 using System;
 using UnityEngine;
 using UnityEngine.UI;
-
 public class SettingUIView : MonoBehaviour
 {
     // 설정 관련 이벤트
@@ -21,6 +20,8 @@ public class SettingUIView : MonoBehaviour
 
     private void Awake()
     {
+
+
         // 설정창 관련 버튼 이벤트 바인딩
         settingsButton.onClick.AddListener(() => OnSettingsClick?.Invoke());
         closeSettingsButton.onClick.AddListener(() => OnSettingsCloseClick?.Invoke());
