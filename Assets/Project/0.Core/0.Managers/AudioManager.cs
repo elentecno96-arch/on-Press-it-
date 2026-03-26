@@ -37,15 +37,18 @@ namespace Project.Core.Managers
             DontDestroyOnLoad(gameObject);
         }
 
-        public override async UniTask Initialize()
+        public override UniTask Initialize()
         {
-            // PlayerManager 체크 로직 추가 (안전성)
+            // PlayerManager 체크 로직
             if (PlayerManager.Instance != null && PlayerManager.Instance.Data != null)
             {
                 AudioSetting(PlayerManager.Instance.Data);
             }
 
             Debug.Log("AudioManager: 믹서 연결 및 초기화 완료");
+
+            return UniTask.CompletedTask; // 완료된 상태를 즉시 반환
+
         }
         public void AudioSetting(PlayerData playerData)
         {
