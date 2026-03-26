@@ -39,6 +39,7 @@ namespace Project.Core.Managers
 
         public override async UniTask Initialize()
         {
+            await UniTask.Yield();
             // PlayerManager 체크 로직 추가 (안전성)
             if (PlayerManager.Instance != null && PlayerManager.Instance.Data != null)
             {
