@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class AdvancedPatternScroller : MonoBehaviour
+public class InfinitePatternScroller : MonoBehaviour
 {
     [Header("패턴 세트")]
     [SerializeField] private RectTransform setA;
