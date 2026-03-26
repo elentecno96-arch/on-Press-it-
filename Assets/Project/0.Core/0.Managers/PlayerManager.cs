@@ -6,6 +6,7 @@ using UnityEngine;
 
 namespace Project.Core.Managers
 {
+    // [설명] 스테이지별 인덱스와 최고 점수를 쌍으로 묶어 저장하는 데이터 클래스
     [System.Serializable]
     public class StageSaveData
     {
@@ -13,6 +14,7 @@ namespace Project.Core.Managers
         public float bestScore;
     }
 
+    // [설명] 업적의 ID, 이름, 해금 상태 및 날짜를 저장하는 데이터 클래스
     [System.Serializable]
     public class AchievementData
     {
@@ -22,6 +24,7 @@ namespace Project.Core.Managers
         public string unlockDate;
     }
 
+    // [설명] 파일로 저장될 최종 루트 데이터 객체
     [System.Serializable]
     public class PlayerData
     {
@@ -35,6 +38,7 @@ namespace Project.Core.Managers
 
     public class PlayerManager : BaseSingleton<PlayerManager>
     {
+        // 이유: 플랫폼마다 다른 권한이 있는 안전한 저장 경로를 반환함
         private string SavePath => Path.Combine(Application.persistentDataPath, "PlayerSave.json");
         public PlayerData Data { get; private set; } = new PlayerData();
 
@@ -63,6 +67,7 @@ namespace Project.Core.Managers
             Debug.Log($"[PlayerManager] 오디오 설정 저장 완료: BGM({bgm}), SFX({sfx})");
         }
 
+        // 설명: 특정 스테이지의 점수가 이전보다 높을 때만 갱신 후 저장
         public void SaveBestScore(int index, float score)
         {
             var record = Data.stageRecords.Find(s => s.stageIndex == index);
@@ -79,6 +84,17 @@ namespace Project.Core.Managers
             Save();
             Debug.Log($"[저장완료] 스테이지 {index} : {score}");
         }
+        // 특정 스테이지가 클리어되었는지 확인하는 헬퍼 메서드 ---
+        public bool IsStageCleared(int stageIndex)
+        {
+            if (Data == null || Data.stageRecords == null) return false;
+
+            var record = Data.stageRecords.Find(s => s.stageIndex == stageIndex);
+
+            // 기록이 있고, 최고 점수가 0보다 크면 클리어된 것으로 봅니다.
+            return record != null && record.bestScore > 0;
+        }
+        // 설명: JSON 형식으로 데이터를 직렬화하여 실제 파일에 작성
         public void Save()
         {
             try
@@ -88,6 +104,7 @@ namespace Project.Core.Managers
             }
             catch (System.Exception e) { Debug.LogError($"[Save 실패] {e.Message}"); }
         }
+        // 설명: 파일이 존재하면 읽어와서 JsonUtility를 통해 C# 객체로 변환
         private void Load()
         {
             if (!File.Exists(SavePath)) return;
@@ -98,7 +115,7 @@ namespace Project.Core.Managers
             }
             catch { Data = new PlayerData(); }
         }
-        // 메모리 누수 방지를 위해 오브젝트 파괴 시 이벤트 구독 해제
+        // 이유: 오브젝트 파괴 시 이벤트 연결을 해제하여 메모리 누수 및 에러 방지
         private void OnDisable()
         {
             // 싱글톤 인스턴스가 존재할 때만 구독 해제
