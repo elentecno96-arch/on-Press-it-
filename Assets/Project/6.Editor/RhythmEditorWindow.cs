@@ -52,12 +52,10 @@ public class RhythmEditorWindow : EditorWindow
         try
         {
             float totalWidth = musicClip.length * pixelPerSecond;
-
             float dynamicTimelineHeight = position.height - 280f;
             dynamicTimelineHeight = Mathf.Max(220f, dynamicTimelineHeight);
 
             Rect timelineRect = GUILayoutUtility.GetRect(totalWidth, dynamicTimelineHeight);
-
             EditorGUI.DrawRect(timelineRect, new Color(0.12f, 0.12f, 0.12f, 1f));
 
             float noteTrackHeight = timelineRect.height * 0.7f;
@@ -91,7 +89,6 @@ public class RhythmEditorWindow : EditorWindow
     private void DrawUnifiedInspector()
     {
         EditorGUILayout.BeginVertical(EditorStyles.helpBox, GUILayout.Height(150));
-
         useMultipleThemes = EditorGUILayout.ToggleLeft("다중 테마 리소스 활성화 (Stage 2 이상)", useMultipleThemes, GUILayout.Width(250));
 
         EditorGUILayout.Space(2);
@@ -113,7 +110,6 @@ public class RhythmEditorWindow : EditorWindow
             res.backgroundPrefab = (GameObject)EditorGUILayout.ObjectField(res.backgroundPrefab, typeof(GameObject), false);
             res.playerPrefab = (GameObject)EditorGUILayout.ObjectField(res.playerPrefab, typeof(GameObject), false);
             res.notePrefab = (GameObject)EditorGUILayout.ObjectField(res.notePrefab, typeof(GameObject), false);
-            stageData.themeResources[i] = res;
 
             EditorGUILayout.EndHorizontal();
             EditorGUI.EndDisabledGroup();
@@ -147,38 +143,24 @@ public class RhythmEditorWindow : EditorWindow
         if (selectedThemeEventIndex != -1 && selectedThemeEventIndex < stageData.themeEvents.Count)
         {
             var tEvent = stageData.themeEvents[selectedThemeEventIndex];
-
             EditorGUILayout.LabelField($"테마 이벤트 설정 (Beat: {tEvent.beat})", EditorStyles.boldLabel);
 
             EditorGUI.BeginChangeCheck();
-            var newBpm = EditorGUILayout.FloatField(bpm, GUILayout.Width(40));
-            if (EditorGUI.EndChangeCheck())
-            {
-                Undo.RecordObject(stageData, "Change BPM");
-                stageData.bpm = newBpm;
-                bpm = newBpm;
-                EditorUtility.SetDirty(stageData);
-            }
-
             tEvent.theme = (StageThemeType)EditorGUILayout.EnumPopup("전환할 테마", tEvent.theme);
 
             if (EditorGUI.EndChangeCheck())
             {
                 Undo.RecordObject(stageData, "Edit Theme Event");
-
                 stageData.themeEvents[selectedThemeEventIndex] = tEvent;
-
                 EditorUtility.SetDirty(stageData);
             }
         }
         else if (selectedNoteIndex != -1 && selectedNoteIndex < stageData.actions.Count)
         {
             var action = stageData.actions[selectedNoteIndex];
-
             EditorGUILayout.LabelField($"노트 설정 (Beat: {action.beat})", EditorStyles.boldLabel);
 
             EditorGUI.BeginChangeCheck();
-
             action.beat = EditorGUILayout.FloatField("Beat Position", action.beat);
             action.role = (ActionRole)EditorGUILayout.EnumPopup("Action Role", action.role);
             action.noteType = (NoteType)EditorGUILayout.EnumPopup("Note Type", action.noteType);
@@ -188,10 +170,8 @@ public class RhythmEditorWindow : EditorWindow
             if (EditorGUI.EndChangeCheck())
             {
                 Undo.RecordObject(stageData, "Edit Note");
-
                 stageData.actions[selectedNoteIndex] = action;
                 stageData.actions.Sort((a, b) => a.beat.CompareTo(b.beat));
-
                 EditorUtility.SetDirty(stageData);
             }
         }
@@ -213,7 +193,14 @@ public class RhythmEditorWindow : EditorWindow
         }
     }
 
-    private void OnStageDataChanged() { if (stageData == null) return; musicClip = stageData.masterTrack; if (previewSource != null) previewSource.clip = musicClip; bpm = stageData.bpm; }
+    private void OnStageDataChanged()
+    {
+        if (stageData == null) return;
+        musicClip = stageData.masterTrack;
+        if (previewSource != null) previewSource.clip = musicClip;
+        bpm = stageData.bpm; 
+    }
+
     private void TogglePlay() { if (previewSource.isPlaying) previewSource.Pause(); else previewSource.Play(); Repaint(); }
     private void StopMusic() { previewSource.Stop(); previewSource.time = 0; scroll.x = 0; Repaint(); }
     private void HandleShortcuts() { if (Event.current.type == EventType.KeyDown && Event.current.keyCode == KeyCode.Space) { TogglePlay(); Event.current.Use(); } }
@@ -224,6 +211,7 @@ public class RhythmEditorWindow : EditorWindow
         EditorGUI.BeginChangeCheck();
         stageData = (StageData)EditorGUILayout.ObjectField(stageData, typeof(StageData), false);
         if (EditorGUI.EndChangeCheck()) OnStageDataChanged();
+
         EditorGUILayout.Space(10);
         previewSource = (AudioSource)EditorGUILayout.ObjectField(previewSource, typeof(AudioSource), true);
 
@@ -233,25 +221,25 @@ public class RhythmEditorWindow : EditorWindow
         if (stageData != null)
         {
             EditorGUI.BeginChangeCheck();
-
             EditorGUILayout.LabelField("Start", GUILayout.Width(35));
             float newStart = EditorGUILayout.FloatField(stageData.playStartTime, GUILayout.Width(40));
-
             EditorGUILayout.LabelField("End", GUILayout.Width(30));
             float newEnd = EditorGUILayout.FloatField(stageData.endPosition, GUILayout.Width(40));
 
+            EditorGUILayout.LabelField("BPM", GUILayout.Width(35));
+            float newBpm = EditorGUILayout.FloatField(stageData.bpm, GUILayout.Width(40));
+
             if (EditorGUI.EndChangeCheck())
             {
-                Undo.RecordObject(stageData, "Edit Stage Range");
-
+                Undo.RecordObject(stageData, "Edit Stage Global Data");
                 stageData.playStartTime = newStart;
                 stageData.endPosition = newEnd;
-
+                stageData.bpm = newBpm;
+                bpm = newBpm; 
                 EditorUtility.SetDirty(stageData);
             }
         }
-        EditorGUILayout.LabelField("BPM", GUILayout.Width(35));
-        bpm = EditorGUILayout.FloatField(bpm, GUILayout.Width(40));
+
         EditorGUILayout.LabelField("Zoom", GUILayout.Width(40));
         pixelPerSecond = EditorGUILayout.FloatField(pixelPerSecond, GUILayout.Width(40));
         EditorGUILayout.EndHorizontal();
