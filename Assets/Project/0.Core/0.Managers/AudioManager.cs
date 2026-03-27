@@ -47,6 +47,7 @@ namespace Project.Core.Managers
             }
 
             Debug.Log("AudioManager: 믹서 연결 및 초기화 완료");
+            IsInitialized = true;
         }
         public void AudioSetting(PlayerData playerData)
         {
@@ -93,7 +94,7 @@ namespace Project.Core.Managers
 
         /// [중요] 효과음 재생 (MainUiPresenter에서 호출하는 함수)
         /// </summary>
-        public void PlaySFX(AudioClip clip, float volumeScale = 0.1f)
+        public void PlaySFX(AudioClip clip, float volumeScale = 1.0f)
         {
             if (clip == null || sfxSource == null) return;
             // PlayOneShot을 써야 여러 효과음이 겹쳐서 들립니다.

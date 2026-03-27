@@ -6,29 +6,62 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// ¸ŞÀÎ UIÀÇ ÁßÀçÀÚ ¿ªÇÒÀ» ÇÏ´Â Presenter Å¬·¡½ºÀÔ´Ï´Ù.
-/// View(UI)ÀÇ ÀÌº¥Æ®¸¦ µè°í Manager(µ¥ÀÌÅÍ/·ÎÁ÷)¸¦ Á¶ÀÛÇÕ´Ï´Ù.
+/// ë©”ì¸ UIì˜ ì¤‘ì¬ì ì—­í• ì„ í•˜ëŠ” Presenter í´ë˜ìŠ¤ì…ë‹ˆë‹¤.
+/// View(UI)ì˜ ì´ë²¤íŠ¸ë¥¼ ë“£ê³  Manager(ë°ì´í„°/ë¡œì§)ë¥¼ ì¡°ì‘í•©ë‹ˆë‹¤.
 /// </summary>
 public class MainUiPresenter : MonoBehaviour
 {
     [Header("--- Views ---")]
     [SerializeField] private SettingUIView _settingView;
     [SerializeField] private StageUiView _stageView;
-    [SerializeField] private MainUiSoundView _soundView; // »ç¿îµå Àü´ã ºä
+    [SerializeField] private MainUiSoundView _soundView; // ì‚¬ìš´ë“œ ì „ë‹´ ë·°
 
     [Header("--- Stage Slots ---")]
     [SerializeField] private List<StageSlot> _stageSlots;
 
-    private StageData _currentSelectedStage;                        // ÇöÀç À¯Àú°¡ Å¬¸¯ÇÑ ½ºÅ×ÀÌÁö µ¥ÀÌÅÍ
-    private const float DefaultVolume = 0.5f;                       // ÃÊ±âÈ­¿ë ±âº» º¼·ı °ª
+    private StageData _currentSelectedStage;                        // í˜„ì¬ ìœ ì €ê°€ í´ë¦­í•œ ìŠ¤í…Œì´ì§€ ë°ì´í„°
+    private const float DefaultVolume = 0.5f;                       // ì´ˆê¸°í™”ìš© ê¸°ë³¸ ë³¼ë¥¨ ê°’
 
+    private bool _isSyncing = false;
     private async void Start()
     {
-        await UniTask.WaitUntil(() => AudioManager.Instance != null);
+        // 1. ëª¨ë“  ë§¤ë‹ˆì €ê°€ ì´ˆê¸°í™”ë  ë•Œê¹Œì§€ ëŒ€ê¸° (ê°€ì¥ ì¤‘ìš”)
+        await UniTask.WaitUntil(() => GameManager.Instance != null && GameManager.Instance.IsInitialized);
+        await UniTask.WaitUntil(() => PlayerManager.Instance != null && PlayerManager.Instance.IsInitialized);
+        await UniTask.WaitUntil(() => AudioManager.Instance != null && AudioManager.Instance.IsInitialized);
 
+        // 2. UI ì´ˆê¸°í™” ì‹œì‘
+        _isSyncing = true;
         SyncUiWithAudio();
 
         _soundView.PlayMainBgmWithDelay(1.0f).Forget();
+    }
+
+    // ì„¸ì´ë¸Œ ë°ì´í„°ë¥¼ ê¸°ë°˜ìœ¼ë¡œ ëª¨ë“  ìŠ¬ë¡¯ì˜ UIë¥¼ ê°±ì‹ í•˜ëŠ” ë©”ì„œë“œ ---
+    private void UpdateStageUnlockStates()
+    {
+        if (_stageSlots == null || _stageSlots.Count == 0) return;
+
+        // ì²« ë²ˆì§¸ ìŠ¤í…Œì´ì§€(ê²Œì„1)ëŠ” í•­ìƒ í•´ê¸ˆë˜ì–´ ìˆì–´ì•¼ í•©ë‹ˆë‹¤.
+        if (_stageSlots[0] != null)
+        {
+            _stageSlots[0].SetUnlockState(true);
+        }
+
+        // ë‘ ë²ˆì§¸ ìŠ¤í…Œì´ì§€(ê²Œì„2)ë¶€í„°ëŠ” ì´ì „ ìŠ¤í…Œì´ì§€ í´ë¦¬ì–´ ì—¬ë¶€ë¥¼ ì²´í¬í•©ë‹ˆë‹¤.
+        for (int i = 1; i < _stageSlots.Count; i++)
+        {
+            if (_stageSlots[i] == null) continue;
+
+            // í•´ê¸ˆ ê·œì¹™: (i-1)ë²ˆì§¸ ìŠ¤í…Œì´ì§€ê°€ í´ë¦¬ì–´ë˜ì–´ì•¼ (i)ë²ˆì§¸ ìŠ¤í…Œì´ì§€ê°€ ì—´ë¦¼
+            int previousStageIndex = i; // StageIndexëŠ” 1ë¶€í„° ì‹œì‘í•œë‹¤ê³  ê°€ì • (i=1 -> ê²Œì„1ì˜ Index)
+
+            // PlayerManagerì—ê²Œ ì´ì „ ìŠ¤í…Œì´ì§€ í´ë¦¬ì–´ ì—¬ë¶€ë¥¼ ë¬¼ì–´ë´…ë‹ˆë‹¤.
+            bool isPreviousCleared = PlayerManager.Instance.IsStageCleared(previousStageIndex);
+
+            // í•´ë‹¹ ìŠ¬ë¡¯ì—ê²Œ ìƒíƒœ ì „ë‹¬
+            _stageSlots[i].SetUnlockState(isPreviousCleared);
+        }
     }
 
     private void OnEnable()
@@ -48,7 +81,7 @@ public class MainUiPresenter : MonoBehaviour
 
     private void OnDisable()
     {
-        // [¸Ş¸ğ¸® ´©¼ö ¹æÁö] ¿ÀºêÁ§Æ®°¡ ºñÈ°¼ºÈ­µÉ ¶§ ¸ğµç ÀÌº¥Æ®¸¦ ÇØÁ¦ (Áßº¹ ±¸µ¶ ¹æÁö)
+        // [ë©”ëª¨ë¦¬ ëˆ„ìˆ˜ ë°©ì§€] ì˜¤ë¸Œì íŠ¸ê°€ ë¹„í™œì„±í™”ë  ë•Œ ëª¨ë“  ì´ë²¤íŠ¸ë¥¼ í•´ì œ (ì¤‘ë³µ êµ¬ë… ë°©ì§€)
         if (_settingView != null)
         {
             _settingView.OnSettingsClick -= OpenSettings;
@@ -73,27 +106,42 @@ public class MainUiPresenter : MonoBehaviour
         }
     }   
 
-    // OnDisableÀº ±âÁ¸°ú µ¿ÀÏÇÏ°Ô À¯Áö (ÀÌº¥Æ® ÇØÁ¦)
+    // OnDisableì€ ê¸°ì¡´ê³¼ ë™ì¼í•˜ê²Œ ìœ ì§€ (ì´ë²¤íŠ¸ í•´ì œ)
 
     private void SyncUiWithAudio()
     {
-        // _soundView³ª _settingView°¡ ¿¬°áµÇÁö ¾Ê¾ÒÀ» °æ¿ì¸¦ ´ëºñÇÑ ¹æ¾î ÄÚµå
+        // _soundViewë‚˜ _settingViewê°€ ì—°ê²°ë˜ì§€ ì•Šì•˜ì„ ê²½ìš°ë¥¼ ëŒ€ë¹„í•œ ë°©ì–´ ì½”ë“œ
         if (_soundView == null || _settingView == null)
         {
-            Debug.LogWarning("MainUiPresenter: _soundView ¶Ç´Â _settingView°¡ ¿¬°áµÇÁö ¾Ê¾Ò½À´Ï´Ù!");
+            Debug.LogWarning("MainUiPresenter: _soundView ë˜ëŠ” _settingViewê°€ ì—°ê²°ë˜ì§€ ì•Šì•˜ìŠµë‹ˆë‹¤!");
             return;
         }
 
-        // µÎ ºä°¡ ¸ğµÎ Á¸ÀçÇÒ ¶§¸¸ ½ÇÇà
+        // ë‘ ë·°ê°€ ëª¨ë‘ ì¡´ì¬í•  ë•Œë§Œ ì‹¤í–‰
         _settingView.SetSliderValues(_soundView.BgmVolume, _soundView.SfxVolume);
     }        
 
     private void HandleResetSettings()
     {
-        _soundView.PlaySfxC();
-        _soundView.SetVolume("BGM", DefaultVolume);
-        _soundView.SetVolume("SFX", DefaultVolume);
-        _settingView.SetSliderValues(DefaultVolume, DefaultVolume);
+        try
+        {
+            // 1. ë¦¬ì…‹ ê³¼ì • ì‹œì‘ (ì´ë²¤íŠ¸ì— ì˜í•œ íš¨ê³¼ìŒ ì°¨ë‹¨)
+            _isSyncing = true;
+
+            _soundView.PlaySfxC(); // ë¦¬ì…‹ ë²„íŠ¼ í´ë¦­ ìì²´ì˜ ì†Œë¦¬ (í•„ìš”í•˜ë‹¤ë©´ ìœ ì§€)
+            _soundView.SetVolume("BGM", DefaultVolume);
+            _soundView.SetVolume("SFX", DefaultVolume);
+
+            // ì´ í•¨ìˆ˜ í˜¸ì¶œë¡œ ì¸í•´ HandleSfxVolumeChangedê°€ ì‹¤í–‰ë˜ì§€ë§Œ, 
+            // _isSyncingì´ trueë¼ ì†Œë¦¬ëŠ” ë‚˜ì§€ ì•ŠìŠµë‹ˆë‹¤.
+            _settingView.SetSliderValues(DefaultVolume, DefaultVolume);
+        }
+
+        finally
+        {
+            // ì–´ë–¤ ìƒí™©ì—ì„œë„(ì—ëŸ¬ê°€ ë‚˜ë”ë¼ë„) ë‹¤ì‹œ ì†Œë¦¬ê°€ ë‚˜ë„ë¡ ë³´ì¥í•©ë‹ˆë‹¤.
+            _isSyncing = false;
+        }
     }
     public void HandleBgmVolumeChanged(float vol)
     {
@@ -103,7 +151,12 @@ public class MainUiPresenter : MonoBehaviour
     public void HandleSfxVolumeChanged(float vol)
     {
         _soundView.SetVolume("SFX", vol);
-        _soundView.PlaySfxC(); 
+
+        // [ì¤‘ìš”] ë™ê¸°í™”ë‚˜ ë¦¬ì…‹ ì¤‘ì´ ì•„ë‹ ë•Œ(ì‚¬ìš©ìê°€ ì§ì ‘ ì¡°ì‘í•  ë•Œ)ë§Œ íš¨ê³¼ìŒ ì¬ìƒ
+        if (!_isSyncing)
+        {
+            _soundView.PlaySfxC();
+        }
     }
 
     private void OpenSettings()
@@ -116,7 +169,7 @@ public class MainUiPresenter : MonoBehaviour
     {
         _soundView.PlaySfxC();
         _settingView.ShowSettings(false);
-        _soundView.SaveAudioSettings(); // ÀúÀå ¸í·É À§ÀÓ
+        _soundView.SaveAudioSettings(); // ì €ì¥ ëª…ë ¹ ìœ„ì„
     }
 
     private void HideStageView()
@@ -140,5 +193,5 @@ public class MainUiPresenter : MonoBehaviour
             _soundView.StopBgm();
             GameManager.Instance.StartStage(_currentSelectedStage).Forget();
         }
-    }
+    }    
 }

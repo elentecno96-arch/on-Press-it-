@@ -39,6 +39,14 @@ public class MainUiSoundView : MonoBehaviour
 
     private void Play(AudioClip clip)
     {
-        if (clip != null) AudioManager.Instance?.PlaySFX(clip);
+        if (clip != null)
+        {
+            Debug.Log($"[SoundView] 효과음 재생 시도: {clip.name}");
+            AudioManager.Instance?.PlaySFX(clip);
+        }
+        else
+        {
+            Debug.LogWarning("[SoundView] 재생할 효과음 클립이 없습니다!");
+        }
     }
 }
