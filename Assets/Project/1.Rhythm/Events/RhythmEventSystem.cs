@@ -45,7 +45,9 @@ namespace Project.Rhythm.Event
                 if (action.type == PatternType.None) continue;
 
                 float hitTime = action.beat * _secondsPerBeat;
-                float duration = (action.type == PatternType.Hold) ? 0.1f : defaultAppearDuration;
+                float duration = (action.type == PatternType.Hold)
+                                 ? action.duration * _secondsPerBeat
+                                 : defaultAppearDuration;
                 float spawnTime = hitTime - duration;
 
                 _events.Add(new EventData

@@ -1,5 +1,5 @@
 using Cysharp.Threading.Tasks;
-using Project.Core.Managers; // 오직 AudioManager.Instance null 체크와 GameManager를 위해서만 유지
+using Project.Core.Managers; 
 using Project.Core.Ui.StageUi.View;
 using Project.Rhythm.Data;
 using System.Collections.Generic;
@@ -27,6 +27,7 @@ public class MainUiPresenter : MonoBehaviour
         await UniTask.WaitUntil(() => AudioManager.Instance != null);
 
         SyncUiWithAudio();
+
         _soundView.PlayMainBgmWithDelay(1.0f).Forget();
     }
 
