@@ -9,7 +9,7 @@ using UnityEngine;
 
 public class RhythmEditorWindow : EditorWindow
 {
-    private float pixlePerSecend = 100f;
+    private float pixelPerSecond = 100f;
     private float bpm = 120f;
     private Vector2 scroll;
 
@@ -21,7 +21,7 @@ public class RhythmEditorWindow : EditorWindow
     private int selectedThemeEventIndex = -1;
     private bool useMultipleThemes = true;
 
-    private float PixelsPerBeat => (60f / bpm) * pixlePerSecend;
+    private float PixelsPerBeat => (60f / bpm) * pixelPerSecond;
 
     [MenuItem("Window/Rhythm Editor")]
     public static void ShowWindow() => GetWindow<RhythmEditorWindow>("Rhythm Editor");
@@ -44,14 +44,14 @@ public class RhythmEditorWindow : EditorWindow
 
         if (previewSource != null && previewSource.isPlaying)
         {
-            float playheadX = previewSource.time * pixlePerSecend;
+            float playheadX = previewSource.time * pixelPerSecond;
             scroll.x = playheadX - (position.width * 0.5f);
         }
 
         scroll = EditorGUILayout.BeginScrollView(scroll, GUILayout.ExpandWidth(true), GUILayout.ExpandHeight(true));
         try
         {
-            float totalWidth = musicClip.length * pixlePerSecend;
+            float totalWidth = musicClip.length * pixelPerSecond;
 
             float dynamicTimelineHeight = position.height - 280f;
             dynamicTimelineHeight = Mathf.Max(220f, dynamicTimelineHeight);
@@ -113,6 +113,7 @@ public class RhythmEditorWindow : EditorWindow
             res.backgroundPrefab = (GameObject)EditorGUILayout.ObjectField(res.backgroundPrefab, typeof(GameObject), false);
             res.playerPrefab = (GameObject)EditorGUILayout.ObjectField(res.playerPrefab, typeof(GameObject), false);
             res.notePrefab = (GameObject)EditorGUILayout.ObjectField(res.notePrefab, typeof(GameObject), false);
+            stageData.themeResources[i] = res;
 
             EditorGUILayout.EndHorizontal();
             EditorGUI.EndDisabledGroup();
@@ -150,6 +151,15 @@ public class RhythmEditorWindow : EditorWindow
             EditorGUILayout.LabelField($"테마 이벤트 설정 (Beat: {tEvent.beat})", EditorStyles.boldLabel);
 
             EditorGUI.BeginChangeCheck();
+            var newBpm = EditorGUILayout.FloatField(bpm, GUILayout.Width(40));
+            if (EditorGUI.EndChangeCheck())
+            {
+                Undo.RecordObject(stageData, "Change BPM");
+                stageData.bpm = newBpm;
+                bpm = newBpm;
+                EditorUtility.SetDirty(stageData);
+            }
+
             tEvent.theme = (StageThemeType)EditorGUILayout.EnumPopup("전환할 테마", tEvent.theme);
 
             if (EditorGUI.EndChangeCheck())
@@ -243,7 +253,7 @@ public class RhythmEditorWindow : EditorWindow
         EditorGUILayout.LabelField("BPM", GUILayout.Width(35));
         bpm = EditorGUILayout.FloatField(bpm, GUILayout.Width(40));
         EditorGUILayout.LabelField("Zoom", GUILayout.Width(40));
-        pixlePerSecend = EditorGUILayout.FloatField(pixlePerSecend, GUILayout.Width(40));
+        pixelPerSecond = EditorGUILayout.FloatField(pixelPerSecond, GUILayout.Width(40));
         EditorGUILayout.EndHorizontal();
         HandleShortcuts();
     }
@@ -251,8 +261,8 @@ public class RhythmEditorWindow : EditorWindow
     private void DrawPlaybackRange(Rect rect)
     {
         if (stageData == null) return;
-        float startX = rect.x + (stageData.playStartTime * pixlePerSecend);
-        float endX = rect.x + (stageData.endPosition * pixlePerSecend);
+        float startX = rect.x + (stageData.playStartTime * pixelPerSecond);
+        float endX = rect.x + (stageData.endPosition * pixelPerSecond);
         Rect rangeRect = new Rect(startX, rect.y, endX - startX, rect.height);
         EditorGUI.DrawRect(rangeRect, new Color(1f, 1f, 1f, 0.03f));
         Handles.color = Color.green; Handles.DrawLine(new Vector3(startX, rect.y), new Vector3(startX, rect.yMax), 2f);
@@ -265,7 +275,7 @@ public class RhythmEditorWindow : EditorWindow
         int totalBeats = Mathf.FloorToInt(musicClip.length / beatInterval);
         for (int i = 0; i <= totalBeats; i++)
         {
-            float xPos = rect.x + (i * beatInterval * pixlePerSecend);
+            float xPos = rect.x + (i * beatInterval * pixelPerSecond);
             bool isBar = i % 4 == 0;
             Handles.color = isBar ? new Color(0.5f, 0.5f, 0.5f, 0.8f) : new Color(0.3f, 0.3f, 0.3f, 0.3f);
             Handles.DrawLine(new Vector3(xPos, rect.y), new Vector3(xPos, rect.yMax));
@@ -277,7 +287,7 @@ public class RhythmEditorWindow : EditorWindow
     private void DrawPlayhead(Rect rect)
     {
         if (previewSource == null) return;
-        float xPos = rect.x + (previewSource.time * pixlePerSecend);
+        float xPos = rect.x + (previewSource.time * pixelPerSecond);
         Handles.color = Color.red; Handles.DrawLine(new Vector3(xPos, rect.y), new Vector3(xPos, rect.yMax), 2f);
     }
 
@@ -285,9 +295,6 @@ public class RhythmEditorWindow : EditorWindow
     {
         Event e = Event.current;
         if (!rect.Contains(e.mousePosition)) return;
-
-        if (stageData.themeEvents == null) stageData.themeEvents = new List<ThemeEvent>();
-        if (stageData.actions == null) stageData.actions = new List<RhythmAction>();
 
         float relativeX = e.mousePosition.x - rect.x;
         float relativeY = e.mousePosition.y - rect.y;
@@ -311,7 +318,7 @@ public class RhythmEditorWindow : EditorWindow
                 }
 
                 if (selectedNoteIndex == -1 && selectedThemeEventIndex == -1 && previewSource != null)
-                    previewSource.time = Mathf.Clamp(relativeX / pixlePerSecend, 0, musicClip.length - 0.01f);
+                    previewSource.time = Mathf.Clamp(relativeX / pixelPerSecond, 0, musicClip.length - 0.01f);
 
                 Repaint();
                 e.Use();
