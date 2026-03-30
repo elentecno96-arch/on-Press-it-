@@ -157,5 +157,10 @@ namespace Project.Rhythm.Note
             targetImage.color = Color.white;
             transform.localScale = new Vector3(BASE_SCALE, BASE_SCALE, 1f);
         }
+
+        public override void StartCountdown(float targetBeat)
+        {
+            // 노트 비주얼이므로 배경 카운트다운 로직은 필요 없음
+        }
     }
 }

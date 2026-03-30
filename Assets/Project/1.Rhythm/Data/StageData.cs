@@ -13,6 +13,7 @@ namespace Project.Rhythm.Data
         [Header("Status")]
         public int stageIndex; // 1, 2, 3... 순서대로 기입
         public bool isClear;   // 클리어 여부
+        public bool skipGuide;
 
         [Header("Audio")]
         public string stageName;

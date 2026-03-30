@@ -12,10 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d04876fa1117aa34b9eea9b52f8b6fae, type: 3}
   m_Name: STAGE 1-1
   m_EditorClassIdentifier: 
+  stageIndex: 1
+  isClear: 0
   stageName: "\uC2A4\uD14C\uC774\uC9C0 1-1"
   masterTrack: {fileID: 8300000, guid: 9589fa5c2e3aba84e80ecc416fb92106, type: 3}
   bpm: 120
-  stageIndex: 1
   themeResources:
   - theme: 0
     backgroundPrefab: {fileID: 720462673943707363, guid: 0fb462abafbf73d41ba5bff37ef50682, type: 3}
@@ -33,200 +34,240 @@ MonoBehaviour:
     role: 0
     duration: 0
     targetID: 
+    noteType: 0
   - beat: 11
     type: 3
     role: 0
     duration: 0
     targetID: 
+    noteType: 0
   - beat: 13
     type: 3
     role: 0
     duration: 0
     targetID: 
+    noteType: 0
   - beat: 17
     type: 3
     role: 0
     duration: 0
     targetID: 
+    noteType: 0
   - beat: 19
     type: 3
     role: 0
     duration: 0
     targetID: 
+    noteType: 0
   - beat: 21
     type: 3
     role: 0
     duration: 0
     targetID: 
+    noteType: 0
   - beat: 26
     type: 3
     role: 0
     duration: 0
     targetID: 
+    noteType: 0
   - beat: 27
     type: 3
     role: 0
     duration: 0
     targetID: 
+    noteType: 0
   - beat: 30
     type: 3
     role: 0
     duration: 0
     targetID: 
+    noteType: 0
   - beat: 31
     type: 3
     role: 0
     duration: 0
     targetID: 
+    noteType: 0
   - beat: 34
     type: 3
     role: 0
     duration: 0
     targetID: 
+    noteType: 0
   - beat: 35
     type: 3
     role: 0
     duration: 0
     targetID: 
+    noteType: 0
   - beat: 41
     type: 3
     role: 0
     duration: 0
     targetID: 
+    noteType: 0
   - beat: 41.5
     type: 3
     role: 0
     duration: 0
     targetID: 
+    noteType: 0
   - beat: 45
     type: 3
     role: 0
     duration: 0
     targetID: 
+    noteType: 0
   - beat: 45.5
     type: 3
     role: 0
     duration: 0
     targetID: 
+    noteType: 0
   - beat: 49
     type: 3
     role: 0
     duration: 0
     targetID: 
+    noteType: 0
   - beat: 49.5
     type: 3
     role: 0
     duration: 0
     targetID: 
+    noteType: 0
   - beat: 57
     type: 3
     role: 0
     duration: 0
     targetID: 
+    noteType: 0
   - beat: 59
     type: 3
     role: 0
     duration: 0
     targetID: 
+    noteType: 0
   - beat: 59.5
     type: 3
     role: 0
     duration: 0
     targetID: 
+    noteType: 0
   - beat: 61
     type: 3
     role: 0
     duration: 0
     targetID: 
+    noteType: 0
   - beat: 63
     type: 3
     role: 0
     duration: 0
     targetID: 
+    noteType: 0
   - beat: 63.5
     type: 3
     role: 0
     duration: 0
     targetID: 
+    noteType: 0
   - beat: 65
     type: 3
     role: 0
     duration: 0
     targetID: 
+    noteType: 0
   - beat: 67
     type: 3
     role: 0
     duration: 0
     targetID: 
+    noteType: 0
   - beat: 67.5
     type: 3
     role: 0
     duration: 0
     targetID: 
+    noteType: 0
   - beat: 73
     type: 3
     role: 0
     duration: 0
     targetID: 
+    noteType: 0
   - beat: 75
     type: 3
     role: 0
     duration: 0
     targetID: 
+    noteType: 0
   - beat: 77
     type: 3
     role: 0
     duration: 0
     targetID: 
+    noteType: 0
   - beat: 79
     type: 3
     role: 0
     duration: 0
     targetID: 
+    noteType: 0
   - beat: 79.5
     type: 3
     role: 0
     duration: 0
     targetID: 
+    noteType: 0
   - beat: 81
     type: 3
     role: 0
     duration: 0
     targetID: 
+    noteType: 0
   - beat: 83
     type: 3
     role: 0
     duration: 0
     targetID: 
+    noteType: 0
   - beat: 83.5
     type: 3
     role: 0
     duration: 0
     targetID: 
+    noteType: 0
   - beat: 90
     type: 3
     role: 0
     duration: 0
     targetID: 
+    noteType: 0
   - beat: 91
     type: 3
     role: 0
     duration: 0
     targetID: 
+    noteType: 0
   - beat: 97
     type: 3
     role: 0
     duration: 0
     targetID: 
+    noteType: 0
   - beat: 101
     type: 3
     role: 0
     duration: 0
     targetID: 
+    noteType: 0
   - beat: 105
     type: 3
     role: 0
     duration: 0
     targetID: 
+    noteType: 0
   themeEvents: []
   patterns: []

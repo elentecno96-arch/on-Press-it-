@@ -12,13 +12,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d04876fa1117aa34b9eea9b52f8b6fae, type: 3}
   m_Name: STAGE 1-2
   m_EditorClassIdentifier: 
+  stageIndex: 2
+  isClear: 0
   stageName: "\uC2A4\uD14C\uC774\uC9C0 1-2"
   masterTrack: {fileID: 8300000, guid: f862af8b09cb72849ad88f4300165523, type: 3}
   bpm: 120
-  stageIndex: 2
   themeResources:
   - theme: 1
-    backgroundPrefab: {fileID: 720462673943707363, guid: 0fb462abafbf73d41ba5bff37ef50682, type: 3}
+    backgroundPrefab: {fileID: 720462673943707363, guid: e6137990a87f4ed41afc48283c06c04c, type: 3}
     playerPrefab: {fileID: 147689285677530342, guid: aee9f6b30452bd847bba2dfebbd3bc0f, type: 3}
     notePrefab: {fileID: 6487635070286732841, guid: 8161861888d907c41a6da7454cfc25b1, type: 3}
   perfectWindow: 0.14

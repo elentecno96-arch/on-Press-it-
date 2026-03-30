@@ -94,7 +94,6 @@ namespace Project.Rhythm.Note
         public void UpdateHoldProgress(float progress)
         {
             // 홀드 게이지를 채우거나 이펙트를 재생하는 로직
-            Debug.Log($"Hold Progress: {progress}");
         }
 
 

@@ -140,5 +140,9 @@ namespace Project.Rhythm.Note
         }
 
         public override void PlayAction(PatternType type) { }
+        public override void StartCountdown(float targetBeat)
+        {
+            // 노트 비주얼이므로 배경 카운트다운 로직은 필요 없음
+        }
     }
 }

@@ -12,10 +12,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d04876fa1117aa34b9eea9b52f8b6fae, type: 3}
   m_Name: STAGE 1 BOSS
   m_EditorClassIdentifier: 
+  stageIndex: 4
+  isClear: 0
+  skipGuide: 1
   stageName: STAGE 1 BOSS
   masterTrack: {fileID: 8300000, guid: 40f3f6daee3c4cc47883c90261fdee88, type: 3}
   bpm: 120
-  stageIndex: 4
   themeResources:
   - theme: 0
     backgroundPrefab: {fileID: 720462673943707363, guid: 0fb462abafbf73d41ba5bff37ef50682, type: 3}

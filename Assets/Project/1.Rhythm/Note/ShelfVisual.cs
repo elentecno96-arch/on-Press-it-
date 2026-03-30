@@ -84,5 +84,10 @@ namespace Project.Rhythm.Note
             transform.localScale = Vector3.one;
             transform.localPosition = Vector3.zero;
         }
+
+        public override void StartCountdown(float targetBeat)
+        {
+            // 노트 비주얼이므로 배경 카운트다운 로직은 필요 없음
+        }
     }
 }
