@@ -123,20 +123,18 @@ namespace Project.Core.Managers
             // 기록이 있고, 최고 점수가 0보다 크면 클리어된 것으로 봅니다.
             return record != null && record.bestScore > 0;
         }
+        
         // 설명: JSON 형식으로 데이터를 직렬화하여 실제 파일에 작성
         public void Save()
         {
             SaveLocal();
 
-            // B. Firebase 서버 저장 (온라인 동기화)
-            if (FirebaseManager.Instance != null && FirebaseManager.Instance.IsInitialized)
+            if (FirebaseManager.Instance != null)
             {
                 string json = JsonUtility.ToJson(Data);
-                FirebaseManager.Instance.DbRef
-                    .Child("users").Child(FirebaseManager.Instance.User.UserId).Child("playerData")
-                    .SetRawJsonValueAsync(json).ContinueWithOnMainThread(task => {
-                        if (task.IsCompleted) Debug.Log("[PlayerManager] 서버 데이터 업로드 성공!");
-                    });
+                string path = $"users/{FirebaseManager.Instance.User.UserId}/playerData";
+
+                FirebaseManager.Instance.SaveDataWithCheck(path, json);
             }
         }
 
