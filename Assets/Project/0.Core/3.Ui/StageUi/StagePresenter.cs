@@ -1,7 +1,9 @@
 using Project.Core.Ui.StageUi.View;
 using Project.Rhythm.Data;
+using Project.Rhythm.Data.Enum;
 using Project.Rhythm.Interface;
 using Project.Rhythm.Judgement;
+using Project.Rhythm.Visual;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -12,8 +14,13 @@ namespace Project.Rhythm.Presentation
         [SerializeField] private StageView stageView;
         [SerializeField] private GameView inGameView;
         [SerializeField] private ResultView resultView;
+        [SerializeField] private GuideView guideView;
 
         private StageData _stageData;
+        private BaseRhythmVisual _currentEnvironment;
+
+        private bool _isGuideShowing;
+        private float _guideEndBeat;
 
         private readonly Dictionary<StageThemeType, GameObject> _backgroundMap = new();
         private readonly Dictionary<StageThemeType, GameObject> _playerMap = new();
@@ -34,6 +41,8 @@ namespace Project.Rhythm.Presentation
             InitializeThemes();
             InitializeUI();
 
+            StageGuide();
+
             if (_stageData.themeResources != null && _stageData.themeResources.Count > 0)
             {
                 var firstTheme = _stageData.themeResources[0].theme;
@@ -49,6 +58,34 @@ namespace Project.Rhythm.Presentation
             }
         }
 
+        /// <summary>
+        /// 스테이지 데이터의 설정을 확인하여 가이드를 실행합니다.
+        /// </summary>
+        /// <remarks>
+        /// 패턴 타입에 따라 가이드 내용을 변경 하며, 스테이지 인덱스가 0이거나, 
+        /// 스테이지 데이터의 skipGuide 플래그가 true인 경우 가이드 표시를 건너뜁니다
+        /// </remarks>
+        private void StageGuide()
+        {
+            if (guideView == null || _stageData == null) return;
+
+            _isGuideShowing = false;
+
+            if (_stageData.skipGuide || _stageData.stageIndex <= 0)
+            {
+                guideView.Hide();
+                return;
+            }
+
+            if (_stageData.actions != null && _stageData.actions.Count > 0)
+            {
+                PatternType mainType = _stageData.actions[0].type;
+                guideView.Show(mainType);
+
+                _isGuideShowing = true;
+                _guideEndBeat = 8f;
+            }
+        }
 
         private void InitializeThemes()
         {
@@ -92,6 +129,12 @@ namespace Project.Rhythm.Presentation
             if (_backgroundMap.TryGetValue(theme, out var newBg))
             {
                 newBg.SetActive(true);
+
+                _currentEnvironment = newBg.GetComponentInChildren<BaseRhythmVisual>();
+                if (_currentEnvironment != null)
+                {
+                    _currentEnvironment.SetBpm(_stageData.bpm);
+                }
             }
 
             if (_playerMap.TryGetValue(theme, out var newPlayer))
@@ -153,6 +196,16 @@ namespace Project.Rhythm.Presentation
 
             float progress = Mathf.Clamp01(currentTime / _stageData.endPosition);
             inGameView.UpdateProgress(progress);
+
+            if (_isGuideShowing)
+            {
+                float currentBeat = (currentTime * _stageData.bpm) / 60f;
+                if (currentBeat >= _guideEndBeat)
+                {
+                    _isGuideShowing = false;
+                    guideView.Hide();
+                }
+            }
         }
 
         public void ShowResult(int p, int gr, int go, int m)
@@ -167,15 +220,13 @@ namespace Project.Rhythm.Presentation
 
         public void StartCountdown(float targetBeat)
         {
-            if (_backgroundMap.TryGetValue(_currentTheme, out var bg))
+            if (_currentEnvironment != null)
             {
-                var stage3 = bg.GetComponentInChildren<Project.Data.Stage.STAGE3.Stage3Environment>();
-
-                if (stage3 != null)
-                {
-                    stage3.SetBpm(_stageData.bpm);
-                    stage3.StartCountdown(targetBeat);
-                }
+                _currentEnvironment.StartCountdown(targetBeat);
+            }
+            else
+            {
+                Debug.LogWarning("[Presenter] 현재 활성화된 Environment 비주얼이 없습니다.");
             }
         }
 

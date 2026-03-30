@@ -28,6 +28,10 @@ namespace Project.Rhythm.Visual
         [SerializeField] protected AudioClip successSfx; // 성공 시
         [SerializeField] protected AudioClip missSfx;    // 실패 시
 
+        protected float _bpm;
+        [SerializeField] protected AudioClip countSfx;
+        public virtual void SetBpm(float bpm) => _bpm = bpm;
+
         protected Sprite[] _currentAnimation;
         protected int _currentFrameIndex;
         protected float _frameTimer;
@@ -145,6 +149,6 @@ namespace Project.Rhythm.Visual
 
         public virtual void UpdateVisual(float progress) { }
         public virtual void StopHoldAction() { }
-        public virtual void StartCountdown(float duration) { }
+        public abstract void StartCountdown(float targetBeat);
     }
 }

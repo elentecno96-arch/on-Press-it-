@@ -12,10 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d04876fa1117aa34b9eea9b52f8b6fae, type: 3}
   m_Name: TEST STAGE
   m_EditorClassIdentifier: 
+  stageIndex: 4
+  isClear: 0
   stageName: "\uD14C\uC2A4\uD2B8 \uC2A4\uD14C\uC774\uC9C0"
   masterTrack: {fileID: 8300000, guid: 0a738c5a3e54bdb44b7072975388763d, type: 3}
   bpm: 120
-  stageIndex: 4
   themeResources:
   - theme: 0
     backgroundPrefab: {fileID: 0}
@@ -33,20 +34,8 @@ MonoBehaviour:
   greatWindow: 0.21
   goodWindow: 0.27
   missWindow: 0.34
-  playStartTime: 4
-  endPosition: 54
-  actions:
-  - beat: 12.5
-    type: 0
-    role: 0
-    duration: 0
-    targetID: 
-    noteType: 0
-  - beat: 14
-    type: 0
-    role: 0
-    duration: 0
-    targetID: 
-    noteType: 0
+  playStartTime: 0
+  endPosition: 58
+  actions: []
   themeEvents: []
   patterns: []

@@ -128,5 +128,9 @@ namespace Project.Rhythm.Player
             _isJudged = false;
             base.OnAnimationComplete();
         }
+        public override void StartCountdown(float targetBeat)
+        {
+            // 플레이어 비주얼이므로 배경 카운트다운 로직은 필요 없음
+        }
     }
 }

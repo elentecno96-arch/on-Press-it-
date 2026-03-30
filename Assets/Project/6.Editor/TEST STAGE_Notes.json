@@ -1,0 +1,42 @@
+{
+    "actions": [
+        {
+            "beat": 8.0,
+            "type": 0,
+            "role": 0,
+            "duration": 0.0,
+            "targetID": "",
+            "noteType": 0
+        },
+        {
+            "beat": 14.0,
+            "type": 0,
+            "role": 0,
+            "duration": 0.0,
+            "targetID": "",
+            "noteType": 0
+        },
+        {
+            "beat": 16.5,
+            "type": 0,
+            "role": 0,
+            "duration": 0.0,
+            "targetID": "",
+            "noteType": 0
+        },
+        {
+            "beat": 18.0,
+            "type": 0,
+            "role": 0,
+            "duration": 0.0,
+            "targetID": "",
+            "noteType": 0
+        }
+    ],
+    "themeEvents": [
+        {
+            "beat": 10.5,
+            "theme": 0
+        }
+    ]
+}

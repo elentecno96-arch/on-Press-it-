@@ -289,7 +289,7 @@ GameObject:
   - component: {fileID: 3507280459605634050}
   - component: {fileID: 4251748271297411611}
   m_Layer: 5
-  m_Name: 1-3_PlayerVisual
+  m_Name: S3_PlayerVisual_Prefab
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

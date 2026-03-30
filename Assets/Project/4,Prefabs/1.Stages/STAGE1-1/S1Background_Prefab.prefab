@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1 &147689285677530342
+--- !u!1 &720462673943707363
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -8,25 +8,25 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 8877685830314451857}
-  - component: {fileID: 1715339167186908399}
-  - component: {fileID: 4016049608662309510}
-  - component: {fileID: 7241005564064514256}
-  - component: {fileID: 9054497128912541829}
+  - component: {fileID: 617751342997667294}
+  - component: {fileID: 4262697207870727590}
+  - component: {fileID: 120481807941668854}
+  - component: {fileID: -3181883145051397798}
+  - component: {fileID: -2289106992875343597}
   m_Layer: 5
-  m_Name: PlayerVisual_Prefab
+  m_Name: S1Background_Prefab
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!224 &8877685830314451857
+--- !u!224 &617751342997667294
 RectTransform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 147689285677530342}
+  m_GameObject: {fileID: 720462673943707363}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
@@ -39,21 +39,21 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!222 &1715339167186908399
+--- !u!222 &4262697207870727590
 CanvasRenderer:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 147689285677530342}
+  m_GameObject: {fileID: 720462673943707363}
   m_CullTransparentMesh: 1
---- !u!114 &4016049608662309510
+--- !u!114 &120481807941668854
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 147689285677530342}
+  m_GameObject: {fileID: 720462673943707363}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
@@ -67,8 +67,8 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 4c4e62025e516e54a82bfa9eb3e49fce, type: 3}
-  m_Type: 1
+  m_Sprite: {fileID: 21300000, guid: 7f241f4fd5f5784429caad5732d471c9, type: 3}
+  m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
   m_FillMethod: 4
@@ -77,50 +77,49 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
---- !u!114 &7241005564064514256
+--- !u!114 &-3181883145051397798
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 147689285677530342}
+  m_GameObject: {fileID: 720462673943707363}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9a01f76422feaab479fe6de5abe836c8, type: 3}
+  m_Script: {fileID: 11500000, guid: dd431371f4d606b42a2ab55b97009dca, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  targetImage: {fileID: 4016049608662309510}
+  targetImage: {fileID: 120481807941668854}
   idleFrames:
-  - {fileID: 21300000, guid: 4c4e62025e516e54a82bfa9eb3e49fce, type: 3}
-  - {fileID: 21300000, guid: 02ec40d44604d09499a536425bba9ea8, type: 3}
-  - {fileID: 21300000, guid: d6df3ae03dd7d7542943a2c98ddac550, type: 3}
-  actionFrames:
-  - {fileID: 21300000, guid: ee4e38715a669e44d83e8be05ab77371, type: 3}
-  - {fileID: 21300000, guid: 37295fc971018ee47827de2afd246bbd, type: 3}
+  - {fileID: 21300000, guid: 7f241f4fd5f5784429caad5732d471c9, type: 3}
+  - {fileID: 21300000, guid: 31c756ace959c3c4e81413b10b6f5c0b, type: 3}
+  - {fileID: 21300000, guid: 4a57142b88c0f8841b9dee0b668207d0, type: 3}
+  - {fileID: 21300000, guid: 0541f14640d3f5c41a43d2627931aabd, type: 3}
+  actionFrames: []
   successFrames: []
   missFrames: []
-  idleFrameRate: 0.15
-  actionFrameRate: 0.15
+  idleFrameRate: 0.3
+  actionFrameRate: 0.1
   successFrameRate: 0.1
   missFrameRate: 0.1
-  audioSource: {fileID: 9054497128912541829}
+  audioSource: {fileID: -2289106992875343597}
   actionSfx: {fileID: 0}
   successSfx: {fileID: 0}
   missSfx: {fileID: 0}
-  grabSfx: {fileID: 0}
---- !u!82 &9054497128912541829
+  countSfx: {fileID: 0}
+--- !u!82 &-2289106992875343597
 AudioSource:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 147689285677530342}
+  m_GameObject: {fileID: 720462673943707363}
   m_Enabled: 1
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 0}
   m_audioClip: {fileID: 0}
   m_PlayOnAwake: 1
-  m_Volume: 0.5
+  m_Volume: 1
   m_Pitch: 1
   Loop: 0
   Mute: 0
