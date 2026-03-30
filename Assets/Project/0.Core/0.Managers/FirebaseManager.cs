@@ -2,6 +2,7 @@ using Cysharp.Threading.Tasks;
 using Firebase;
 using Firebase.Auth;
 using Firebase.Database;
+using Firebase.Extensions;
 using Project.Core.Utilities;
 using UnityEngine;
 
@@ -15,9 +16,9 @@ public class FirebaseManager : BaseSingleton<FirebaseManager>
     {
         if (IsInitialized) return;
 
-        Debug.Log("Firebase 초기화 중...");
+        Debug.Log("Firebase 초기화 시작...");
 
-        // 의존성 체크
+        // 의존성 체크 및 기본 앱 초기화 (google-services.json 참조)
         var dependencyStatus = await FirebaseApp.CheckAndFixDependenciesAsync().AsUniTask();
         if (dependencyStatus != DependencyStatus.Available)
         {
@@ -25,28 +26,46 @@ public class FirebaseManager : BaseSingleton<FirebaseManager>
             return;
         }
 
-        AppOptions options = new AppOptions
-        {
-            DatabaseUrl = new System.Uri("https://pressit-f30f8-default-rtdb.firebaseio.com/")
-        };
+        Auth = FirebaseAuth.DefaultInstance;
+        DbRef = FirebaseDatabase.DefaultInstance.RootReference;
 
-        FirebaseApp app = FirebaseApp.Create(options);
-        Auth = FirebaseAuth.GetAuth(app);
-
-        string databaseUrl = "https://pressit-f30f8-default-rtdb.firebaseio.com/";
-        DbRef = FirebaseDatabase.GetInstance(databaseUrl).RootReference;
-
-        // 익명 로그인
+        // 익명 로그인 시도
         try
         {
             var authResult = await Auth.SignInAnonymouslyAsync().AsUniTask();
             User = authResult.User;
-            Debug.Log($"Firebase 초기화 및 익명 로그인 성공! UID: {User.UserId}");
+
+            Debug.Log($"<color=green>Firebase 인증 성공! UID: {User.UserId}</color>");
             IsInitialized = true;
         }
         catch (System.Exception e)
         {
-            Debug.LogError($"Firebase 로그인 실패: {e.Message}");
+            Debug.LogError($"Firebase 로그인 실패: {e.GetBaseException().Message}");
         }
+    }
+
+    public void SaveDataWithCheck(string path, string json)
+    {
+        if (!IsInitialized || User == null)
+        {
+            Debug.LogWarning("Firebase가 초기화되지 않았거나 로그인되지 않았습니다.");
+            return;
+        }
+
+        DbRef.Child(path).SetRawJsonValueAsync(json).ContinueWithOnMainThread(task =>
+        {
+            if (task.IsFaulted)
+            {
+                Debug.LogError($"[Firebase] 저장 실패 ({path}): {task.Exception.GetBaseException().Message}");
+            }
+            else if (task.IsCanceled)
+            {
+                Debug.LogWarning($"[Firebase] 저장 취소됨: {path}");
+            }
+            else
+            {
+                Debug.Log($"<color=cyan>[Firebase] 저장 성공: {path}</color>");
+            }
+        });
     }
 }

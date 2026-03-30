@@ -38,11 +38,16 @@ namespace Project.Core.Managers
                 }
             }
 
-            // 디버깅용: 현재 체크 중인 값 확인
-            Debug.Log($"[업적 체크] 스테이지: {data.stageName}, Perfect: {perfectCount}/{totalNotes}, 최초클리어: {isFirstClear}");
+            string clearId = $"Clear_{index}";
+            bool alreadyHasClearAchi = PlayerManager.Instance.Data.achievements.Exists(a => a.id == clearId);
+
+            // 외부 판단(isFirstClear) 혹은 데이터 기반 판단(!alreadyHasClearAchi) 둘 중 하나라도 맞으면 진행
+            bool actualFirstClear = isFirstClear || !alreadyHasClearAchi;
+
+            Debug.Log($"[업적 체크] 스테이지: {data.stageName}, Perfect: {perfectCount}/{totalNotes}, 최종판정_최초클리어: {actualFirstClear}");
 
             // 1. 최초 클리어
-            if (isFirstClear)
+            if (actualFirstClear)
             {
                 Unlock($"Clear_{index}", $"{data.stageName} 최초 클리어!");
             }
