@@ -19,7 +19,7 @@ namespace Project.Core.Managers
         public event Action OnPointerUp;
         private bool _isInputBlocked = false;
 
-        public bool IsPressing => !_isInputBlocked && Touch.activeTouches.Count > 0;
+        public bool IsPressing => IsInitialized && !_isInputBlocked && Touch.activeTouches.Count > 0;
 
         private const float SLIDE_THRESHOLD = 50f;
         private string _lastInputType = "None";

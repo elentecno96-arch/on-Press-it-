@@ -63,7 +63,8 @@ namespace Project.Core.Ui.StageUi.View
 
         public void Hide()
         {
-            canvasGroup.DOFade(0f, 0.4f).OnComplete(() => {
+            canvasGroup.DOFade(0f, 0.4f).OnComplete(() =>
+            {
                 StopAnimation();
                 gameObject.SetActive(false);
             });
@@ -83,6 +84,11 @@ namespace Project.Core.Ui.StageUi.View
             StopAnimation();
             canvasGroup.alpha = 0;
             gameObject.SetActive(false);
+        }
+
+        private void OnDisable()
+        {
+            StopAnimation();
         }
     }
 }

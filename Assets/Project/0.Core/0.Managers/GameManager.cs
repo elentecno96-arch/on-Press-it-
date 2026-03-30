@@ -22,13 +22,19 @@ namespace Project.Core.Managers
 
             if (IsInitialized) return;
 
+            await FirebaseManager.Instance.Initialize();
+            await PlayerManager.Instance.Initialize();
+
+            if (FirebaseManager.Instance.IsInitialized)
+            {
+                await PlayerManager.Instance.SyncWithServer();
+            }
+
             if (InputManager.Instance != null)
             {
                 await InputManager.Instance.Initialize();
             }
 
-            //전역 매니저 기본 초기화
-            await PlayerManager.Instance.Initialize();
             await AudioManager.Instance.Initialize();
             await AchievementManager.Instance.Initialize();
 

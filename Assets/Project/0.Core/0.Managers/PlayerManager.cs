@@ -1,7 +1,8 @@
 using Cysharp.Threading.Tasks;
+using Firebase.Extensions;
 using Project.Core.Utilities;
-using System.IO;
 using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
 
 namespace Project.Core.Managers
@@ -57,6 +58,34 @@ namespace Project.Core.Managers
             await UniTask.Yield();
             IsInitialized = true;
         }
+
+        public async UniTask SyncWithServer()
+        {
+            try
+            {
+                if (FirebaseManager.Instance == null || !FirebaseManager.Instance.IsInitialized) return;
+
+                var snapshot = await FirebaseManager.Instance.DbRef
+                    .Child("users").Child(FirebaseManager.Instance.User.UserId).Child("playerData")
+                    .GetValueAsync().AsUniTask();
+
+                if (snapshot.Exists)
+                {
+                    string json = snapshot.GetRawJsonValue();
+                    PlayerData serverData = JsonUtility.FromJson<PlayerData>(json);
+
+                    Data = serverData; //덥어쓰기
+
+                    SaveLocal();
+                    Debug.Log("[PlayerManager] 서버 데이터 동기화 완료!");
+                }
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogError($"[PlayerManager] 서버 동기화 중 에러: {e.Message}");
+            }
+        }
+
         // AudioManager로부터 전달받은 볼륨 정보를 데이터에 반영하고 저장
         private void UpdateAudioSettings(float bgm, float sfx)
         {
@@ -97,13 +126,30 @@ namespace Project.Core.Managers
         // 설명: JSON 형식으로 데이터를 직렬화하여 실제 파일에 작성
         public void Save()
         {
+            SaveLocal();
+
+            // B. Firebase 서버 저장 (온라인 동기화)
+            if (FirebaseManager.Instance != null && FirebaseManager.Instance.IsInitialized)
+            {
+                string json = JsonUtility.ToJson(Data);
+                FirebaseManager.Instance.DbRef
+                    .Child("users").Child(FirebaseManager.Instance.User.UserId).Child("playerData")
+                    .SetRawJsonValueAsync(json).ContinueWithOnMainThread(task => {
+                        if (task.IsCompleted) Debug.Log("[PlayerManager] 서버 데이터 업로드 성공!");
+                    });
+            }
+        }
+
+        private void SaveLocal()
+        {
             try
             {
                 string json = JsonUtility.ToJson(Data, true);
                 File.WriteAllText(SavePath, json);
             }
-            catch (System.Exception e) { Debug.LogError($"[Save 실패] {e.Message}"); }
+            catch (System.Exception e) { Debug.LogError($"[Local Save 실패] {e.Message}"); }
         }
+
         // 설명: 파일이 존재하면 읽어와서 JsonUtility를 통해 C# 객체로 변환
         private void Load()
         {
