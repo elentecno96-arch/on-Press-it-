@@ -1,0 +1,23 @@
+{
+    "stageName": "테스트 스테이지",
+    "bpm": 120.0,
+    "actions": [
+        {
+            "beat": 4.0,
+            "type": 1,
+            "role": 0,
+            "duration": 0.0,
+            "targetID": "",
+            "noteType": 0
+        },
+        {
+            "beat": 8.0,
+            "type": 1,
+            "role": 0,
+            "duration": 0.0,
+            "targetID": "",
+            "noteType": 0
+        }
+    ],
+    "themeEvents": []
+}

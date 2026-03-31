@@ -75,7 +75,7 @@ namespace Project.Editor.TestEditor.Input
             {
                 if (e.mousePosition.y >= rulerLimit && e.mousePosition.y < noteLimit)
                 {
-                    int foundIndex = _engine.actions.FindIndex(a => Mathf.Abs(a.beat - beat) < 0.1f);
+                    int foundIndex = _engine.actions.FindIndex(a => Mathf.Abs(a.beat - beat) < 0.05f);
                     if (foundIndex != -1)
                     {
                         _engine.selectedActionIndex = foundIndex;
@@ -89,7 +89,7 @@ namespace Project.Editor.TestEditor.Input
                 }
                 else if (e.mousePosition.y >= noteLimit && e.mousePosition.y <= rect.yMax)
                 {
-                    int foundIndex = _engine.themeEvents.FindIndex(t => Mathf.Abs(t.beat - beat) < 0.1f);
+                    int foundIndex = _engine.themeEvents.FindIndex(t => Mathf.Abs(t.beat - beat) < 0.05f);
                     if (foundIndex != -1)
                     {
                         _engine.selectedThemeEventIndex = foundIndex;
