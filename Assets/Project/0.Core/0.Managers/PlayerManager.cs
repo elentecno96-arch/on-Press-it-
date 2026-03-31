@@ -55,12 +55,39 @@ namespace Project.Core.Managers
                 AudioManager.Instance.OnRequestAudioSave += UpdateAudioSettings;
             }
 
-            // StageData의 클리어 요청 이벤트를 구독합니다.
-            // 이제 StageData에서 신호가 오면 자동으로 SaveStageResult가 실행됩니다.
-            StageData.OnStageClearRequested += SaveStageResult;
+            // OnStageClearRequested(점수포함) -> OnStagePlayCompleted(인덱스만)로 변경 대응
+            StageData.OnStagePlayCompleted += HandleStageCompleted;
 
             await UniTask.Yield();
             IsInitialized = true;
+        }
+
+        // 점수와 상관없이 "플레이 했다"는 기록 자체를 남기는 메서드
+        public void HandleStageCompleted(int index)
+        {
+            if (index <= 0) return;
+
+            var record = Data.stageRecords.Find(s => s.stageIndex == index);
+
+            // 기록이 아예 없는 경우에만 새로 생성 (기본값 0점으로 '플레이 기록' 생성)
+            if (record == null)
+            {
+                record = new StageSaveData { stageIndex = index, bestScore = 0 };
+                Data.stageRecords.Add(record);
+                Save(); // 새로운 스테이지 플레이 시 즉시 저장
+                Debug.Log($"[PlayerManager] 스테이지 {index} 최초 플레이 기록 생성");
+            }
+        }
+        public bool IsStageCleared(int stageIndex)
+        {
+            if (stageIndex <= 0) return false;
+            if (Data == null || Data.stageRecords == null) return false;
+
+            // [변경] 점수가 0보다 큰지가 아니라, 리스트에 해당 스테이지 인덱스가 존재하는지로 판단
+            // 즉, 한 번이라도 완주해서 HandleStageCompleted가 실행되었다면 true입니다.
+            bool hasPlayed = Data.stageRecords.Exists(s => s.stageIndex == stageIndex);
+
+            return hasPlayed;
         }
 
         public async UniTask SyncWithServer()
@@ -136,28 +163,7 @@ namespace Project.Core.Managers
         {
             //SaveStageResult와 동일한 로직이므로 내부에서 호출하도록 변경 가능
             SaveStageResult(index, score);
-        }
-        // 특정 스테이지가 클리어되었는지 확인하는 헬퍼 메서드 ---
-        public bool IsStageCleared(int stageIndex)
-        {
-            // [수정] 0 이하는 기록이 존재할 수 없으므로 무조건 false입니다.
-            // 첫 스테이지 오픈은 Presenter의 (myStageNum == 1) 로직이 담당합니다.
-            if (stageIndex <= 0) return false;
-
-            if (Data == null || Data.stageRecords == null) return false;
-
-            var record = Data.stageRecords.Find(s => s.stageIndex == stageIndex);
-
-            if (record != null)
-            {
-                Debug.Log($"[데이터확인] 인덱스:{stageIndex} / 점수:{record.bestScore}");
-                // 점수가 0보다 커야 클리어로 인정
-                return record.bestScore > 0;
-            }
-
-            // 기록이 아예 없으면 당연히 false
-            return false;
-        }
+        }        
 
         // 설명: JSON 형식으로 데이터를 직렬화하여 실제 파일에 작성
         public void Save()
@@ -197,13 +203,12 @@ namespace Project.Core.Managers
         // 이유: 오브젝트 파괴 시 이벤트 연결을 해제하여 메모리 누수 및 에러 방지
         private void OnDisable()
         {
-            // 싱글톤 인스턴스가 존재할 때만 구독 해제
             if (AudioManager.Instance != null)
             {
                 AudioManager.Instance.OnRequestAudioSave -= UpdateAudioSettings;
             }
-
-            StageData.OnStageClearRequested -= SaveStageResult;
+            // [수정] 이벤트 해제 구문 변경
+            StageData.OnStagePlayCompleted -= HandleStageCompleted;
         }
     }
 }
