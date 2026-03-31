@@ -78,4 +78,25 @@ public class FirebaseManager : BaseSingleton<FirebaseManager>
         SaveDataAsync(path, json).Forget();
     }
 
+    public async UniTask<string> LoadPlayerData()
+    {
+        if (!IsInitialized || User == null) return null;
+
+        try
+        {
+            var snapshot = await DbRef
+                .Child("users")
+                .Child(User.UserId)
+                .Child("playerData")
+                .GetValueAsync().AsUniTask();
+
+            return snapshot.Exists ? snapshot.GetRawJsonValue() : null;
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogError($"[FirebaseManager] 데이터 로드 실패: {e.Message}");
+            return null;
+        }
+    }
+
 }
