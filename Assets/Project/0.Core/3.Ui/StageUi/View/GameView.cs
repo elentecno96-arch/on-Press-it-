@@ -6,63 +6,109 @@ using UnityEngine.UI;
 
 namespace Project.Core.Ui.StageUi.View
 {
-    /// <summary>
-    /// Game씬의 InGame UI 담당 View
-    /// Image의 FillAmount를 이용해 진행도를 표시합니다.
-    /// </summary>
     public class GameView : MonoBehaviour
     {
         [SerializeField] private TextMeshProUGUI stageName;
 
-        [SerializeField] private GameObject progressBar;
-        [SerializeField] private Image progressBack;  // 배경 이미지 (필요시 활성/비활성용)
-        [SerializeField] private Image progressGauge; // 실제 차오르는 이미지 (Image Type: Filled 필수)
+        [Header("Progress UI Settings")]
+        [SerializeField] private Slider progressSlider;
+        [SerializeField] private TextMeshProUGUI progressText;
 
-        [SerializeField] private Button settingButton;
+        [Header("Main Panels")]
         [SerializeField] private GameObject settingPanel;
+        [SerializeField] private Button settingButton;
 
-        [SerializeField] private Button exitToMainButton;
+        [Header("Confirmation Popups")]
+        [SerializeField] private GameObject restartConfirmPopup;
+        [SerializeField] private GameObject exitConfirmPopup;
+
+        [Header("Restart Popup Buttons")]
+        [SerializeField] private Button restartConfirmBtn; // 진짜 재시작
+        [SerializeField] private Button restartCancelBtn;  // 재시작 취소 (닫기)
+
+        [Header("Exit Popup Buttons")]
+        [SerializeField] private Button exitConfirmBtn;    // 진짜 종료
+        [SerializeField] private Button exitCancelBtn;     // 종료 취소 (닫기)
+
+        [Header("Setting Panel Buttons")]
+        [SerializeField] private Button openRestartPopupBtn;
+        [SerializeField] private Button openExitPopupBtn;
+        [SerializeField] private Button muteButton;
+
+        private bool _isMuted = false;
+        private bool _isActionStarted = false;
 
         private void Awake()
         {
-            if (settingPanel != null) settingPanel.SetActive(false);
-            if (settingButton != null)
-            {
-                settingButton.onClick.AddListener(() => {
-                    if (settingPanel != null)
-                    {
-                        bool isActive = settingPanel.activeSelf;
-                        settingPanel.SetActive(!isActive);
-                        Debug.Log($"<color=white>[GameView]</color> 설정창 {(!isActive ? "활성화" : "비활성화")}");
-                    }
-                });
-            }
+            // 모든 팝업 초기화 (꺼두기)
+            settingPanel?.SetActive(false);
+            restartConfirmPopup?.SetActive(false);
+            exitConfirmPopup?.SetActive(false);
 
-            if (exitToMainButton != null)
+            if (progressSlider != null)
             {
-                exitToMainButton.onClick.AddListener(() => {
-                    LoadingManager.Instance.LoadSceneAsync("Main").Forget();
-                    Debug.Log("<color=orange>[GameView]</color> 게임 중단 및 메인 씬 이동 요청");
-                });
+                progressSlider.minValue = 0f;
+                progressSlider.maxValue = 1f;
+                progressSlider.value = 0f;
+                progressSlider.interactable = false;
             }
 
             UpdateProgress(0f);
+            InitButtonEvents();
+        }
+
+        private void InitButtonEvents()
+        {
+            // 1. 설정창 열기
+            settingButton?.onClick.AddListener(() => {
+                settingPanel?.SetActive(!settingPanel.activeSelf);
+            });
+
+            // 2. 재시작 로직
+            openRestartPopupBtn?.onClick.AddListener(() => restartConfirmPopup?.SetActive(true));
+            restartCancelBtn?.onClick.AddListener(() => restartConfirmPopup?.SetActive(false)); // 취소: 팝업 닫기
+
+            restartConfirmBtn?.onClick.AddListener(() => {
+                if (_isActionStarted) return;
+                var currentData = GameManager.Instance.CurrentStageData;
+                if (currentData != null)
+                {
+                    _isActionStarted = true;
+                    restartConfirmPopup.SetActive(false);
+                    settingPanel.SetActive(false);
+                    GameManager.Instance.StartStage(currentData).Forget();
+                    _isActionStarted = false;
+                }
+            });
+
+            // 3. 종료 로직
+            openExitPopupBtn?.onClick.AddListener(() => exitConfirmPopup?.SetActive(true));
+            exitCancelBtn?.onClick.AddListener(() => exitConfirmPopup?.SetActive(false)); // 취소: 팝업 닫기
+
+            exitConfirmBtn?.onClick.AddListener(() => {
+                exitConfirmPopup.SetActive(false);
+                settingPanel.SetActive(false);
+                LoadingManager.Instance.LoadSceneAsync("Main").Forget();
+            });
+
+            // 4. 음소거
+            muteButton?.onClick.AddListener(() => {
+                _isMuted = !_isMuted;
+                AudioListener.volume = _isMuted ? 0f : 1f;
+            });
         }
 
         public void SetStageName(string name) => stageName.text = name;
 
-        /// <summary>
-        /// 0.0 ~ 1.0 사이의 값을 받아 이미지의 FillAmount를 조절
-        /// </summary>
         public void UpdateProgress(float progress)
         {
-            if (progressGauge != null)
+            float clampedProgress = Mathf.Clamp01(progress);
+            if (progressSlider != null) progressSlider.value = clampedProgress;
+            if (progressText != null)
             {
-                progressGauge.fillAmount = Mathf.Clamp01(progress);
+                int percent = Mathf.FloorToInt(clampedProgress * 100f);
+                progressText.text = $"{percent}%";
             }
         }
-
-        public void OpenSetting() => settingPanel?.SetActive(true);
-        public void CloseSetting() => settingPanel?.SetActive(false);
     }
 }
