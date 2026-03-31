@@ -134,6 +134,18 @@ PrefabInstance:
       propertyPath: m_RaycastTarget
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 2715459858790310349, guid: 8b17b056bb1b64242bb7adaa7857c7ff, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 71
+      objectReference: {fileID: 0}
+    - target: {fileID: 2715459858790310349, guid: 8b17b056bb1b64242bb7adaa7857c7ff, type: 3}
+      propertyPath: m_SizeDelta.y
+      value: 76
+      objectReference: {fileID: 0}
+    - target: {fileID: 2715459858790310349, guid: 8b17b056bb1b64242bb7adaa7857c7ff, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 151
+      objectReference: {fileID: 0}
     - target: {fileID: 6508458119255633763, guid: 8b17b056bb1b64242bb7adaa7857c7ff, type: 3}
       propertyPath: m_Pivot.x
       value: 0.5
@@ -214,13 +226,21 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 6670990807487723951, guid: 8b17b056bb1b64242bb7adaa7857c7ff, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 91
+      objectReference: {fileID: 0}
+    - target: {fileID: 6670990807487723951, guid: 8b17b056bb1b64242bb7adaa7857c7ff, type: 3}
+      propertyPath: m_SizeDelta.y
+      value: 85
+      objectReference: {fileID: 0}
     - target: {fileID: 7311784778562744098, guid: 8b17b056bb1b64242bb7adaa7857c7ff, type: 3}
       propertyPath: m_Name
       value: StageInfo2
       objectReference: {fileID: 0}
     - target: {fileID: 7311784778562744098, guid: 8b17b056bb1b64242bb7adaa7857c7ff, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
