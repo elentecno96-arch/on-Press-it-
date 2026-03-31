@@ -1,5 +1,4 @@
 using Cysharp.Threading.Tasks;
-using Firebase.Extensions;
 using Project.Core.Utilities;
 using System.Collections.Generic;
 using System.IO;
@@ -116,14 +115,25 @@ namespace Project.Core.Managers
         // 특정 스테이지가 클리어되었는지 확인하는 헬퍼 메서드 ---
         public bool IsStageCleared(int stageIndex)
         {
+            // [수정] 0 이하는 기록이 존재할 수 없으므로 무조건 false입니다.
+            // 첫 스테이지 오픈은 Presenter의 (myStageNum == 1) 로직이 담당합니다.
+            if (stageIndex <= 0) return false;
+
             if (Data == null || Data.stageRecords == null) return false;
 
             var record = Data.stageRecords.Find(s => s.stageIndex == stageIndex);
 
-            // 기록이 있고, 최고 점수가 0보다 크면 클리어된 것으로 봅니다.
-            return record != null && record.bestScore > 0;
+            if (record != null)
+            {
+                Debug.Log($"[데이터확인] 인덱스:{stageIndex} / 점수:{record.bestScore}");
+                // 점수가 0보다 커야 클리어로 인정
+                return record.bestScore > 0;
+            }
+
+            // 기록이 아예 없으면 당연히 false
+            return false;
         }
-        
+
         // 설명: JSON 형식으로 데이터를 직렬화하여 실제 파일에 작성
         public void Save()
         {
@@ -168,5 +178,6 @@ namespace Project.Core.Managers
                 AudioManager.Instance.OnRequestAudioSave -= UpdateAudioSettings;
             }
         }
+
     }
 }

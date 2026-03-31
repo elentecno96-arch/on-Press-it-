@@ -210,10 +210,13 @@ namespace Project.Core.Managers
                 // 2. 이제 점수를 최종 계산하고 저장합니다.
                 _judgementSystem.FinalizeAndSaveResult();
 
-                // 3. 데이터 수집
+                // 3. 현재 스테이지 데이터에 클리어 로그 출력 (ScriptableObject 메서드 호출)
+                _activeStageData.SetClear(true);
+
+                // 4. 데이터 수집 및 업적 체크
                 int p = _judgementSystem.GetCount(JudgeResult.Perfect);
 
-                // 4. 업적 매니저 호출 (미리 계산한 isFirstClear로 전달합니다)
+                // 5. 업적 매니저 호출 (미리 계산한 isFirstClear로 전달합니다)
                 if (AchievementManager.Instance != null)
                 {
                     AchievementManager.Instance.CheckStageAchievements(data, p, isFirstClear);
