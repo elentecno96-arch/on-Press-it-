@@ -18,7 +18,19 @@ MonoBehaviour:
   stageName: "\uD14C\uC2A4\uD2B8 \uC2A4\uD14C\uC774\uC9C0"
   masterTrack: {fileID: 8300000, guid: 0a738c5a3e54bdb44b7072975388763d, type: 3}
   bpm: 120
-  themeResources: []
+  themeResources:
+  - theme: 0
+    backgroundPrefab: {fileID: 0}
+    playerPrefab: {fileID: 0}
+    notePrefab: {fileID: 0}
+  - theme: 1
+    backgroundPrefab: {fileID: 0}
+    playerPrefab: {fileID: 0}
+    notePrefab: {fileID: 0}
+  - theme: 2
+    backgroundPrefab: {fileID: 0}
+    playerPrefab: {fileID: 0}
+    notePrefab: {fileID: 0}
   perfectWindow: 0.12
   greatWindow: 0.21
   goodWindow: 0.27
