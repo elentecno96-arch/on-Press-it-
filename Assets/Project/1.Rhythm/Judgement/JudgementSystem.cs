@@ -2,6 +2,7 @@ using Project.Core.Managers;
 using Project.Rhythm.Data;
 using Project.Rhythm.Data.Enum;
 using Project.Rhythm.Data.Struct;
+using Project.Rhythm.Note;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -29,6 +30,8 @@ namespace Project.Rhythm.Judgement
 
         public event Action<JudgeResult, Note.Note> OnJudged;
 
+        private int _totalNotes; // 총 노트 수 (점수 계산용)
+
         public bool IsHolding => _activeHoldNote.HasValue;
 
         public void Initialize(StageData data)
@@ -38,8 +41,19 @@ namespace Project.Rhythm.Judgement
             _judgeQueue.Clear();
             _activeHoldNote = null;
             _judgeCounts.Clear();
+
             foreach (JudgeResult res in Enum.GetValues(typeof(JudgeResult)))
                 _judgeCounts[res] = 0;
+
+            _totalNotes = 0;
+            if (data.actions != null)
+            {
+                foreach (var action in data.actions)
+                {
+                    if (action.noteType != NoteType.Signal)
+                        _totalNotes++;
+                }
+            }
 
             _perfectWin = data.perfectWindow;
             _greatWin = data.greatWindow;
@@ -51,17 +65,36 @@ namespace Project.Rhythm.Judgement
         /// </summary>
         public void FinalizeAndSaveResult()
         {
-            // 1. 점수 계산
-            float score = (_judgeCounts[JudgeResult.Perfect] * 100f) +
-                          (_judgeCounts[JudgeResult.Great] * 70f) +
-                          (_judgeCounts[JudgeResult.Good] * 40f);
-            // 2. 데이터 저장
+            // 만점 고정 점수 계산 (최대 100,000점)
+            float score = CalculateFinalScore();
+
+            // 데이터 저장
             PlayerManager.Instance.SaveBestScore(_currentStageIndex, score);
 
-            // 3. 콘솔에 한 줄로 요약 출력 (매우 간소화)
+            // 결과 출력
             Debug.Log($"<color=yellow><b>[STAGE {_currentStageIndex} CLEAR]</b></color> " +
-                      $"Score: {score} | Perfect:{_judgeCounts[JudgeResult.Perfect]} Great:{_judgeCounts[JudgeResult.Great]} " +
-                      $"Good:{_judgeCounts[JudgeResult.Good]} Miss:{_judgeCounts[JudgeResult.Miss]}");
+                      $"Final Score: {score:N0} / 100,000 | " +
+                      $"P:{_judgeCounts[JudgeResult.Perfect]} G:{_judgeCounts[JudgeResult.Great]} " +
+                      $"Go:{_judgeCounts[JudgeResult.Good]} M:{_judgeCounts[JudgeResult.Miss]}");
+        }
+
+        /// <summary>
+        /// 만점 고정 점수 계산 로직
+        /// </summary>
+        public float CalculateFinalScore()
+        {
+            if (_totalNotes <= 0) return 0f;
+
+            // 가중치 합산
+            float weightedSum = (_judgeCounts[JudgeResult.Perfect] * 1.0f) +
+                               (_judgeCounts[JudgeResult.Great] * 0.7f) +
+                               (_judgeCounts[JudgeResult.Good] * 0.4f);
+
+            // (가중치 합 / 총 노트 수) * 100,000
+            float finalScore = (weightedSum / _totalNotes) * 100000f;
+
+            // 부동 소수점 오차 방지를 위해 반올림 처리
+            return Mathf.Round(finalScore);
         }
 
 
@@ -143,8 +176,6 @@ namespace Project.Rhythm.Judgement
         private void LogAndNotify(JudgeResult result, Note.Note note)
         {
             _judgeCounts[result]++;
-            // 개별 노트 판정 로그 (필요 없으면 주석 처리 하세요)
-            // PrintJudgeLog(result);
             OnJudged?.Invoke(result, note);
         }
 
@@ -220,10 +251,5 @@ namespace Project.Rhythm.Judgement
         }
 
         public int GetCount(JudgeResult result) => _judgeCounts[result];
-        private void PrintJudgeLog(JudgeResult result) // 개별 판정 로그
-        {
-            string color = result switch { JudgeResult.Perfect => "cyan", JudgeResult.Great => "green", JudgeResult.Good => "yellow", _ => "red" };
-            Debug.Log($"<color={color}>[{result}]</color>");
-        }
     }
 }
