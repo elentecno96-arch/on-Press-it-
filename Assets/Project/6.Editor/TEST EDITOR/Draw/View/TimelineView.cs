@@ -193,23 +193,27 @@ public class TimelineView
         float startTime = _engine.scrollX / _engine.zoomLevel;
         float endTime = (_engine.scrollX + area.width) / _engine.zoomLevel;
 
-        int startBeat = Mathf.FloorToInt(startTime / beatDuration);
-        int endBeat = Mathf.CeilToInt(endTime / beatDuration);
+        float snapStep = beatDuration * 0.5f;
+        int startStep = Mathf.FloorToInt(startTime / snapStep);
+        int endStep = Mathf.CeilToInt(endTime / snapStep);
 
-        for (int i = startBeat; i <= endBeat; i++)
+        for (int i = startStep; i <= endStep; i++)
         {
-            float beatTime = i * beatDuration;
-            float xPos = area.x + (beatTime * _engine.zoomLevel) - _engine.scrollX;
+            float lineTime = i * snapStep;
+            float xPos = area.x + (lineTime * _engine.zoomLevel) - _engine.scrollX;
 
             if (xPos < area.x || xPos > area.xMax) continue;
 
-            bool isBar = i % 4 == 0;
-            Handles.color = isBar ? new Color(0.5f, 0.5f, 0.5f, 0.8f) : new Color(0.3f, 0.3f, 0.3f, 0.2f);
-            Handles.DrawLine(new Vector3(xPos, area.y), new Vector3(xPos, area.yMax));
+            Color lineColor;
+            if (i % 8 == 0) lineColor = new Color(0.8f, 0.8f, 0.8f, 0.8f);
+            else if (i % 2 == 0) lineColor = new Color(0.5f, 0.5f, 0.5f, 0.5f); 
+            else lineColor = new Color(0.3f, 0.3f, 0.3f, 0.2f); 
 
-            if (isBar)
+            EditorGUI.DrawRect(new Rect(xPos, area.y, 1f, area.height), lineColor);
+
+            if (i % 8 == 0)
             {
-                GUI.Label(new Rect(xPos + 5, area.y + 2, 50, 20), $"M {i / 4}", EditorStyles.boldLabel);
+                GUI.Label(new Rect(xPos + 5, area.y + 2, 50, 20), $"M {i / 8}", EditorStyles.boldLabel);
             }
         }
     }
