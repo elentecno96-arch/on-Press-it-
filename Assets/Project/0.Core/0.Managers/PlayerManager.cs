@@ -138,7 +138,7 @@ namespace Project.Core.Managers
             }
 
             // ===== 업적 병합 (해금 상태 및 날짜 보호) =====
-            if (server.stageRecords != null)
+            if (server.achievements != null)
             {
                 foreach (var serverAch in server.achievements)
                 {
