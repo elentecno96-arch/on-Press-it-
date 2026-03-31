@@ -23,7 +23,7 @@ namespace Project.Rhythm.Data
         [Header("Audio")]
         public string stageName;
         public AudioClip masterTrack;
-        public float bpm;      
+        public float bpm;
 
         [Header("Theme Resources")]
         public List<ThemeResource> themeResources;
@@ -47,12 +47,13 @@ namespace Project.Rhythm.Data
         public List<PatternData> patterns = new();
 
         // 클리어 이벤트를 정의합니다. (인덱스와 점수를 전달)
-        public static event System.Action<int> OnStagePlayCompleted;
-        public void SetClear(int score)
+        public static event System.Action<int, bool> OnStagePlayStatusChanged;
+        public void SetPlayComplete(bool isPlayed)
         {
-            // (float)score는 PlayerManager가 float 점수를 받기 때문입니다.
-            OnStagePlayCompleted?.Invoke(this.stageIndex);
-            Debug.Log($"[StageData] {stageName} 플레이 완료 이벤트 발송 (Index: {stageIndex})");
+            // 이 인덱스의 스테이지를 플레이했다(True)는 사실을 알림
+            OnStagePlayStatusChanged?.Invoke(this.stageIndex, isPlayed);
+
+            Debug.Log($"[StageData] {stageName} (Index: {stageIndex}) 플레이 완료 상태: {isPlayed}");
         }
     }
 }

@@ -56,26 +56,28 @@ namespace Project.Core.Managers
             }
 
             // OnStageClearRequested(점수포함) -> OnStagePlayCompleted(인덱스만)로 변경 대응
-            StageData.OnStagePlayCompleted += HandleStageCompleted;
+            StageData.OnStagePlayStatusChanged += HandleStageStatusChanged;
 
             await UniTask.Yield();
             IsInitialized = true;
         }
 
         // 점수와 상관없이 "플레이 했다"는 기록 자체를 남기는 메서드
-        public void HandleStageCompleted(int index)
+        private void HandleStageStatusChanged(int index, bool isPlayed)
         {
-            if (index <= 0) return;
+            // False(플레이 안 함/실패 등)라면 아무것도 하지 않고 리턴합니다.
+            if (!isPlayed || index <= 0) return;
 
             var record = Data.stageRecords.Find(s => s.stageIndex == index);
 
-            // 기록이 아예 없는 경우에만 새로 생성 (기본값 0점으로 '플레이 기록' 생성)
+            // 기록이 아예 없는 경우에만 '플레이 함' 상태를 위해 데이터 생성 (기본 점수 0)
             if (record == null)
             {
                 record = new StageSaveData { stageIndex = index, bestScore = 0 };
                 Data.stageRecords.Add(record);
-                Save(); // 새로운 스테이지 플레이 시 즉시 저장
-                Debug.Log($"[PlayerManager] 스테이지 {index} 최초 플레이 기록 생성");
+
+                Save(); // 새로운 스테이지 플레이(True) 시 즉시 저장
+                Debug.Log($"[PlayerManager] {index}번 스테이지가 '플레이 됨(True)' 상태로 기록되었습니다.");
             }
         }
         public bool IsStageCleared(int stageIndex)
@@ -208,7 +210,7 @@ namespace Project.Core.Managers
                 AudioManager.Instance.OnRequestAudioSave -= UpdateAudioSettings;
             }
             // [수정] 이벤트 해제 구문 변경
-            StageData.OnStagePlayCompleted -= HandleStageCompleted;
+            StageData.OnStagePlayStatusChanged -= HandleStageStatusChanged;
         }
     }
 }

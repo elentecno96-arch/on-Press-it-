@@ -197,7 +197,6 @@ namespace Project.Core.Managers
                 _audioTimeline.StartTimeline();
                 await UniTask.WaitUntil(() => _audioTimeline.GetStageTime() >= data.endPosition, cancellationToken: token);
 
-                // --- [수정 구간: 순서 변경] ---
                 // 1. 점수 저장 전, 최초 클리어 여부를 미리 계산합니다.
                 bool isFirstClear = false;
                 if (PlayerManager.Instance != null && PlayerManager.Instance.Data != null)
@@ -207,14 +206,14 @@ namespace Project.Core.Managers
                     if (record == null || record.bestScore <= 0) isFirstClear = true;
                 }
 
-                // 2. 이제 점수를 최종 계산하고 저장합니다.
+                // 2. 점수 계산 및 저장은 JudgementSystem이 담당 (데이터 무결성)
                 _judgementSystem.FinalizeAndSaveResult();
 
-                // 3. 현재 스테이지 데이터에 클리어 로그 출력 (ScriptableObject 메서드 호출)
-                _activeStageData.SetClear(1);
+                // 3. 스테이지를 끝까지 완주했으므로 'true'를 전달하여 플레이 기록을 확정함
+                _activeStageData.SetPlayComplete(true);
 
                 // 4. 데이터 수집 및 업적 체크
-                int p = _judgementSystem.GetCount(JudgeResult.Perfect);
+                int p = _judgementSystem.GetCount(JudgeResult.Perfect);               
 
                 // 5. 업적 매니저 호출 (미리 계산한 isFirstClear로 전달합니다)
                 if (AchievementManager.Instance != null)
