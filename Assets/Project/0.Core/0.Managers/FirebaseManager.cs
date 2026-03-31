@@ -46,26 +46,27 @@ public class FirebaseManager : BaseSingleton<FirebaseManager>
 
     public void SaveDataWithCheck(string path, string json)
     {
-        if (!IsInitialized || User == null)
-        {
-            Debug.LogWarning("Firebase가 초기화되지 않았거나 로그인되지 않았습니다.");
-            return;
-        }
+        if (!IsInitialized || User == null) return;
+        SaveDataAsync(path, json).Forget();
+    }
 
-        DbRef.Child(path).SetRawJsonValueAsync(json).ContinueWithOnMainThread(task =>
+    private async UniTaskVoid SaveDataAsync(string path, string json)
+    {
+        try
         {
-            if (task.IsFaulted)
-            {
-                Debug.LogError($"[Firebase] 저장 실패 ({path}): {task.Exception.GetBaseException().Message}");
-            }
-            else if (task.IsCanceled)
-            {
-                Debug.LogWarning($"[Firebase] 저장 취소됨: {path}");
-            }
-            else
-            {
-                Debug.Log($"<color=cyan>[Firebase] 저장 성공: {path}</color>");
-            }
-        });
+            await DbRef.Child(path).SetRawJsonValueAsync(json)
+                .AsUniTask() 
+                .AttachExternalCancellation(this.GetCancellationTokenOnDestroy()); // 여기서 토큰 연결
+
+            Debug.Log($"<color=cyan>[Firebase] 저장 성공: {path}</color>");
+        }
+        catch (System.OperationCanceledException)
+        {
+            Debug.Log("[Firebase] 저장 작업이 취소되었습니다.");
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogError($"[Firebase] 저장 실패: {e.Message}");
+        }
     }
 }

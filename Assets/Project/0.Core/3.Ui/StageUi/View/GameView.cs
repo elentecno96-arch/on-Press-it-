@@ -1,5 +1,6 @@
 using Cysharp.Threading.Tasks;
 using Project.Core.Managers;
+using System.Threading;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -23,12 +24,12 @@ namespace Project.Core.Ui.StageUi.View
         [SerializeField] private GameObject exitConfirmPopup;
 
         [Header("Restart Popup Buttons")]
-        [SerializeField] private Button restartConfirmBtn; // 진짜 재시작
-        [SerializeField] private Button restartCancelBtn;  // 재시작 취소 (닫기)
+        [SerializeField] private Button restartConfirmBtn;
+        [SerializeField] private Button restartCancelBtn;
 
         [Header("Exit Popup Buttons")]
-        [SerializeField] private Button exitConfirmBtn;    // 진짜 종료
-        [SerializeField] private Button exitCancelBtn;     // 종료 취소 (닫기)
+        [SerializeField] private Button exitConfirmBtn;
+        [SerializeField] private Button exitCancelBtn;
 
         [Header("Setting Panel Buttons")]
         [SerializeField] private Button openRestartPopupBtn;
@@ -38,12 +39,14 @@ namespace Project.Core.Ui.StageUi.View
         private bool _isMuted = false;
         private bool _isActionStarted = false;
 
+        // 자동 숨김용 토큰
+        private CancellationTokenSource _hideTokenSource;
+
         private void Awake()
         {
-            // 모든 팝업 초기화 (꺼두기)
-            settingPanel?.SetActive(false);
-            restartConfirmPopup?.SetActive(false);
-            exitConfirmPopup?.SetActive(false);
+            if (settingPanel != null) settingPanel.SetActive(false);
+            if (restartConfirmPopup != null) restartConfirmPopup.SetActive(false);
+            if (exitConfirmPopup != null) exitConfirmPopup.SetActive(false);
 
             if (progressSlider != null)
             {
@@ -59,51 +62,146 @@ namespace Project.Core.Ui.StageUi.View
 
         private void InitButtonEvents()
         {
-            // 1. 설정창 열기
-            settingButton?.onClick.AddListener(() => {
-                settingPanel?.SetActive(!settingPanel.activeSelf);
-            });
+            if (settingButton != null)
+            {
+                settingButton.onClick.AddListener(() => {
+                    if (settingPanel == null) return;
 
-            // 2. 재시작 로직
-            openRestartPopupBtn?.onClick.AddListener(() => restartConfirmPopup?.SetActive(true));
-            restartCancelBtn?.onClick.AddListener(() => restartConfirmPopup?.SetActive(false)); // 취소: 팝업 닫기
+                    bool nextState = !settingPanel.activeSelf;
+                    settingPanel.SetActive(nextState);
 
-            restartConfirmBtn?.onClick.AddListener(() => {
-                if (_isActionStarted) return;
-                var currentData = GameManager.Instance.CurrentStageData;
-                if (currentData != null)
-                {
-                    _isActionStarted = true;
-                    restartConfirmPopup.SetActive(false);
-                    settingPanel.SetActive(false);
-                    GameManager.Instance.StartStage(currentData).Forget();
-                    _isActionStarted = false;
-                }
-            });
+                    if (nextState) StartAutoHideTimer().Forget();
+                    else CancelTimer();
+                });
+            }
 
-            // 3. 종료 로직
-            openExitPopupBtn?.onClick.AddListener(() => exitConfirmPopup?.SetActive(true));
-            exitCancelBtn?.onClick.AddListener(() => exitConfirmPopup?.SetActive(false)); // 취소: 팝업 닫기
+            if (openRestartPopupBtn != null)
+            {
+                openRestartPopupBtn.onClick.AddListener(() => {
+                    if (restartConfirmPopup != null) restartConfirmPopup.SetActive(true);
+                    RefreshTimer();
+                });
+            }
 
-            exitConfirmBtn?.onClick.AddListener(() => {
-                exitConfirmPopup.SetActive(false);
-                settingPanel.SetActive(false);
-                LoadingManager.Instance.LoadSceneAsync("Main").Forget();
-            });
+            if (restartCancelBtn != null)
+            {
+                restartCancelBtn.onClick.AddListener(() => {
+                    if (restartConfirmPopup != null) restartConfirmPopup.SetActive(false);
+                    RefreshTimer();
+                });
+            }
 
-            // 4. 음소거
-            muteButton?.onClick.AddListener(() => {
-                _isMuted = !_isMuted;
-                AudioListener.volume = _isMuted ? 0f : 1f;
-            });
+            if (restartConfirmBtn != null)
+            {
+                restartConfirmBtn.onClick.AddListener(() => {
+                    if (_isActionStarted) return;
+
+                    var currentData = GameManager.Instance.CurrentStageData;
+                    if (currentData != null)
+                    {
+                        _isActionStarted = true;
+                        CancelTimer();
+                        if (restartConfirmPopup != null) restartConfirmPopup.SetActive(false);
+                        if (settingPanel != null) settingPanel.SetActive(false);
+                        GameManager.Instance.StartStage(currentData).Forget();
+                        _isActionStarted = false;
+                    }
+                });
+            }
+
+            if (openExitPopupBtn != null)
+            {
+                openExitPopupBtn.onClick.AddListener(() => {
+                    if (exitConfirmPopup != null) exitConfirmPopup.SetActive(true);
+                    RefreshTimer();
+                });
+            }
+
+            if (exitCancelBtn != null)
+            {
+                exitCancelBtn.onClick.AddListener(() => {
+                    if (exitConfirmPopup != null) exitConfirmPopup.SetActive(false);
+                    RefreshTimer();
+                });
+            }
+
+            if (exitConfirmBtn != null)
+            {
+                exitConfirmBtn.onClick.AddListener(() => {
+                    CancelTimer();
+                    if (exitConfirmPopup != null) exitConfirmPopup.SetActive(false);
+                    if (settingPanel != null) settingPanel.SetActive(false);
+                    LoadingManager.Instance.LoadSceneAsync("Main").Forget();
+                });
+            }
+
+            if (muteButton != null)
+            {
+                muteButton.onClick.AddListener(() => {
+                    _isMuted = !_isMuted;
+                    AudioListener.volume = _isMuted ? 0f : 1f;
+                    RefreshTimer();
+                });
+            }
         }
 
-        public void SetStageName(string name) => stageName.text = name;
+        private async UniTaskVoid StartAutoHideTimer()
+        {
+            CancelTimer();
+            _hideTokenSource = new CancellationTokenSource();
+
+            try
+            {
+                await UniTask.Delay(2000, cancellationToken: _hideTokenSource.Token);
+
+                if (restartConfirmPopup == null || exitConfirmPopup == null) return;
+
+                if (restartConfirmPopup.activeSelf || exitConfirmPopup.activeSelf)
+                {
+                    return;
+                }
+
+                if (settingPanel != null) settingPanel.SetActive(false);
+            }
+            catch (System.OperationCanceledException)
+            {
+                // 취소 시 예외 처리
+            }
+        }
+
+        private void RefreshTimer()
+        {
+            if (settingPanel != null && settingPanel.activeSelf)
+            {
+                StartAutoHideTimer().Forget();
+            }
+        }
+
+        private void CancelTimer()
+        {
+            if (_hideTokenSource != null)
+            {
+                _hideTokenSource.Cancel();
+                _hideTokenSource.Dispose();
+                _hideTokenSource = null;
+            }
+        }
+
+        private void OnDestroy()
+        {
+            CancelTimer();
+        }
+
+        public void SetStageName(string name)
+        {
+            if (stageName != null) stageName.text = name;
+        }
 
         public void UpdateProgress(float progress)
         {
             float clampedProgress = Mathf.Clamp01(progress);
             if (progressSlider != null) progressSlider.value = clampedProgress;
+
             if (progressText != null)
             {
                 int percent = Mathf.FloorToInt(clampedProgress * 100f);
