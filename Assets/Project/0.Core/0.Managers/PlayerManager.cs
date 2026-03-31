@@ -1,6 +1,6 @@
 using Cysharp.Threading.Tasks;
-using Firebase.Extensions;
 using Project.Core.Utilities;
+using Project.Rhythm.Data;
 using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
@@ -55,8 +55,39 @@ namespace Project.Core.Managers
                 AudioManager.Instance.OnRequestAudioSave += UpdateAudioSettings;
             }
 
+            // OnStageClearRequested(점수포함) -> OnStagePlayCompleted(인덱스만)로 변경 대응
+            StageData.OnStagePlayCompleted += HandleStageCompleted;
+
             await UniTask.Yield();
             IsInitialized = true;
+        }
+
+        // 점수와 상관없이 "플레이 했다"는 기록 자체를 남기는 메서드
+        public void HandleStageCompleted(int index)
+        {
+            if (index <= 0) return;
+
+            var record = Data.stageRecords.Find(s => s.stageIndex == index);
+
+            // 기록이 아예 없는 경우에만 새로 생성 (기본값 0점으로 '플레이 기록' 생성)
+            if (record == null)
+            {
+                record = new StageSaveData { stageIndex = index, bestScore = 0 };
+                Data.stageRecords.Add(record);
+                Save(); // 새로운 스테이지 플레이 시 즉시 저장
+                Debug.Log($"[PlayerManager] 스테이지 {index} 최초 플레이 기록 생성");
+            }
+        }
+        public bool IsStageCleared(int stageIndex)
+        {
+            if (stageIndex <= 0) return false;
+            if (Data == null || Data.stageRecords == null) return false;
+
+            // [변경] 점수가 0보다 큰지가 아니라, 리스트에 해당 스테이지 인덱스가 존재하는지로 판단
+            // 즉, 한 번이라도 완주해서 HandleStageCompleted가 실행되었다면 true입니다.
+            bool hasPlayed = Data.stageRecords.Exists(s => s.stageIndex == stageIndex);
+
+            return hasPlayed;
         }
 
         public async UniTask SyncWithServer()
@@ -96,34 +127,44 @@ namespace Project.Core.Managers
             Debug.Log($"[PlayerManager] 오디오 설정 저장 완료: BGM({bgm}), SFX({sfx})");
         }
 
-        // 설명: 특정 스테이지의 점수가 이전보다 높을 때만 갱신 후 저장
-        public void SaveBestScore(int index, float score)
+        //StageData에서 호출할 범용 저장 메서드입니다.
+        public void SaveStageResult(int index, float score)
         {
+            if (index <= 0) return;
+
             var record = Data.stageRecords.Find(s => s.stageIndex == index);
             if (record == null)
             {
-                Data.stageRecords.Add(new StageSaveData { stageIndex = index, bestScore = score });
+                record = new StageSaveData { stageIndex = index, bestScore = score };
+                Data.stageRecords.Add(record);
             }
             else if (score > record.bestScore)
             {
                 record.bestScore = score;
             }
-            else return;
+            else
+            {
+                // 점수가 더 높지 않으면 저장하지 않고 리턴
+                return;
+            }
 
-            Save();
-            Debug.Log($"[저장완료] 스테이지 {index} : {score}");
+            Save(); // 로컬 및 서버 저장 통합 함수 호출
+            Debug.Log($"[PlayerManager] 스테이지 {index} 결과 저장 완료: {score}점");
         }
-        // 특정 스테이지가 클리어되었는지 확인하는 헬퍼 메서드 ---
-        public bool IsStageCleared(int stageIndex)
+        //StageData의 BestScore 프로퍼티에서 호출할 헬퍼 메서드입니다.
+        public int GetBestScore(int index)
         {
-            if (Data == null || Data.stageRecords == null) return false;
-
-            var record = Data.stageRecords.Find(s => s.stageIndex == stageIndex);
-
-            // 기록이 있고, 최고 점수가 0보다 크면 클리어된 것으로 봅니다.
-            return record != null && record.bestScore > 0;
+            var record = Data.stageRecords.Find(s => s.stageIndex == index);
+            return record != null ? (int)record.bestScore : 0;
         }
-        
+
+        // 설명: 특정 스테이지의 점수가 이전보다 높을 때만 갱신 후 저장
+        public void SaveBestScore(int index, float score)
+        {
+            //SaveStageResult와 동일한 로직이므로 내부에서 호출하도록 변경 가능
+            SaveStageResult(index, score);
+        }        
+
         // 설명: JSON 형식으로 데이터를 직렬화하여 실제 파일에 작성
         public void Save()
         {
@@ -162,11 +203,12 @@ namespace Project.Core.Managers
         // 이유: 오브젝트 파괴 시 이벤트 연결을 해제하여 메모리 누수 및 에러 방지
         private void OnDisable()
         {
-            // 싱글톤 인스턴스가 존재할 때만 구독 해제
             if (AudioManager.Instance != null)
             {
                 AudioManager.Instance.OnRequestAudioSave -= UpdateAudioSettings;
             }
+            // [수정] 이벤트 해제 구문 변경
+            StageData.OnStagePlayCompleted -= HandleStageCompleted;
         }
     }
 }

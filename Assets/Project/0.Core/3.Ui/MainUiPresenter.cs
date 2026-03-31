@@ -14,55 +14,85 @@ public class MainUiPresenter : MonoBehaviour
     [Header("--- Views ---")]
     [SerializeField] private SettingUIView _settingView;
     [SerializeField] private StageUiView _stageView;
-    [SerializeField] private MainUiSoundView _soundView; // 사운드 전담 뷰
+    [SerializeField] private MainUiSoundView _soundView;  // 사운드 전담 뷰
 
     [Header("--- Stage Slots ---")]
     [SerializeField] private List<StageSlot> _stageSlots;
 
-    private StageData _currentSelectedStage;                        // 현재 유저가 클릭한 스테이지 데이터
-    private const float DefaultVolume = 0.5f;                       // 초기화용 기본 볼륨 값
+    private StageData _currentSelectedStage;              // 현재 유저가 클릭한 스테이지 데이터
+    private const float DefaultVolume = 0.5f;             // 초기화용 기본 볼륨 값
 
-    private bool _isSyncing = false;
+    private bool _isSyncing = false; 
     private async void Start()
     {
         // 1. 모든 매니저가 초기화될 때까지 대기 (가장 중요)
         await UniTask.WaitUntil(() => GameManager.Instance != null && GameManager.Instance.IsInitialized);
         await UniTask.WaitUntil(() => PlayerManager.Instance != null && PlayerManager.Instance.IsInitialized);
-        await UniTask.WaitUntil(() => AudioManager.Instance != null && AudioManager.Instance.IsInitialized);
+        await UniTask.WaitUntil(() => AudioManager.Instance != null && AudioManager.Instance.IsInitialized);       
 
-        // 2. UI 초기화 시작
+        // 2. UI 및 스테이지 해금 상태 갱신 (추가된 부분)
         _isSyncing = true;
+        // 오디오 설정 UI 동기화
         SyncUiWithAudio();
+       
+        // 단순히 자물쇠만 여는 것이 아니라, 전체적인 UI 상태를 동기화하는 관점입니다.
+        RefreshAllStageUI();
 
+        _isSyncing = false;
+
+        // 3. BGM 재생 (기존 유지)
         _soundView.PlayMainBgmWithDelay(1.0f).Forget();
+    }
+    //  외부에서도 호출 가능하도록 퍼블릭으로 선언된 새로고침 메서드
+    public void RefreshAllStageUI()
+    {
+        // 기존에 작성했던 자물쇠 해금 로직을 실행합니다.
+        UpdateStageUnlockStates();
+
+        // 여기서 점수 텍스트 갱신 등의 로직을 함께 넣을 수 있습니다.
+        Debug.Log("[MainUiPresenter] 모든 스테이지 UI 상태가 갱신되었습니다.");
     }
 
     // 세이브 데이터를 기반으로 모든 슬롯의 UI를 갱신하는 메서드 ---
     private void UpdateStageUnlockStates()
     {
-        if (_stageSlots == null || _stageSlots.Count == 0) return;
-
-        // 첫 번째 스테이지(게임1)는 항상 해금되어 있어야 합니다.
-        if (_stageSlots[0] != null)
+        // 1. 리스트가 비어있는지 먼저 확인 (방어 코드)
+        if (_stageSlots == null || _stageSlots.Count == 0)
         {
-            _stageSlots[0].SetUnlockState(true);
+            Debug.LogWarning("[MainUiPresenter] _stageSlots 리스트가 비어있습니다. 인스펙터를 확인하세요.");
+            return;
         }
 
-        // 두 번째 스테이지(게임2)부터는 이전 스테이지 클리어 여부를 체크합니다.
-        for (int i = 1; i < _stageSlots.Count; i++)
+        // 2. foreach문을 통해 리스트 안의 각 'slot'을 하나씩 검사
+        foreach (StageSlot slot in _stageSlots) // 여기서 StageSlot은 클래스 이름입니다.
         {
-            if (_stageSlots[i] == null) continue;
+            if (slot == null) continue; // 슬롯이 비어있으면 건너뜀
 
-            // 해금 규칙: (i-1)번째 스테이지가 클리어되어야 (i)번째 스테이지가 열림
-            int previousStageIndex = i; // StageIndex는 1부터 시작한다고 가정 (i=1 -> 게임1의 Index)
+            // 3. 해당 슬롯의 스테이지 번호(1, 2, 3...)를 가져옴
+            int myStageNum = slot.GetStageIndex();
+            bool isUnlocked = false;
 
-            // PlayerManager에게 이전 스테이지 클리어 여부를 물어봅니다.
-            bool isPreviousCleared = PlayerManager.Instance.IsStageCleared(previousStageIndex);
+            // 4. 해금 판정 로직
+            if (myStageNum == 1)
+            {
+                // 1번 스테이지는 무조건 오픈
+                isUnlocked = true;
+            }
+            else if (myStageNum > 1)
+            {
+                // 이전 스테이지(내 번호 - 1)가 클리어 되었는지 확인
+                // 예: 2번 슬롯은 1번이 클리어됐는지 물어봄
+                isUnlocked = PlayerManager.Instance.IsStageCleared(myStageNum - 1);
+            }
 
-            // 해당 슬롯에게 상태 전달
-            _stageSlots[i].SetUnlockState(isPreviousCleared);
+            // 5. 실제 UI(자물쇠 등)에 상태 반영
+            slot.SetUnlockState(isUnlocked);
+
+            // 6. 로그로 확인
+            Debug.Log($"[검사] 스테이지 {myStageNum}번 슬롯 | 이전(제{myStageNum - 1}번) 클리어여부: {isUnlocked}");
         }
     }
+    
 
     private void OnEnable()
     {
