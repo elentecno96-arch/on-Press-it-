@@ -35,7 +35,7 @@ namespace Project.Core.Systems.Intro
 
         private bool CheckComponents()
         {
-            return warningGroup && logoGroup && startGroup && startObject;
+            return warningGroup != null && logoGroup != null && startGroup != null && startObject != null;
         }
 
         private async UniTask RunIntro()
@@ -45,11 +45,12 @@ namespace Project.Core.Systems.Intro
             InitUI();
 
             //Warning
-            await warningGroup.DOFade(1, FADE_IN).AsyncWaitForCompletion();
-
-            await UniTask.Delay(TimeSpan.FromSeconds(1.5f));
-
-            await warningGroup.DOFade(0, FADE_OUT).AsyncWaitForCompletion();
+            if (warningGroup != null)
+            {
+                await warningGroup.DOFade(1, FADE_IN).AsyncWaitForCompletion();
+                await UniTask.Delay(TimeSpan.FromSeconds(1.5f));
+                await warningGroup.DOFade(0, FADE_OUT).AsyncWaitForCompletion();
+            }
 
             //Logo
             await PlayLogoAnimation();
@@ -72,11 +73,11 @@ namespace Project.Core.Systems.Intro
 
         private void InitUI()
         {
-            warningGroup.alpha = 0;
-            logoGroup.alpha = 0;
-            startGroup.alpha = 0;
+            if (warningGroup != null) warningGroup.alpha = 0;
+            if (logoGroup != null) logoGroup.alpha = 0;
+            if (startGroup != null) startGroup.alpha = 0;
 
-            startObject.SetActive(false);
+            if (startObject != null) startObject.SetActive(false);
 
             if (logoTransform != null)
                 logoTransform.localScale = Vector3.zero;
@@ -87,22 +88,14 @@ namespace Project.Core.Systems.Intro
         /// </summary>
         private async UniTask PlayLogoAnimation()
         {
-            logoGroup.alpha = 1;
+            if (logoGroup == null || logoTransform == null) return;
 
+            logoGroup.alpha = 1;
             logoTransform.localScale = Vector3.zero;
 
             Sequence seq = DOTween.Sequence();
-
-            seq.Append(
-                logoTransform
-                .DOScale(1.2f, 0.6f)
-                .SetEase(Ease.OutBounce)
-            );
-
-            seq.Append(
-                logoTransform
-                .DOScale(1f, 0.2f)
-            );
+            seq.Append(logoTransform.DOScale(1.2f, 0.6f).SetEase(Ease.OutBounce));
+            seq.Append(logoTransform.DOScale(1f, 0.2f));
 
             await seq.AsyncWaitForCompletion();
         }
@@ -112,21 +105,17 @@ namespace Project.Core.Systems.Intro
         /// </summary>
         private void StartTapAnimation()
         {
-            startObject.SetActive(true);
+            if (startObject == null || startGroup == null || startTextTransform == null) return;
 
+            startObject.SetActive(true);
             startGroup.alpha = 1;
 
-            // 왼쪽에서 슬라이드 등장
-            startTextTransform.anchoredPosition =
-                new Vector2(-800, startTextTransform.anchoredPosition.y);
+            startTextTransform.anchoredPosition = new Vector2(-800, startTextTransform.anchoredPosition.y);
 
             startTextTransform
                 .DOAnchorPosX(0, 0.8f)
                 .SetEase(Ease.OutBack)
-                .OnComplete(() =>
-                {
-                    PlayIdleAnimation();
-                });
+                .OnComplete(PlayIdleAnimation);
         }
 
         /// <summary>
@@ -134,14 +123,10 @@ namespace Project.Core.Systems.Intro
         /// </summary>
         private void PlayIdleAnimation()
         {
-            startGroup
-                .DOFade(0.3f, 0.7f)
-                .SetLoops(-1, LoopType.Yoyo);
+            if (startGroup == null || startTextTransform == null) return;
 
-            startTextTransform
-                .DORotate(new Vector3(0, 0, 3), 0.5f)
-                .SetLoops(-1, LoopType.Yoyo)
-                .SetEase(Ease.InOutSine);
+            startGroup.DOFade(0.3f, 0.7f).SetLoops(-1, LoopType.Yoyo).SetLink(gameObject);
+            startTextTransform.DORotate(new Vector3(0, 0, 3), 0.5f).SetLoops(-1, LoopType.Yoyo).SetEase(Ease.InOutSine).SetLink(gameObject);
         }
 
         //private void StartBlinkText()
@@ -157,26 +142,9 @@ namespace Project.Core.Systems.Intro
         private async UniTask ExitAnimation()
         {
             Sequence seq = DOTween.Sequence();
-
-            seq.Join(
-                logoGroup
-                .DOFade(0, FADE_OUT)
-            );
-
-            seq.Join(
-                startGroup
-                .DOFade(0, FADE_OUT)
-            );
-
-            // 살짝 축소 연출 추가 (있으면 훨씬 자연스러움)
-            if (logoTransform != null)
-            {
-                seq.Join(
-                    logoTransform
-                    .DOScale(0.8f, FADE_OUT)
-                    .SetEase(Ease.InBack)
-                );
-            }
+            if (logoGroup != null) seq.Join(logoGroup.DOFade(0, FADE_OUT));
+            if (startGroup != null) seq.Join(startGroup.DOFade(0, FADE_OUT));
+            if (logoTransform != null) seq.Join(logoTransform.DOScale(0.8f, FADE_OUT).SetEase(Ease.InBack));
 
             await seq.AsyncWaitForCompletion();
         }
@@ -184,19 +152,19 @@ namespace Project.Core.Systems.Intro
         private async UniTask WaitInput()
         {
             await UniTask.WaitUntil(() =>
-                Touchscreen.current?.primaryTouch.press.isPressed == true ||
-                Pointer.current?.press.isPressed == true ||
-                Keyboard.current?.anyKey.isPressed == true
+                (Touchscreen.current != null && Touchscreen.current.primaryTouch.press.isPressed) ||
+                (Pointer.current != null && Pointer.current.press.isPressed) ||
+                (Keyboard.current != null && Keyboard.current.anyKey.isPressed)
             );
         }
 
         private void EnterMain()
         {
             if (_isTransitioning) return;
-
-            DOTween.KillAll(); 
-
             _isTransitioning = true;
+
+            //DOTween.KillAll();
+            DOTween.Kill(gameObject);
 
             GameManager.Instance.EnterGameScene("Main").Forget(); 
             //GameManager.Instance.EnterGameScene("TestCore1").Forget();

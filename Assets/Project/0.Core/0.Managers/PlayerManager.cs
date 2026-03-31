@@ -29,8 +29,8 @@ namespace Project.Core.Managers
     [System.Serializable]
     public class PlayerData
     {
-        public List<StageSaveData> stageRecords = new List<StageSaveData>();
-        public List<AchievementData> achievements = new List<AchievementData>();
+        public List<StageSaveData> stageRecords = new();
+        public List<AchievementData> achievements = new();
 
         // 오디오 설정을 저장하기 위한 변수 추가 (기본값 1.0f)
         public float bgmVolume = 1.0f;
