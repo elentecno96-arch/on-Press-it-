@@ -211,7 +211,7 @@ namespace Project.Core.Managers
                 _judgementSystem.FinalizeAndSaveResult();
 
                 // 3. 현재 스테이지 데이터에 클리어 로그 출력 (ScriptableObject 메서드 호출)
-                _activeStageData.SetClear(true);
+                _activeStageData.SetClear(1);
 
                 // 4. 데이터 수집 및 업적 체크
                 int p = _judgementSystem.GetCount(JudgeResult.Perfect);

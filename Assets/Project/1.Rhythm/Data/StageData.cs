@@ -1,5 +1,6 @@
 using Project.Core.Managers;
 using Project.Rhythm.Data.Struct;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -16,6 +17,8 @@ namespace Project.Rhythm.Data
         public bool skipGuide;
         //외부에서 stageData.isClear를 호출하면 PlayerManager의 데이터를 즉시 확인
         public bool isClear => PlayerManager.Instance != null && PlayerManager.Instance.IsStageCleared(stageIndex); //clear 여부는 PlayerManager의 데이터를 참조하여 반환
+        //스테이지의 최고 점수도 데이터에서 바로 확인할 수 있도록 추가
+        public int BestScore => PlayerManager.Instance != null ? PlayerManager.Instance.GetBestScore(stageIndex) : 0;
 
         [Header("Audio")]
         public string stageName;
@@ -43,11 +46,14 @@ namespace Project.Rhythm.Data
         [Header("Patterns (Editor Only)")]
         public List<PatternData> patterns = new();
 
-        // 이 메서드는 남겨두되, 내부에 로직만 넣습니다.
-        public void SetClear(bool value)
+        // 클리어 이벤트를 정의합니다. (인덱스와 점수를 전달)
+        public static event System.Action<int, float> OnStageClearRequested;
+        public void SetClear(int score)
         {
-            // 이 필드는 런타임 확인용 로그입니다.
-            Debug.Log($"{stageName} 클리어 상태 변경 시도: {value}");
+            // (float)score는 PlayerManager가 float 점수를 받기 때문입니다.
+            OnStageClearRequested?.Invoke(this.stageIndex, (float)score);
+
+            Debug.Log($"[StageData] {stageName} 클리어 이벤트 발송");
         }
     }
 }

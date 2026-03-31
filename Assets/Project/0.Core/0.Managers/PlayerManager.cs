@@ -1,5 +1,6 @@
 using Cysharp.Threading.Tasks;
 using Project.Core.Utilities;
+using Project.Rhythm.Data;
 using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
@@ -54,6 +55,10 @@ namespace Project.Core.Managers
                 AudioManager.Instance.OnRequestAudioSave += UpdateAudioSettings;
             }
 
+            // StageData의 클리어 요청 이벤트를 구독합니다.
+            // 이제 StageData에서 신호가 오면 자동으로 SaveStageResult가 실행됩니다.
+            StageData.OnStageClearRequested += SaveStageResult;
+
             await UniTask.Yield();
             IsInitialized = true;
         }
@@ -95,22 +100,42 @@ namespace Project.Core.Managers
             Debug.Log($"[PlayerManager] 오디오 설정 저장 완료: BGM({bgm}), SFX({sfx})");
         }
 
-        // 설명: 특정 스테이지의 점수가 이전보다 높을 때만 갱신 후 저장
-        public void SaveBestScore(int index, float score)
+        //StageData에서 호출할 범용 저장 메서드입니다.
+        public void SaveStageResult(int index, float score)
         {
+            if (index <= 0) return;
+
             var record = Data.stageRecords.Find(s => s.stageIndex == index);
             if (record == null)
             {
-                Data.stageRecords.Add(new StageSaveData { stageIndex = index, bestScore = score });
+                record = new StageSaveData { stageIndex = index, bestScore = score };
+                Data.stageRecords.Add(record);
             }
             else if (score > record.bestScore)
             {
                 record.bestScore = score;
             }
-            else return;
+            else
+            {
+                // 점수가 더 높지 않으면 저장하지 않고 리턴
+                return;
+            }
 
-            Save();
-            Debug.Log($"[저장완료] 스테이지 {index} : {score}");
+            Save(); // 로컬 및 서버 저장 통합 함수 호출
+            Debug.Log($"[PlayerManager] 스테이지 {index} 결과 저장 완료: {score}점");
+        }
+        //StageData의 BestScore 프로퍼티에서 호출할 헬퍼 메서드입니다.
+        public int GetBestScore(int index)
+        {
+            var record = Data.stageRecords.Find(s => s.stageIndex == index);
+            return record != null ? (int)record.bestScore : 0;
+        }
+
+        // 설명: 특정 스테이지의 점수가 이전보다 높을 때만 갱신 후 저장
+        public void SaveBestScore(int index, float score)
+        {
+            //SaveStageResult와 동일한 로직이므로 내부에서 호출하도록 변경 가능
+            SaveStageResult(index, score);
         }
         // 특정 스테이지가 클리어되었는지 확인하는 헬퍼 메서드 ---
         public bool IsStageCleared(int stageIndex)
@@ -177,7 +202,8 @@ namespace Project.Core.Managers
             {
                 AudioManager.Instance.OnRequestAudioSave -= UpdateAudioSettings;
             }
-        }
 
+            StageData.OnStageClearRequested -= SaveStageResult;
+        }
     }
 }
