@@ -6,9 +6,9 @@ namespace Project.Rhythm.Data
 {
     public enum StageThemeType
     {
-        Stage1, // 슬라이드
-        Stage2, // 탭
-        Stage3  // 홀드
+        Stage1, // 가장 먼저 생성되는 테마
+        Stage2, // 인덱스 2
+        Stage3  // 인덱스 3
     }
     /// <summary>
     /// 작은 단위인 액션을 넣은 패턴 묶음
