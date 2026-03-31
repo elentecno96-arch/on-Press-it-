@@ -10,6 +10,7 @@ public class GlobalLoadingView : MonoBehaviour
     private const float DEFAULT_TWEEN_DURATION = 0.4f;  // 연출 기본 시간
     private const float PROGRESS_ZERO = 0f;             // 초기 게이지 값
 
+    [SerializeField] private CanvasGroup canvasGroup;
     [SerializeField] private Canvas loadingCanvas;
     [SerializeField] private Slider loadingBar;
     [SerializeField] private TextMeshProUGUI loadingText;
@@ -26,6 +27,10 @@ public class GlobalLoadingView : MonoBehaviour
         _originalPos = loadingBarRoot.anchoredPosition;
         loadingBar.value = PROGRESS_ZERO;
         loadingText.text = string.Empty;
+
+        if (canvasGroup != null) canvasGroup.alpha = 0;
+        loadingBarRoot.localScale = Vector3.one * 0.8f;
+
         SetVisible(false);
     }
 
@@ -47,21 +52,23 @@ public class GlobalLoadingView : MonoBehaviour
 
     public async UniTask Show()
     {
-        loadingBarRoot.anchoredPosition = new Vector2(_originalPos.x - moveDistance, _originalPos.y);
+        canvasGroup.alpha = 0;
+        loadingBarRoot.localScale = Vector3.one * 0.9f;
 
-        await loadingBarRoot.DOAnchorPos(_originalPos, tweenDuration)
-                            .SetEase(Ease.OutBack)
-                            .ToUniTask();
+        await UniTask.WhenAll(
+            canvasGroup.DOFade(1f, tweenDuration).ToUniTask(),
+            loadingBarRoot.DOScale(1f, tweenDuration).SetEase(Ease.OutBack).ToUniTask()
+        );
     }
 
     public async UniTask Hide()
     {
         _progressTween?.Kill();
-        Vector2 targetPos = new Vector2(_originalPos.x + moveDistance, _originalPos.y);
 
-        await loadingBarRoot.DOAnchorPos(targetPos, tweenDuration)
-                            .SetEase(Ease.InBack)
-                            .ToUniTask(TweenCancelBehaviour.Complete);
+        await UniTask.WhenAll(
+            canvasGroup.DOFade(0f, tweenDuration).ToUniTask(),
+            loadingBarRoot.DOScale(0.9f, tweenDuration).SetEase(Ease.InQuad).ToUniTask()
+        );
 
         Debug.Log("Hide 연출 완료");
     }
