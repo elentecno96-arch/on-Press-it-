@@ -91,8 +91,7 @@ public class MainUiPresenter : MonoBehaviour
             // 6. 로그로 확인
             Debug.Log($"[검사] 스테이지 {myStageNum}번 슬롯 | 이전(제{myStageNum - 1}번) 클리어여부: {isUnlocked}");
         }
-    }
-    
+    }    
 
     private void OnEnable()
     {
