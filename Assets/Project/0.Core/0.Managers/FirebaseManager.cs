@@ -69,4 +69,13 @@ public class FirebaseManager : BaseSingleton<FirebaseManager>
             Debug.LogError($"[Firebase] 저장 실패: {e.Message}");
         }
     }
+
+    public void SavePlayerData(string json)
+    {
+        if (!IsInitialized || User == null) return;
+
+        string path = $"users/{User.UserId}/playerData";
+        SaveDataAsync(path, json).Forget();
+    }
+
 }
