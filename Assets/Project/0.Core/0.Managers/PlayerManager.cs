@@ -4,6 +4,7 @@ using Project.Rhythm.Data;
 using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 namespace Project.Core.Managers
 {
@@ -108,7 +109,7 @@ namespace Project.Core.Managers
                     MergeData(serverData);
 
                     // 2. 병합된 최종 데이터를 로컬과 서버 모두에 즉시 강제 저장
-                    SaveInternal(true);
+                    SaveInternal();
                     Debug.Log("[PlayerManager] 서버 데이터 동기화 및 강제 저장 완료");
                 }
             }
@@ -124,30 +125,36 @@ namespace Project.Core.Managers
             if (server == null) return;
 
             // ===== 점수 병합 (더 높은 점수 유지) =====
-            foreach (var serverRecord in server.stageRecords)
+            if (server.stageRecords != null)
             {
-                var local = Data.stageRecords.Find(s => s.stageIndex == serverRecord.stageIndex);
-                if (local == null)
-                    Data.stageRecords.Add(serverRecord);
-                else
-                    local.bestScore = Mathf.Max(local.bestScore, serverRecord.bestScore);
+                foreach (var serverRecord in server.stageRecords)
+                {
+                    var local = Data.stageRecords.Find(s => s.stageIndex == serverRecord.stageIndex);
+                    if (local == null)
+                        Data.stageRecords.Add(serverRecord);
+                    else
+                        local.bestScore = Mathf.Max(local.bestScore, serverRecord.bestScore);
+                }
             }
 
             // ===== 업적 병합 (해금 상태 및 날짜 보호) =====
-            foreach (var serverAch in server.achievements)
+            if (server.stageRecords != null)
             {
-                var local = Data.achievements.Find(a => a.id == serverAch.id);
-                if (local == null)
+                foreach (var serverAch in server.achievements)
                 {
-                    Data.achievements.Add(serverAch);
-                }
-                else if (serverAch.isUnlocked)
-                {
-                    // 로컬이 아직 잠겨있거나, 서버 날짜가 더 이전일 경우에만 반영 (선택 사항)
-                    if (!local.isUnlocked)
+                    var local = Data.achievements.Find(a => a.id == serverAch.id);
+                    if (local == null)
                     {
-                        local.isUnlocked = true;
-                        local.unlockDate = serverAch.unlockDate;
+                        Data.achievements.Add(serverAch);
+                    }
+                    else if (serverAch.isUnlocked)
+                    {
+                        // 로컬이 아직 잠겨있거나, 서버 날짜가 더 이전일 경우에만 반영 (선택 사항)
+                        if (!local.isUnlocked)
+                        {
+                            local.isUnlocked = true;
+                            local.unlockDate = serverAch.unlockDate;
+                        }
                     }
                 }
             }
@@ -210,19 +217,18 @@ namespace Project.Core.Managers
             SaveLocal();
 
             // 서버 저장은 쿨다운 및 예약 로직 실행
-            HandleServerSave();
+            HandleServerSave().Forget();
         }
 
-        private async void HandleServerSave()
+        private async UniTaskVoid HandleServerSave()
         {
-            if (isSavePending) return; // 이미 예약된 저장이 있음
+            if (isSavePending) return;
 
             float elapsed = Time.time - lastSaveTime;
             if (elapsed < SAVE_COOLDOWN)
             {
-                // 쿨다운 중이면 남은 시간만큼 대기 후 저장 예약
                 isSavePending = true;
-                await UniTask.Delay(System.TimeSpan.FromSeconds(SAVE_COOLDOWN - elapsed));
+                await UniTask.Delay(System.TimeSpan.FromSeconds(SAVE_COOLDOWN - elapsed), cancellationToken: this.GetCancellationTokenOnDestroy());
                 SaveInternal();
                 isSavePending = false;
             }
@@ -232,9 +238,9 @@ namespace Project.Core.Managers
             }
         }
 
-        private void SaveInternal(bool force = false)
+        private void SaveInternal()
         {
-            if (!force && FirebaseManager.Instance == null || !FirebaseManager.Instance.IsInitialized) return;
+            if (FirebaseManager.Instance == null || !FirebaseManager.Instance.IsInitialized) return;
 
             // 실제 저장 직전에 타이머 업데이트
             lastSaveTime = Time.time;
