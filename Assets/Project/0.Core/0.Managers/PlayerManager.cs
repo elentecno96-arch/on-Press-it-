@@ -43,6 +43,7 @@ namespace Project.Core.Managers
         private float lastSaveTime;
         private const float SAVE_COOLDOWN = 0.5f;
         private bool isSavePending = false;
+        public const float CLEAR_SCORE_THRESHOLD = 85000f;  // 클리어 여부 판단 기준 (예시값, 필요에 따라 조정)
 
         // 플랫폼별 안전한 로컬 저장 경로
         private string SavePath => Path.Combine(Application.persistentDataPath, "PlayerSave.json");
@@ -88,8 +89,20 @@ namespace Project.Core.Managers
         // 스테이지 플레이 여부 체크
         public bool IsStageCleared(int stageIndex)
         {
+            // 인덱스가 0 이하이거나 데이터가 없으면 미클리어 처리
             if (stageIndex <= 0 || Data?.stageRecords == null) return false;
-            return Data.stageRecords.Exists(s => s.stageIndex == stageIndex);
+
+            // 해당 스테이지의 저장된 기록을 찾습니다.
+            var record = Data.stageRecords.Find(s => s.stageIndex == stageIndex);
+
+            // 최고 점수가 7만 점 이상이어야 true 반환
+            if (record != null && record.bestScore >= CLEAR_SCORE_THRESHOLD)
+            {
+                return true;
+            }
+
+            // 기록이 없거나 7만 점 미만이면 false
+            return false;
         }
 
         // 서버 데이터 동기화 (Merge 방식)
