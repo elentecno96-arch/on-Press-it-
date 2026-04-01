@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 using Project.Rhythm.Data;
 using Project.Rhythm.Data.Enum;
 using Project.Rhythm.Data.Struct;
@@ -334,3 +335,4 @@ namespace Project.Editor.TestEditor.Engine
         }
     }
 }
+#endif

@@ -1,6 +1,5 @@
+#if UNITY_EDITOR
 using Project.Editor.TestEditor.Engine;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
@@ -234,3 +233,4 @@ public class TimelineView
         EditorGUI.DrawRect(new Rect(0, yPos, width, 1f), new Color(0.3f, 0.3f, 0.3f));
     }
 }
+#endif

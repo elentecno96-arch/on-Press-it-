@@ -1,12 +1,12 @@
+#if UNITY_EDITOR
 using Project.Rhythm.Data;
 using Project.Rhythm.Data.Enum;
 using Project.Rhythm.Data.Struct;
 using Project.Rhythm.Note;
-using Project.Editor;
 using System.Collections.Generic;
+using System.IO;
 using UnityEditor;
 using UnityEngine;
-using System.IO;
 
 namespace Project.Editor
 {
@@ -251,3 +251,4 @@ namespace Project.Editor
         }
     }
 }
+#endif

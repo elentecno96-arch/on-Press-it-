@@ -2,10 +2,7 @@ using Cysharp.Threading.Tasks;
 using Project.Core.Utilities;
 using Project.Rhythm.Data;
 using Project.Rhythm.Note;
-using Project.Rhythm.Data.Enum;
 using System;
-using System.Collections.Generic;
-using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 
 namespace Project.Core.Managers

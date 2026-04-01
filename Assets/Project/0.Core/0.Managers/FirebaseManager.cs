@@ -2,7 +2,6 @@ using Cysharp.Threading.Tasks;
 using Firebase;
 using Firebase.Auth;
 using Firebase.Database;
-using Firebase.Extensions;
 using Project.Core.Utilities;
 using UnityEngine;
 

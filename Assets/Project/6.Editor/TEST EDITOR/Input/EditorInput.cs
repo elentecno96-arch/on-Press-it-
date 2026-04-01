@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 using Project.Editor.TestEditor.Engine;
 using UnityEditor;
 using UnityEngine;
@@ -119,3 +120,4 @@ namespace Project.Editor.TestEditor.Input
         }
     }
 }
+#endif
