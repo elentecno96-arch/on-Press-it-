@@ -234,15 +234,15 @@ namespace Project.Core.Managers
 
         private async UniTaskVoid HandleServerSave()
         {
-            if (isSavePending) return;
+            if (isSavePending) return; //저장 예약이 되어 있다면 무시
 
             float elapsed = Time.time - lastSaveTime;
             if (elapsed < SAVE_COOLDOWN)
             {
-                isSavePending = true;
+                isSavePending = true; // 예약됨 표시
                 await UniTask.Delay(System.TimeSpan.FromSeconds(SAVE_COOLDOWN - elapsed), cancellationToken: this.GetCancellationTokenOnDestroy());
                 SaveInternal();
-                isSavePending = false;
+                isSavePending = false; // 예약 해제
             }
             else
             {
