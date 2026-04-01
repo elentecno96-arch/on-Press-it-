@@ -28,7 +28,12 @@ public class MainUiPresenter : MonoBehaviour
         // 1. 모든 매니저가 초기화될 때까지 대기 (가장 중요)
         await UniTask.WaitUntil(() => GameManager.Instance != null && GameManager.Instance.IsInitialized);
         await UniTask.WaitUntil(() => PlayerManager.Instance != null && PlayerManager.Instance.IsInitialized);
-        await UniTask.WaitUntil(() => AudioManager.Instance != null && AudioManager.Instance.IsInitialized);       
+        await UniTask.WaitUntil(() => AudioManager.Instance != null && AudioManager.Instance.IsInitialized);
+
+        // 서버(Firebase)로부터 실제 유저 데이터를 완전히 받아올 때까지 대기
+        // 이 과정이 끝나야 stageRecords에 실제 점수들이 채워집니다.
+        Debug.Log("[MainUiPresenter] 최신 플레이어 데이터를 서버와 동기화합니다...");
+        await PlayerManager.Instance.SyncWithServer();
 
         // 2. UI 및 스테이지 해금 상태 갱신 (추가된 부분)
         _isSyncing = true;
