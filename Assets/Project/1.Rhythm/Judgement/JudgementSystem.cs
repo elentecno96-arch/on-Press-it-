@@ -155,20 +155,6 @@ namespace Project.Rhythm.Judgement
             }
         }
 
-        public void ProcessHoldUp(float stageTime)
-        {
-            if (!_activeHoldNote.HasValue) return;
-
-            var target = _activeHoldNote.Value;
-            float releaseTime = target.targetTime + (target.action.duration * _secondsPerBeat);
-
-            float absDiff = Mathf.Abs(stageTime - releaseTime);
-            JudgeResult result = CalculateResult(absDiff);
-
-            LogAndNotify(result, target.note);
-            _activeHoldNote = null;
-        }
-
         public void UpdateHoldCheck(bool isPressing, float stageTime)
         {
             if (!_activeHoldNote.HasValue) return;
@@ -180,14 +166,17 @@ namespace Project.Rhythm.Judgement
             {
                 if (stageTime > releaseTime + _missWin)
                 {
-                    LogAndNotify(JudgeResult.Miss, target.note); 
                     _activeHoldNote = null; 
-                    return;
+                    LogAndNotify(JudgeResult.Miss, target.note);
                 }
             }
+
             else
             {
                 float absDiff = Mathf.Abs(stageTime - releaseTime);
+
+                _activeHoldNote = null;
+
                 if (stageTime < releaseTime - _missWin)
                 {
                     LogAndNotify(JudgeResult.Miss, target.note);
@@ -196,8 +185,6 @@ namespace Project.Rhythm.Judgement
                 {
                     LogAndNotify(CalculateResult(absDiff), target.note);
                 }
-
-                _activeHoldNote = null;
             }
         }
 

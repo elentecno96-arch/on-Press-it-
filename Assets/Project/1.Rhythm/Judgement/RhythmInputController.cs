@@ -45,8 +45,6 @@ namespace Project.Rhythm.Judgement
 
         private void PointerUp()
         {
-            _judgement.ProcessHoldUp(_getCurrentTime());
-
             OnInputTriggered?.Invoke(PatternType.None);
         }
 
