@@ -298,13 +298,13 @@ namespace Project.Rhythm.Presentation
 
         public void ShowJudgeEffect(JudgeResult result)
         {
-            if (playUiView != null)
-            {
-                playUiView.ShowJudgement(result);
+            //if (playUiView != null)
+            //{
+            //    playUiView.ShowJudgement(result);
 
-                if (_judgementSystem != null)
-                    playUiView.UpdateScore(_judgementSystem.CalculateFinalScore());
-            }
+            //    if (_judgementSystem != null)
+            //        playUiView.UpdateScore(_judgementSystem.CalculateFinalScore());
+            //}
         }
         private void OnDestroy()
         {
