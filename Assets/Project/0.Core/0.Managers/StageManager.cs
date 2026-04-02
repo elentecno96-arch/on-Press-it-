@@ -93,7 +93,6 @@ namespace Project.Core.Managers
             {
                 presenter.GetTouchVisual()?.PlayAction(result);
                 note?.OnJudged(result);
-                //presenter.ShowJudgeEffect(result);
             };
 
             _eventSystem.OnSpawnTriggered += (action, hitTime, duration) =>

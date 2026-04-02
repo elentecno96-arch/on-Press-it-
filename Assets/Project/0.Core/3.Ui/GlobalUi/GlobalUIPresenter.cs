@@ -2,6 +2,7 @@ using Cysharp.Threading.Tasks;
 using Project.Core.Ui.GlobalUi.View;
 using Project.Core.Utilities;
 using Project.Data.LoadingText;
+using System.Threading;
 using UnityEngine;
 
 namespace Project.Core.Ui.GlobalUi
@@ -14,25 +15,42 @@ namespace Project.Core.Ui.GlobalUi
         private const float FADE_IN_VALUE = 1f;
         private const float FADE_OUT_VALUE = 0f;
 
-        [SerializeField] private GlobalFadeView fadeView;       
+        [SerializeField] private GlobalFadeView fadeView;
         [SerializeField] private GlobalLoadingView loadingView;
-
-        // 추후 SO로 분리 예정
         [SerializeField] private LoadingMessageData messageData;
+
+        private CancellationTokenSource _fadeCts;
 
         public override UniTask Initialize()
         {
             fadeView.Init();
             loadingView.Init();
-
             IsInitialized = true;
 
             return UniTask.CompletedTask;
         }
 
+        private CancellationToken GetFreshToken()
+        {
+            _fadeCts?.Cancel();
+            _fadeCts?.Dispose();
+            _fadeCts = new CancellationTokenSource();
+            return _fadeCts.Token;
+        }
+
+        public void ResetFade()
+        {
+            _fadeCts?.Cancel();
+            _fadeCts?.Dispose();
+            _fadeCts = null;
+
+            fadeView.SetAlphaImmediate(FADE_OUT_VALUE);
+        }
+
         public async UniTask ShowLoading()
         {
-            await fadeView.PlayFade(FADE_IN_VALUE);
+            var token = GetFreshToken();
+            await fadeView.PlayFade(FADE_IN_VALUE, -1f, token);
 
             if (messageData != null)
             {
@@ -45,10 +63,11 @@ namespace Project.Core.Ui.GlobalUi
 
         public async UniTask HideLoading()
         {
-            await loadingView.Hide(); 
+            var token = GetFreshToken();
+            await loadingView.Hide();
             loadingView.SetVisible(false);
 
-            await fadeView.PlayFade(FADE_OUT_VALUE);
+            await fadeView.PlayFade(FADE_OUT_VALUE, -1f, token);
         }
 
         public void SetProgress(float val)
@@ -58,12 +77,14 @@ namespace Project.Core.Ui.GlobalUi
 
         public async UniTask FadeIn(float duration)
         {
-            await fadeView.PlayFade(FADE_IN_VALUE, duration);
+            var token = GetFreshToken();
+            await fadeView.PlayFade(FADE_IN_VALUE, duration, token);
         }
 
         public async UniTask FadeOut(float duration)
         {
-            await fadeView.PlayFade(FADE_OUT_VALUE, duration);
+            var token = GetFreshToken();
+            await fadeView.PlayFade(FADE_OUT_VALUE, duration, token);
         }
 
         public async UniTask UpdateProgress(float val, float dur) => await loadingView.UpdateProgress(val, dur);
