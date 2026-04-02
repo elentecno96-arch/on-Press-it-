@@ -141,37 +141,66 @@ namespace Project.Rhythm.Judgement
         public void ProcessHoldDown(float stageTime)
         {
             if (_judgeQueue.Count == 0 || _activeHoldNote.HasValue) return;
+
             var target = _judgeQueue.Peek();
             if (target.action.type == PatternType.Hold)
             {
-                if (Mathf.Abs(stageTime - target.targetTime) <= _missWin)
+                float absDiff = Mathf.Abs(stageTime - target.targetTime);
+
+                if (absDiff <= _missWin)
                 {
                     _judgeQueue.Dequeue();
                     _activeHoldNote = target;
                 }
             }
         }
+
         public void ProcessHoldUp(float stageTime)
         {
             if (!_activeHoldNote.HasValue) return;
+
             var target = _activeHoldNote.Value;
-            float targetReleaseTime = target.targetTime + (target.action.duration * _secondsPerBeat);
-            LogAndNotify(CalculateResult(Mathf.Abs(stageTime - targetReleaseTime)), target.note);
+            float releaseTime = target.targetTime + (target.action.duration * _secondsPerBeat);
+
+            float absDiff = Mathf.Abs(stageTime - releaseTime);
+            JudgeResult result = CalculateResult(absDiff);
+
+            LogAndNotify(result, target.note);
             _activeHoldNote = null;
         }
+
         public void UpdateHoldCheck(bool isPressing, float stageTime)
         {
             if (!_activeHoldNote.HasValue) return;
-            if (!isPressing)
+
+            var target = _activeHoldNote.Value;
+            float releaseTime = target.targetTime + (target.action.duration * _secondsPerBeat);
+
+            if (isPressing)
             {
-                float releaseTime = _activeHoldNote.Value.targetTime + (_activeHoldNote.Value.action.duration * _secondsPerBeat);
-                if (stageTime < releaseTime - _goodWin)
+                if (stageTime > releaseTime + _missWin)
                 {
-                    LogAndNotify(JudgeResult.Miss, _activeHoldNote.Value.note);
-                    _activeHoldNote = null;
+                    LogAndNotify(JudgeResult.Miss, target.note); 
+                    _activeHoldNote = null; 
+                    return;
                 }
             }
+            else
+            {
+                float absDiff = Mathf.Abs(stageTime - releaseTime);
+                if (stageTime < releaseTime - _missWin)
+                {
+                    LogAndNotify(JudgeResult.Miss, target.note);
+                }
+                else
+                {
+                    LogAndNotify(CalculateResult(absDiff), target.note);
+                }
+
+                _activeHoldNote = null;
+            }
         }
+
         private void ApplyResult(JudgeData target, JudgeResult result) { _judgeQueue.Dequeue(); LogAndNotify(result, target.note); }
         private void LogAndNotify(JudgeResult result, Note.Note note)
         {
