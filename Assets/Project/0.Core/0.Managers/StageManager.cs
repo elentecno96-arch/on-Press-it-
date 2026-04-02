@@ -51,7 +51,10 @@ namespace Project.Core.Managers
             _activeStageData = GameManager.Instance.CurrentStageData ?? testStageData;
 
             InitializeSystems(_activeStageData);
+
+            presenter.SetJudgementSystem(_judgementSystem);
             presenter.Initialize(_activeStageData);
+
             BuildThemeQueue(_activeStageData);
 
             _noteSpawner = new NoteSpawnSystem(presenter);
@@ -175,7 +178,6 @@ namespace Project.Core.Managers
             {
                 float progress = _judgementSystem.GetHoldProgress(CurrentTime);
                 presenter.GetTouchVisual()?.UpdateVisual(progress);
-                _judgementSystem.GetCurrentHoldNote()?.UpdateHoldProgress(progress);
             }
         }
 

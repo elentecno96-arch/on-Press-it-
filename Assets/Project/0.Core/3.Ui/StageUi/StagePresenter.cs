@@ -13,11 +13,13 @@ namespace Project.Rhythm.Presentation
     {
         [SerializeField] private StageView stageView;
         [SerializeField] private GameView inGameView;
+        [SerializeField] private PlayUiView playUiView;
         [SerializeField] private ResultView resultView;
         [SerializeField] private GuideView guideView;
 
         private StageData _stageData;
         private BaseRhythmVisual _currentEnvironment;
+        private JudgementSystem _judgementSystem;
 
         private bool _isGuideShowing;
         private float _guideEndBeat;
@@ -272,9 +274,42 @@ namespace Project.Rhythm.Presentation
             return obj;
         }
 
+        public void SetJudgementSystem(JudgementSystem system)
+        {
+            _judgementSystem = system;
+            _judgementSystem.OnJudged += HandleOnJudged;
+        }
+
+        private void HandleOnJudged(JudgeResult result, Note.Note note)
+        {
+            if (playUiView == null) return;
+
+            if (_judgementSystem != null)
+            {
+                float currentScore = _judgementSystem.CalculateFinalScore();
+                playUiView.UpdateScore(currentScore);
+            }
+
+            if (!_judgementSystem.IsHolding)
+            {
+                playUiView.ShowJudgement(result);
+            }
+        }
+
         public void ShowJudgeEffect(JudgeResult result)
         {
-            Debug.Log($"[Visual Effect] {result}");
+            if (playUiView != null)
+            {
+                playUiView.ShowJudgement(result);
+
+                if (_judgementSystem != null)
+                    playUiView.UpdateScore(_judgementSystem.CalculateFinalScore());
+            }
+        }
+        private void OnDestroy()
+        {
+            if (_judgementSystem != null)
+                _judgementSystem.OnJudged -= HandleOnJudged;
         }
     }
 }
