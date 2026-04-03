@@ -98,4 +98,61 @@ public class FirebaseManager : BaseSingleton<FirebaseManager>
         }
     }
 
+    /// <summary>
+    /// 특정 값을 저장하는 매서드
+    /// </summary>
+    /// <param name="path"></param>
+    /// <param name="value"></param>
+    /// <returns></returns>
+    public async UniTask SetValueAsync(string path, object value)
+    {
+        if (!IsInitialized || User == null) return;
+        await DbRef.Child(path).SetValueAsync(value).AsUniTask();
+    }
+
+    /// <summary>
+    /// 랭킹용 데이터 업데이트
+    /// </summary>
+    /// <param name="nickname"></param>
+    /// <param name="totalScore"></param>
+    public void UpdateLeaderboardData(string nickname, float totalScore)
+    {
+        if (!IsInitialized || User == null) return;
+
+        string path = $"leaderboard/{User.UserId}";
+        var data = new System.Collections.Generic.Dictionary<string, object>
+    {
+        { "userName", nickname },
+        { "score", totalScore },
+        { "lastUpdated", ServerValue.Timestamp } // 서버 시간 기준
+    };
+
+        DbRef.Child(path).UpdateChildrenAsync(data).AsUniTask().Forget();
+    }
+
+    /// <summary>
+    /// 내 글로벌 랭킹 조회
+    /// </summary>
+    /// <param name="myTotalScore"></param>
+    /// <returns></returns>
+    public async UniTask<int> GetMyRank(float myTotalScore)
+    {
+        if (!IsInitialized || User == null || myTotalScore <= 0) return 0;
+
+        try
+        {
+            // 내 점수보다 높은 사람들만 필터링해서 가져옴
+            var snapshot = await DbRef.Child("leaderboard")
+                .OrderByChild("score")
+                .StartAt(myTotalScore + 1) // 내 점수 초과인 유저들
+                .GetValueAsync().AsUniTask();
+
+            return (int)snapshot.ChildrenCount + 1;
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogError($"[Rank] 등수 조회 실패: {e.Message}");
+            return 0;
+        }
+    }
 }

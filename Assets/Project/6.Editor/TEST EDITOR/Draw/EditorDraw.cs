@@ -35,9 +35,9 @@ namespace Project.Editor.TestEditor.Draw
             float mainContentHeight = totalArea.height - settingsHeight;
             float timelineWidth = totalArea.width - noteInspectorWidth;
 
-            Rect settingsRect = new Rect(0, 0, totalArea.width, settingsHeight);
-            Rect timelineRect = new Rect(0, settingsHeight, timelineWidth, mainContentHeight);
-            Rect noteInspectorRect = new Rect(timelineWidth, settingsHeight, noteInspectorWidth, mainContentHeight);
+            Rect settingsRect = new (0, 0, totalArea.width, settingsHeight);
+            Rect timelineRect = new (0, settingsHeight, timelineWidth, mainContentHeight);
+            Rect noteInspectorRect = new (timelineWidth, settingsHeight, noteInspectorWidth, mainContentHeight);
 
             _settingView.Draw(settingsRect);
             _timelineView.Draw(timelineRect);

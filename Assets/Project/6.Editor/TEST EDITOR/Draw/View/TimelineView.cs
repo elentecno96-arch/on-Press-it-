@@ -25,15 +25,15 @@ public class TimelineView
             float noteHeight = h * NOTE_RATIO;
             float themeHeight = h * THEME_RATIO;
 
-            Rect rulerArea = new Rect(totalRect.x, totalRect.y, totalRect.width, rulerHeight);
-            Rect noteArea = new Rect(totalRect.x, rulerArea.yMax, totalRect.width, noteHeight);
-            Rect themeArea = new Rect(totalRect.x, noteArea.yMax, totalRect.width, themeHeight);
+            Rect rulerArea = new (totalRect.x, totalRect.y, totalRect.width, rulerHeight);
+            Rect noteArea = new (totalRect.x, rulerArea.yMax, totalRect.width, noteHeight);
+            Rect themeArea = new (totalRect.x, noteArea.yMax, totalRect.width, themeHeight);
 
             EditorGUI.DrawRect(rulerArea, new Color(0.2f, 0.2f, 0.2f));
             EditorGUI.DrawRect(noteArea, new Color(0.12f, 0.12f, 0.12f));
             EditorGUI.DrawRect(themeArea, new Color(0.15f, 0.15f, 0.18f));
 
-            Rect gridArea = new Rect(totalRect.x, rulerArea.yMax, totalRect.width, noteHeight + themeHeight);
+            Rect gridArea = new (totalRect.x, rulerArea.yMax, totalRect.width, noteHeight + themeHeight);
             DrawBPMGrid(gridArea);
 
             DrawActions(noteArea);
@@ -70,7 +70,7 @@ public class TimelineView
             float noteHeight = noteArea.height * 0.5f;
             float yPos = noteArea.y + (noteArea.height - noteHeight) * 0.5f;
 
-            Rect noteRect = new Rect(xPos - 8, yPos, 16, noteHeight);
+            Rect noteRect = new (xPos - 8, yPos, 16, noteHeight);
 
             Color noteColor;
             if (i == _engine.selectedActionIndex)
@@ -96,10 +96,10 @@ public class TimelineView
 
             Color eventColor = (i == _engine.selectedThemeEventIndex) ? Color.white : new Color(0.8f, 0.4f, 1f); 
 
-            Rect eventRect = new Rect(xPos - 6, themeArea.y + (themeArea.height * 0.1f), 12, themeArea.height * 0.8f);
+            Rect eventRect = new (xPos - 6, themeArea.y + (themeArea.height * 0.1f), 12, themeArea.height * 0.8f);
             EditorGUI.DrawRect(eventRect, eventColor);
 
-            GUIStyle themeLabelStyle = new GUIStyle(EditorStyles.miniLabel);
+            GUIStyle themeLabelStyle = new (EditorStyles.miniLabel);
             themeLabelStyle.normal.textColor = eventColor;
             GUI.Label(new Rect(xPos + 8, themeArea.y + 5, 100, 18), tEvent.theme.ToString(), themeLabelStyle);
         }
@@ -107,9 +107,9 @@ public class TimelineView
 
     private void DrawRulerContent(Rect area)
     {
-        Rect controlRect = new Rect(area.x, area.y, area.width, area.height * 0.7f);
+        Rect controlRect = new (area.x, area.y, area.width, area.height * 0.7f);
 
-        Rect scrollRect = new Rect(area.x, controlRect.yMax, area.width, area.height * 0.3f);
+        Rect scrollRect = new (area.x, controlRect.yMax, area.width, area.height * 0.3f);
 
         DrawTopControlButtons(controlRect);
 
@@ -125,9 +125,9 @@ public class TimelineView
     private void DrawTopControlButtons(Rect area)
     {
         float sectionWidth = area.width / 3f;
-        Rect leftRect = new Rect(area.x, area.y, sectionWidth, area.height);
-        Rect centerRect = new Rect(area.x + sectionWidth, area.y, sectionWidth, area.height);
-        Rect rightRect = new Rect(area.x + sectionWidth * 2, area.y, sectionWidth, area.height);
+        Rect leftRect = new (area.x, area.y, sectionWidth, area.height);
+        Rect centerRect = new (area.x + sectionWidth, area.y, sectionWidth, area.height);
+        Rect rightRect = new (area.x + sectionWidth * 2, area.y, sectionWidth, area.height);
 
         GUILayout.BeginArea(leftRect);
         EditorGUILayout.BeginHorizontal();
@@ -223,7 +223,7 @@ public class TimelineView
 
         if (xPos >= totalArea.x && xPos <= totalArea.xMax)
         {
-            Rect lineRect = new Rect(xPos, totalArea.y + rulerH, 1f, contentH);
+            Rect lineRect = new (xPos, totalArea.y + rulerH, 1f, contentH);
             EditorGUI.DrawRect(lineRect, new Color(1f, 0f, 0f, 0.7f));
         }
     }

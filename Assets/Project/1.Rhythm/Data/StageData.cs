@@ -11,6 +11,8 @@ namespace Project.Rhythm.Data
     [CreateAssetMenu(fileName = "NewStage", menuName = "Project/Rhythm/Stage")]
     public class StageData : ScriptableObject
     {
+        public Sprite stageImage;
+
         [Header("Status")]
         public int stageIndex; // 1, 2, 3... 순서대로 기입        
         public bool skipGuide;
