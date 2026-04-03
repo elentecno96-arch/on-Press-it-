@@ -13,8 +13,9 @@ MonoBehaviour:
   m_Name: TEST STAGE
   m_EditorClassIdentifier: 
   stageIndex: 4
-  isClear: 0
   skipGuide: 0
+  isClear: 0
+  bestScore: 0
   stageName: "\uD14C\uC2A4\uD2B8 \uC2A4\uD14C\uC774\uC9C0"
   masterTrack: {fileID: 8300000, guid: 0a738c5a3e54bdb44b7072975388763d, type: 3}
   bpm: 120
@@ -46,6 +47,12 @@ MonoBehaviour:
     noteType: 0
   - beat: 8
     type: 1
+    role: 0
+    duration: 0
+    targetID: 
+    noteType: 0
+  - beat: 12
+    type: 0
     role: 0
     duration: 0
     targetID: 

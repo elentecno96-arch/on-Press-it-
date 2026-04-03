@@ -1,4 +1,5 @@
 #if UNITY_EDITOR
+using Project.Editor.TestEditor.Engine;
 using Project.Rhythm.Data;
 using Project.Rhythm.Data.Struct;
 using UnityEditor;
@@ -8,12 +9,12 @@ namespace Project.Editor.TestEditor.Draw.View
 {
     public class SettingInspectorView
     {
-        private Engine.EditorEngine _engine;
+        private readonly EditorEngine _engine;
 
-        private GUIStyle _smallLabelStyle;
-        private GUIStyle _smallFieldStyle;
-        private GUIStyle _smallTextFieldStyle;
-        private GUIStyle _smallTitleStyle;
+        private GUIStyle _sLabel;
+        private GUIStyle _sField;
+        private GUIStyle _sText;
+        private GUIStyle _sTitle;
 
         private bool _isInitialized = false;
 
@@ -26,10 +27,10 @@ namespace Project.Editor.TestEditor.Draw.View
         {
             if (_isInitialized) return;
 
-            _smallLabelStyle = new GUIStyle(EditorStyles.label) { fontSize = 10 };
-            _smallFieldStyle = new GUIStyle(EditorStyles.numberField) { fontSize = 10 };
-            _smallTextFieldStyle = new GUIStyle(EditorStyles.textField) { fontSize = 10 };
-            _smallTitleStyle = new GUIStyle(EditorStyles.boldLabel) { fontSize = 9 };
+            _sLabel = new GUIStyle(EditorStyles.label) { fontSize = 10 };
+            _sField = new GUIStyle(EditorStyles.numberField) { fontSize = 10 };
+            _sText = new GUIStyle(EditorStyles.textField) { fontSize = 10 };
+            _sTitle = new GUIStyle(EditorStyles.boldLabel) { fontSize = 9 };
 
             _isInitialized = true;
         }
@@ -39,7 +40,7 @@ namespace Project.Editor.TestEditor.Draw.View
             InitStyles();
 
             bool isDisabled = _engine.currentStageData == null;
-
+            
             GUILayout.BeginArea(rect, EditorStyles.helpBox);
             {
                 EditorGUILayout.BeginVertical();
@@ -49,7 +50,7 @@ namespace Project.Editor.TestEditor.Draw.View
                         float leftPanelWidth = rect.width * NAME_PADDING;
                         EditorGUILayout.BeginVertical(GUILayout.Width(leftPanelWidth));
                         {
-                            GUILayout.Label("스테이지 데이터 세팅", _smallTitleStyle);
+                            GUILayout.Label("스테이지 데이터 세팅", _sTitle);
                             EditorGUILayout.Space(2);
 
                             float originalLabelWidth = EditorGUIUtility.labelWidth;
@@ -72,14 +73,16 @@ namespace Project.Editor.TestEditor.Draw.View
 
                             EditorGUILayout.Space(2);
 
+                            //BeginDisabledGroup(), EndDisabledGroup()
+                            //데이터가 없을 때 스코프 안에 있는 UI 요소 비활성화
                             EditorGUI.BeginDisabledGroup(isDisabled);
                             {
-                                _engine.stageName = EditorGUILayout.TextField("스테이지 이름", _engine.stageName, _smallTextFieldStyle);
+                                _engine.stageName = EditorGUILayout.TextField("스테이지 이름", _engine.stageName, _sText);
                                 _engine.masterTrack = (AudioClip)EditorGUILayout.ObjectField("스테이지 곡", _engine.masterTrack, typeof(AudioClip), false);
 
                                 EditorGUILayout.Space(2);
-                                _engine.bpm = EditorGUILayout.FloatField("BPM", _engine.bpm, _smallFieldStyle);
-                                _engine.stageIndex = EditorGUILayout.IntField("Stage Index", _engine.stageIndex, _smallFieldStyle);
+                                _engine.bpm = EditorGUILayout.FloatField("BPM", _engine.bpm, _sField);
+                                _engine.stageIndex = EditorGUILayout.IntField("Stage Index", _engine.stageIndex, _sField);
                                 _engine.skipGuide = EditorGUILayout.Toggle("Skip Guide", _engine.skipGuide);
                             }
                             EditorGUI.EndDisabledGroup();
@@ -98,7 +101,7 @@ namespace Project.Editor.TestEditor.Draw.View
                             // 중앙 패널
                             EditorGUILayout.BeginVertical(GUILayout.Width(halfRemainingWidth));
                             {
-                                GUILayout.Label("저장 및 판정 설정", _smallTitleStyle);
+                                GUILayout.Label("저장 및 판정 설정", _sTitle);
                                 EditorGUILayout.Space(2);
 
                                 EditorGUILayout.BeginHorizontal();
@@ -111,10 +114,10 @@ namespace Project.Editor.TestEditor.Draw.View
 
                                 EditorGUILayout.Space(2);
                                 GUILayout.Label("판정 정밀 수치", EditorStyles.miniBoldLabel);
-                                _engine.perfectWindow = EditorGUILayout.FloatField("Perfect", _engine.perfectWindow, _smallFieldStyle);
-                                _engine.greatWindow = EditorGUILayout.FloatField("Great", _engine.greatWindow, _smallFieldStyle);
-                                _engine.goodWindow = EditorGUILayout.FloatField("Good", _engine.goodWindow, _smallFieldStyle);
-                                _engine.missWindow = EditorGUILayout.FloatField("Miss", _engine.missWindow, _smallFieldStyle);
+                                _engine.perfectWindow = EditorGUILayout.FloatField("Perfect", _engine.perfectWindow, _sField);
+                                _engine.greatWindow = EditorGUILayout.FloatField("Great", _engine.greatWindow, _sField);
+                                _engine.goodWindow = EditorGUILayout.FloatField("Good", _engine.goodWindow, _sField);
+                                _engine.missWindow = EditorGUILayout.FloatField("Miss", _engine.missWindow, _sField);
                             }
                             EditorGUILayout.EndVertical();
 
@@ -122,7 +125,7 @@ namespace Project.Editor.TestEditor.Draw.View
 
                             EditorGUILayout.BeginVertical(GUILayout.Width(halfRemainingWidth));
                             {
-                                GUILayout.Label("테마 및 오디오", _smallTitleStyle);
+                                GUILayout.Label("테마 및 오디오", _sTitle);
                                 EditorGUILayout.Space(1);
 
                                 if (GUILayout.Button("테마 설정", GUILayout.Height(20), GUILayout.Width(halfRemainingWidth - 10)))
@@ -141,7 +144,7 @@ namespace Project.Editor.TestEditor.Draw.View
 
                                 EditorGUILayout.BeginHorizontal();
                                 {
-                                    GUILayout.Label("볼륨", _smallLabelStyle, GUILayout.Width(30));
+                                    GUILayout.Label("볼륨", _sLabel, GUILayout.Width(30));
                                     float newVol = EditorGUILayout.Slider(_engine.masterVolume, 0f, 1f);
                                     if (newVol != _engine.masterVolume)
                                     {
@@ -195,21 +198,21 @@ namespace Project.Editor.TestEditor.Draw.View
         {
             var popup = new ThemePopupEditor(_engine);
             Rect windowRect = EditorWindow.focusedWindow.position;
-            Vector2 popupSize = new Vector2(400, 500);
-            Rect spawnRect = new Rect((windowRect.width - popupSize.x) * 0.5f, (windowRect.height - popupSize.y) * 0.5f, 10, 10);
+            Vector2 popupSize = new (400, 500);
+            Rect spawnRect = new ((windowRect.width - popupSize.x) * 0.5f, (windowRect.height - popupSize.y) * 0.5f, 10, 10);
             PopupWindow.Show(spawnRect, popup);
         }
 
         private void DrawVerticalLine(float height)
         {
-            Color lineColor = new Color(0.1f, 0.1f, 0.1f, 1.0f);
+            Color lineColor = new (0.1f, 0.1f, 0.1f, 1.0f);
             Rect lineRect = EditorGUILayout.GetControlRect(false, height, GUILayout.Width(1));
             EditorGUI.DrawRect(lineRect, lineColor);
         }
 
         private void DrawHorizontalLine_Local(float width)
         {
-            Color lineColor = new Color(0.1f, 0.1f, 0.1f, 1.0f);
+            Color lineColor = new (0.1f, 0.1f, 0.1f, 1.0f);
             Rect lineRect = GUILayoutUtility.GetRect(width, 1);
             EditorGUI.DrawRect(lineRect, lineColor);
         }

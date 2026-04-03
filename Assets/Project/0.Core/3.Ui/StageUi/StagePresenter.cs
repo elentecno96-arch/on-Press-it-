@@ -1,3 +1,4 @@
+using Project.Core.Managers;
 using Project.Core.Ui.StageUi.View;
 using Project.Rhythm.Data;
 using Project.Rhythm.Data.Enum;
@@ -216,6 +217,20 @@ namespace Project.Rhythm.Presentation
 
             if (resultView != null)
             {
+                if (_judgementSystem != null && _stageData != null)
+                {
+                    float finalScore = _judgementSystem.CalculateFinalScore();
+
+                    PlayerManager.Instance.SaveStageResult(_stageData.stageIndex, finalScore);
+
+                    if (FirebaseManager.Instance != null && FirebaseManager.Instance.IsInitialized)
+                    {
+                        FirebaseManager.Instance.UpdateLeaderboardData(
+                            PlayerManager.Instance.Data.userName,
+                            PlayerManager.Instance.GetTotalSumScore()
+                        );
+                    }
+                }
                 resultView.DisplayResult(p, gr, go, m);
             }
         }

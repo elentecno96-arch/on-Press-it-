@@ -7,6 +7,20 @@ using UnityEngine;
 
 namespace Project.Core.Managers
 {
+    [System.Serializable]
+    public class ScoreRecord // 상세 기록 구조체
+    {
+        public float score;
+        public string date;
+    }
+
+    [System.Serializable]
+    public class DetailedStageRecord // 스테이지별 상세 기록 래퍼
+    {
+        public int stageIndex;
+        public List<ScoreRecord> records = new();
+    }
+
     // 스테이지별 최고 점수 데이터
     [System.Serializable]
     public class StageSaveData
@@ -29,7 +43,10 @@ namespace Project.Core.Managers
     [System.Serializable]
     public class PlayerData
     {
+        public string userName = "New Player"; //유저 이름 기본값
         public List<StageSaveData> stageRecords = new();
+        public List<DetailedStageRecord> detailedRecords = new(); //각 스테이지 기록을 담는 리스트
+
         public List<AchievementData> achievements = new();
 
         // 오디오 설정
@@ -201,10 +218,26 @@ namespace Project.Core.Managers
             {
                 record.bestScore = score;
             }
-            else
+
+            var detailed = Data.detailedRecords.Find(d => d.stageIndex == index);
+            if (detailed == null)
             {
-                // 기존 점수가 더 높으면 저장 안함
-                return;
+                detailed = new DetailedStageRecord { stageIndex = index };
+                Data.detailedRecords.Add(detailed);
+            }
+
+            // 새로운 기록 추가
+            detailed.records.Add(new ScoreRecord
+            {
+                score = score,
+                date = System.DateTime.Now.ToString("yyyy-MM-dd")
+            });
+
+            // 점수 높은 순으로 정렬 후 3개만 남기기
+            detailed.records.Sort((a, b) => b.score.CompareTo(a.score));
+            if (detailed.records.Count > 3)
+            {
+                detailed.records.RemoveRange(3, detailed.records.Count - 3);
             }
 
             Save();
@@ -306,6 +339,38 @@ namespace Project.Core.Managers
                 FirebaseManager.Instance.SavePlayerData(json);
                 Debug.Log("[PlayerManager] 앱 종료 전 최종 데이터 서버 전송 시도");
             }
+        }
+
+        /// <summary>
+        /// 유저 이름 변경
+        /// </summary>
+        /// <param name="newName"></param>
+        public void UpdateUserName(string newName)
+        {
+            Data.userName = newName;
+            Save();
+        }
+
+        /// <summary>
+        /// 결과창에서 호출 할 Top3 기록 정보 반환
+        /// </summary>
+        /// <param name="index"></param>
+        /// <returns></returns>
+        public List<ScoreRecord> GetTopThreeRecords(int index)
+        {
+            var detailed = Data.detailedRecords.Find(d => d.stageIndex == index);
+            return detailed?.records ?? new List<ScoreRecord>();
+        }
+
+        /// <summary>
+        /// 프로필용 전체 전체 합산 점수 반환
+        /// </summary>
+        /// <returns></returns>
+        public float GetTotalSumScore()
+        {
+            float total = 0;
+            foreach (var s in Data.stageRecords) total += s.bestScore;
+            return total;
         }
 
         // 이벤트 해제 (메모리 누수 방지)
