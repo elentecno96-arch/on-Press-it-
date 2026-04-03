@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 using Project.Rhythm.Data.Struct;
 using UnityEditor;
 using UnityEngine;
@@ -92,3 +93,4 @@ namespace Project.Editor
         }
     }
 }
+#endif  

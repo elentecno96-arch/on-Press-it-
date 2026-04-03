@@ -1,3 +1,4 @@
+using Project.Core.Managers;
 using Project.Rhythm.Data.Struct;
 using System.Collections.Generic;
 using UnityEngine;
@@ -11,14 +12,18 @@ namespace Project.Rhythm.Data
     public class StageData : ScriptableObject
     {
         [Header("Status")]
-        public int stageIndex; // 1, 2, 3... 순서대로 기입
-        public bool isClear;   // 클리어 여부
+        public int stageIndex; // 1, 2, 3... 순서대로 기입        
         public bool skipGuide;
+        [HideInInspector] public bool isClear;
+        [HideInInspector] public int bestScore;
+        //외부에서 stageData.isClear를 호출하면 PlayerManager의 데이터를 즉시 확인
+
+        public int BestScore => PlayerManager.Instance != null ? PlayerManager.Instance.GetBestScore(stageIndex) : 0;
 
         [Header("Audio")]
         public string stageName;
         public AudioClip masterTrack;
-        public float bpm;      
+        public float bpm;
 
         [Header("Theme Resources")]
         public List<ThemeResource> themeResources;
@@ -41,12 +46,14 @@ namespace Project.Rhythm.Data
         [Header("Patterns (Editor Only)")]
         public List<PatternData> patterns = new();
 
-        /// [추가] 이 스테이지가 클리어되었을 때 호출하여 상태를 변경합니다.
-        /// public void SetClear(bool value)
-        public void SetClear(bool value)
+        // 클리어 이벤트를 정의합니다. (인덱스와 점수를 전달)
+        public static event System.Action<int, bool> OnStagePlayStatusChanged;
+        public void SetPlayComplete(bool isPlayed)
         {
-            isClear = value;
-            Debug.Log($"{stageName} 클리어 상태 변경: {value}");
+            // 이 인덱스의 스테이지를 플레이했다(True)는 사실을 알림
+            OnStagePlayStatusChanged?.Invoke(this.stageIndex, isPlayed);
+
+            Debug.Log($"[StageData] {stageName} (Index: {stageIndex}) 플레이 완료 상태: {isPlayed}");
         }
     }
 }

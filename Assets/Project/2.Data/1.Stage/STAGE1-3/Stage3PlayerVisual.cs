@@ -56,8 +56,7 @@ namespace Project.Rhythm.Player
             {
                 _isHolding = true;
                 PlaySfx(actionSfx);
-
-                SetAnimation(actionFrames, actionFrameRate, true);
+                if (playerHoldSlider != null) playerHoldSlider.gameObject.SetActive(true);
             }
         }
 
@@ -73,9 +72,14 @@ namespace Project.Rhythm.Player
         public override void PlayAction(JudgeResult result)
         {
             _isHolding = false;
-            _isLocked = true;
+            _isLocked = true; 
 
-            if (playerHoldSlider != null) playerHoldSlider.gameObject.SetActive(false);
+            if (playerHoldSlider != null)
+            {
+                playerHoldSlider.value = 0f;
+                playerHoldSlider.gameObject.SetActive(false);
+            }
+
             targetImage.rectTransform.anchoredPosition = Vector2.zero;
 
             if (result != JudgeResult.Miss)

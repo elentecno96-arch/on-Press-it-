@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 using Project.Editor.TestEditor.Engine;
 using Project.Rhythm.Data;
 using Project.Rhythm.Data.Enum;
@@ -103,3 +104,4 @@ public class NoteInspectorView
         if (GUILayout.Button("선택 해제", GUILayout.Height(30))) _engine.ClearSelection();
     }
 }
+#endif

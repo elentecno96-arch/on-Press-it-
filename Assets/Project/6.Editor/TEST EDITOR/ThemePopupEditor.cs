@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 using UnityEditor;
 using UnityEngine;
 using Project.Rhythm.Data;
@@ -86,3 +87,4 @@ public class ThemePopupEditor : PopupWindowContent
         EditorGUILayout.Space(5);
     }
 }
+#endif

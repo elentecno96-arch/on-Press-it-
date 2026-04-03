@@ -1,13 +1,13 @@
 using Cysharp.Threading.Tasks;
-using Firebase.Extensions;
 using Project.Core.Utilities;
+using Project.Rhythm.Data;
 using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 
 namespace Project.Core.Managers
 {
-    // [설명] 스테이지별 인덱스와 최고 점수를 쌍으로 묶어 저장하는 데이터 클래스
+    // 스테이지별 최고 점수 데이터
     [System.Serializable]
     public class StageSaveData
     {
@@ -15,7 +15,7 @@ namespace Project.Core.Managers
         public float bestScore;
     }
 
-    // [설명] 업적의 ID, 이름, 해금 상태 및 날짜를 저장하는 데이터 클래스
+    // 업적 데이터 (해금 여부 포함)
     [System.Serializable]
     public class AchievementData
     {
@@ -25,119 +25,243 @@ namespace Project.Core.Managers
         public string unlockDate;
     }
 
-    // [설명] 파일로 저장될 최종 루트 데이터 객체
+    // 플레이어 전체 저장 데이터
     [System.Serializable]
     public class PlayerData
     {
-        public List<StageSaveData> stageRecords = new List<StageSaveData>();
-        public List<AchievementData> achievements = new List<AchievementData>();
+        public List<StageSaveData> stageRecords = new();
+        public List<AchievementData> achievements = new();
 
-        // 오디오 설정을 저장하기 위한 변수 추가 (기본값 1.0f)
+        // 오디오 설정
         public float bgmVolume = 1.0f;
         public float sfxVolume = 1.0f;
     }
 
     public class PlayerManager : BaseSingleton<PlayerManager>
     {
-        // 이유: 플랫폼마다 다른 권한이 있는 안전한 저장 경로를 반환함
+        // 서버 저장 호출 쿨타임 (Firebase write 남용 방지)
+        private float lastSaveTime;
+        private const float SAVE_COOLDOWN = 0.5f;
+        private bool isSavePending = false;
+        public const float CLEAR_SCORE_THRESHOLD = 85000f;  // 클리어 여부 판단 기준 (예시값, 필요에 따라 조정)
+
+        // 플랫폼별 안전한 로컬 저장 경로
         private string SavePath => Path.Combine(Application.persistentDataPath, "PlayerSave.json");
+
         public PlayerData Data { get; private set; } = new PlayerData();
 
         public override async UniTask Initialize()
         {
             if (IsInitialized) return;
+
+            // 로컬 데이터 먼저 로드 (오프라인 대비)
             Load();
 
-            // AudioManager의 이벤트를 구독하여 데이터 수신 대기
-            // AudioManager.Instance가 존재할 때만 이벤트를 연결합니다.
+            // 오디오 설정 변경 이벤트 구독
             if (AudioManager.Instance != null)
-            {
                 AudioManager.Instance.OnRequestAudioSave += UpdateAudioSettings;
-            }
+
+            // 스테이지 플레이 기록 이벤트
+            StageData.OnStagePlayStatusChanged += HandleStageStatusChanged;
 
             await UniTask.Yield();
             IsInitialized = true;
         }
 
+        // 스테이지를 "플레이한 적 있음" 기록
+        private void HandleStageStatusChanged(int index, bool isPlayed)
+        {
+            if (!isPlayed || index <= 0) return;
+
+            var record = Data.stageRecords.Find(s => s.stageIndex == index);
+
+            // 최초 플레이 시에만 기록 생성
+            if (record == null)
+            {
+                record = new StageSaveData { stageIndex = index, bestScore = 0 };
+                Data.stageRecords.Add(record);
+
+                Save();
+                Debug.Log($"[PlayerManager] {index}번 스테이지 플레이 기록 생성");
+            }
+        }
+
+        // 스테이지 플레이 여부 체크
+        public bool IsStageCleared(int stageIndex)
+        {
+            // 인덱스가 0 이하이거나 데이터가 없으면 미클리어 처리
+            if (stageIndex <= 0 || Data?.stageRecords == null) return false;
+
+            // 해당 스테이지의 저장된 기록을 찾습니다.
+            var record = Data.stageRecords.Find(s => s.stageIndex == stageIndex);
+
+            // 최고 점수가 7만 점 이상이어야 true 반환
+            if (record != null && record.bestScore >= CLEAR_SCORE_THRESHOLD)
+            {
+                return true;
+            }
+
+            // 기록이 없거나 7만 점 미만이면 false
+            return false;
+        }
+
+        // 서버 데이터 동기화 (Merge 방식)
         public async UniTask SyncWithServer()
         {
             try
             {
                 if (FirebaseManager.Instance == null || !FirebaseManager.Instance.IsInitialized) return;
 
-                var snapshot = await FirebaseManager.Instance.DbRef
-                    .Child("users").Child(FirebaseManager.Instance.User.UserId).Child("playerData")
-                    .GetValueAsync().AsUniTask();
-
-                if (snapshot.Exists)
+                string json = await FirebaseManager.Instance.LoadPlayerData();
+                if (!string.IsNullOrEmpty(json))
                 {
-                    string json = snapshot.GetRawJsonValue();
                     PlayerData serverData = JsonUtility.FromJson<PlayerData>(json);
 
-                    Data = serverData; //덥어쓰기
+                    // 1. 데이터 병합
+                    MergeData(serverData);
 
-                    SaveLocal();
-                    Debug.Log("[PlayerManager] 서버 데이터 동기화 완료!");
+                    // 2. 병합된 최종 데이터를 로컬과 서버 모두에 즉시 강제 저장
+                    SaveInternal();
+                    Debug.Log("[PlayerManager] 서버 데이터 동기화 및 강제 저장 완료");
                 }
             }
             catch (System.Exception e)
             {
-                Debug.LogError($"[PlayerManager] 서버 동기화 중 에러: {e.Message}");
+                Debug.LogError($"[PlayerManager] 서버 동기화 에러: {e.Message}");
             }
         }
 
-        // AudioManager로부터 전달받은 볼륨 정보를 데이터에 반영하고 저장
+        // 서버 데이터와 로컬 데이터 병합
+        private void MergeData(PlayerData server)
+        {
+            if (server == null) return;
+
+            // ===== 점수 병합 (더 높은 점수 유지) =====
+            if (server.stageRecords != null)
+            {
+                foreach (var serverRecord in server.stageRecords)
+                {
+                    var local = Data.stageRecords.Find(s => s.stageIndex == serverRecord.stageIndex);
+                    if (local == null)
+                        Data.stageRecords.Add(serverRecord);
+                    else
+                        local.bestScore = Mathf.Max(local.bestScore, serverRecord.bestScore);
+                }
+            }
+
+            // ===== 업적 병합 (해금 상태 및 날짜 보호) =====
+            if (server.achievements != null)
+            {
+                foreach (var serverAch in server.achievements)
+                {
+                    var local = Data.achievements.Find(a => a.id == serverAch.id);
+                    if (local == null)
+                    {
+                        Data.achievements.Add(serverAch);
+                    }
+                    else if (serverAch.isUnlocked)
+                    {
+                        // 로컬이 아직 잠겨있거나, 서버 날짜가 더 이전일 경우에만 반영 (선택 사항)
+                        if (!local.isUnlocked)
+                        {
+                            local.isUnlocked = true;
+                            local.unlockDate = serverAch.unlockDate;
+                        }
+                    }
+                }
+            }
+
+            // 볼륨 설정 등은 서버 데이터 수용
+            Data.bgmVolume = server.bgmVolume;
+            Data.sfxVolume = server.sfxVolume;
+        }
+
+        // 오디오 설정 업데이트 시 저장
         private void UpdateAudioSettings(float bgm, float sfx)
         {
             Data.bgmVolume = bgm;
             Data.sfxVolume = sfx;
 
             Save();
-            Debug.Log($"[PlayerManager] 오디오 설정 저장 완료: BGM({bgm}), SFX({sfx})");
         }
 
-        // 설명: 특정 스테이지의 점수가 이전보다 높을 때만 갱신 후 저장
-        public void SaveBestScore(int index, float score)
+        // 스테이지 점수 저장 (최고 점수만 유지)
+        public void SaveStageResult(int index, float score)
         {
+            if (index <= 0) return;
+
             var record = Data.stageRecords.Find(s => s.stageIndex == index);
+
             if (record == null)
             {
-                Data.stageRecords.Add(new StageSaveData { stageIndex = index, bestScore = score });
+                record = new StageSaveData { stageIndex = index, bestScore = score };
+                Data.stageRecords.Add(record);
             }
             else if (score > record.bestScore)
             {
                 record.bestScore = score;
             }
-            else return;
+            else
+            {
+                // 기존 점수가 더 높으면 저장 안함
+                return;
+            }
 
             Save();
-            Debug.Log($"[저장완료] 스테이지 {index} : {score}");
+            Debug.Log($"[PlayerManager] 스테이지 {index} 점수 저장: {score}");
         }
-        // 특정 스테이지가 클리어되었는지 확인하는 헬퍼 메서드 ---
-        public bool IsStageCleared(int stageIndex)
+
+        public int GetBestScore(int index)
         {
-            if (Data == null || Data.stageRecords == null) return false;
-
-            var record = Data.stageRecords.Find(s => s.stageIndex == stageIndex);
-
-            // 기록이 있고, 최고 점수가 0보다 크면 클리어된 것으로 봅니다.
-            return record != null && record.bestScore > 0;
+            var record = Data.stageRecords.Find(s => s.stageIndex == index);
+            return record != null ? (int)record.bestScore : 0;
         }
-        
-        // 설명: JSON 형식으로 데이터를 직렬화하여 실제 파일에 작성
+
+        public void SaveBestScore(int index, float score)
+        {
+            SaveStageResult(index, score);
+        }
+
+        // 로컬 + 서버 저장
         public void Save()
         {
+            // 로컬은 즉시 저장하여 세이브 파일 안전 확보
             SaveLocal();
 
-            if (FirebaseManager.Instance != null)
-            {
-                string json = JsonUtility.ToJson(Data);
-                string path = $"users/{FirebaseManager.Instance.User.UserId}/playerData";
+            // 서버 저장은 쿨다운 및 예약 로직 실행
+            HandleServerSave().Forget();
+        }
 
-                FirebaseManager.Instance.SaveDataWithCheck(path, json);
+        private async UniTaskVoid HandleServerSave()
+        {
+            if (isSavePending) return; //저장 예약이 되어 있다면 무시
+
+            float elapsed = Time.time - lastSaveTime;
+            if (elapsed < SAVE_COOLDOWN)
+            {
+                isSavePending = true; // 예약됨 표시
+                await UniTask.Delay(System.TimeSpan.FromSeconds(SAVE_COOLDOWN - elapsed), cancellationToken: this.GetCancellationTokenOnDestroy());
+                SaveInternal();
+                isSavePending = false; // 예약 해제
+            }
+            else
+            {
+                SaveInternal();
             }
         }
 
+        private void SaveInternal()
+        {
+            if (FirebaseManager.Instance == null || !FirebaseManager.Instance.IsInitialized) return;
+
+            // 실제 저장 직전에 타이머 업데이트
+            lastSaveTime = Time.time;
+
+            string json = JsonUtility.ToJson(Data);
+            FirebaseManager.Instance.SavePlayerData(json);
+        }
+
+        // 로컬 파일 저장
         private void SaveLocal()
         {
             try
@@ -145,28 +269,52 @@ namespace Project.Core.Managers
                 string json = JsonUtility.ToJson(Data, true);
                 File.WriteAllText(SavePath, json);
             }
-            catch (System.Exception e) { Debug.LogError($"[Local Save 실패] {e.Message}"); }
+            catch (System.Exception e)
+            {
+                Debug.LogError($"[Local Save 실패] {e.Message}");
+            }
         }
 
-        // 설명: 파일이 존재하면 읽어와서 JsonUtility를 통해 C# 객체로 변환
+        // 로컬 파일 로드
         private void Load()
         {
             if (!File.Exists(SavePath)) return;
+
             try
             {
                 string json = File.ReadAllText(SavePath);
-                Data = JsonUtility.FromJson<PlayerData>(json);
+
+                // 역직렬화 실패 대비 null 방어
+                Data = JsonUtility.FromJson<PlayerData>(json) ?? new PlayerData();
             }
-            catch { Data = new PlayerData(); }
+            catch
+            {
+                Data = new PlayerData();
+            }
         }
-        // 이유: 오브젝트 파괴 시 이벤트 연결을 해제하여 메모리 누수 및 에러 방지
+
+        // 앱 종료 시 강제 저장 (매우 중요)
+        protected override void OnApplicationQuit()
+        {
+            base.OnApplicationQuit();
+
+            SaveLocal();
+
+            if (FirebaseManager.Instance != null && FirebaseManager.Instance.IsInitialized)
+            {
+                string json = JsonUtility.ToJson(Data);
+                FirebaseManager.Instance.SavePlayerData(json);
+                Debug.Log("[PlayerManager] 앱 종료 전 최종 데이터 서버 전송 시도");
+            }
+        }
+
+        // 이벤트 해제 (메모리 누수 방지)
         private void OnDisable()
         {
-            // 싱글톤 인스턴스가 존재할 때만 구독 해제
             if (AudioManager.Instance != null)
-            {
                 AudioManager.Instance.OnRequestAudioSave -= UpdateAudioSettings;
-            }
+
+            StageData.OnStagePlayStatusChanged -= HandleStageStatusChanged;
         }
     }
 }

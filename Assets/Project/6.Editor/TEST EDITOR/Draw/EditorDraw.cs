@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 using Project.Editor.TestEditor.Draw.View;
 using Project.Editor.TestEditor.Engine;
 using UnityEngine;
@@ -44,4 +45,4 @@ namespace Project.Editor.TestEditor.Draw
         }
     }
 }
-
+#endif

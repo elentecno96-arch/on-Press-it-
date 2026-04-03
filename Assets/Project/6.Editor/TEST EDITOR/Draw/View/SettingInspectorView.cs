@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 using Project.Rhythm.Data;
 using Project.Rhythm.Data.Struct;
 using UnityEditor;
@@ -214,3 +215,4 @@ namespace Project.Editor.TestEditor.Draw.View
         }
     }
 }
+#endif

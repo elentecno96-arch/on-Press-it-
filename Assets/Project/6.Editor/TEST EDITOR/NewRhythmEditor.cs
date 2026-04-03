@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 using Project.Editor.TestEditor.Draw;
 using Project.Editor.TestEditor.Engine;
 using Project.Editor.TestEditor.Input;
@@ -64,3 +65,4 @@ namespace Project.Editor.TestEditor
         }
     }
 }
+#endif

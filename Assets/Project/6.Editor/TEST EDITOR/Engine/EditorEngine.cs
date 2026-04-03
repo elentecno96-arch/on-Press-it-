@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 using Project.Rhythm.Data;
 using Project.Rhythm.Data.Enum;
 using Project.Rhythm.Data.Struct;
@@ -303,9 +304,11 @@ namespace Project.Editor.TestEditor.Engine
 
         public float GetSnappedTime(float rawTime)
         {
+            if (bpm <= 0) return rawTime;
+
             float beatDuration = 60f / bpm;
-            // 4분음표 스냅 (나중에 8, 16분음표 선택 가능하게 확장 가능)
-            float snapUnit = beatDuration;
+            float snapUnit = beatDuration * 0.5f;
+
             return Mathf.Round(rawTime / snapUnit) * snapUnit;
         }
 
@@ -332,3 +335,4 @@ namespace Project.Editor.TestEditor.Engine
         }
     }
 }
+#endif
