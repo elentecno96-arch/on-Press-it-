@@ -41,17 +41,19 @@ namespace Project.Core.Systems.SaveLoad
                 _isSavePending = false;
             }
 
-            PerformCloudSave(data);
+            PerformCloudSaveAsync(data).Forget();
         }
 
         // 실제 서버 전송 실행
-        public void PerformCloudSave(PlayerData data)
+        public async UniTask PerformCloudSaveAsync(PlayerData data)
         {
             if (FirebaseManager.Instance == null || !FirebaseManager.Instance.IsInitialized) return;
 
             _lastSaveTime = Time.time;
             string json = SaveSystem.Serialize(data);
-            FirebaseManager.Instance.SavePlayerData(json);
+            await FirebaseManager.Instance.SavePlayerData(json);
+            
+            Debug.Log("[SyncServer] 서버 저장 완료");
         }
     }
 }
