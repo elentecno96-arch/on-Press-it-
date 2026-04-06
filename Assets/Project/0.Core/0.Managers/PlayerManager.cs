@@ -5,7 +5,6 @@ using Project.Core.Utilities;
 using Project.Rhythm.Data;
 using System;
 using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
 
 namespace Project.Core.Managers
@@ -28,7 +27,9 @@ namespace Project.Core.Managers
 
         // 프로필 정보
         public PlayerData Data { get; private set; }
-        public string UserAccountTag => string.IsNullOrEmpty(Data?.userId) ? "#00000" : $"#{Data.userId.Substring(0, Math.Min(Data.userId.Length, 5)).ToUpper()}";
+        public string UserAccountTag => string.IsNullOrEmpty(Data?.userId)
+                      ? "#00000"
+                      : $"#{Data.userId[..Math.Min(Data.userId.Length, 5)].ToUpper()}";
 
         protected override void Awake()
         {

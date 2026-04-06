@@ -27,7 +27,7 @@ namespace Project.Core.Ui.GlobalUi.View
             gameObject.SetActive(false);
         }
 
-        public async UniTaskVoid ShowMessage(string message, float duration, CancellationToken token)
+        public async UniTask ShowMessage(string message, float duration, CancellationToken token)
         {
             rectTransform.DOKill();
             canvasGroup.DOKill();

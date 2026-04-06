@@ -21,9 +21,8 @@ namespace Project.Core.Ui.GlobalUi
         [SerializeField] private NotificationView notificationView;
         [SerializeField] private LoadingMessageData messageData;
 
-        //Queue 순차 적 팝업 알람 ( 현재는 즉시 표시 )
-        //private Queue<string> _notiQueue = new ();
-        //private bool _isShowing;
+        private readonly Queue<string> _notiQueue = new ();
+        private bool _isShowing;
 
         private CancellationTokenSource _fadeCts;
         private CancellationTokenSource _notiCts;
@@ -105,13 +104,40 @@ namespace Project.Core.Ui.GlobalUi
         public void ShowNotification(string message, float duration = 2.0f)
         {
             if (notificationView == null) return;
-            Debug.Log("팝업 호출됨");
 
+            _notiQueue.Enqueue(message);
+
+            if (!_isShowing)
+            {
+                ProcessNotificationQueue(duration).Forget();
+            }
+        }
+
+        private async UniTaskVoid ProcessNotificationQueue(float duration)
+        {
+            _isShowing = true;
+
+            while (_notiQueue.Count > 0)
+            {
+                string msg = _notiQueue.Dequeue();
+
+                _notiCts?.Cancel();
+                _notiCts?.Dispose();
+                _notiCts = new CancellationTokenSource();
+
+                await notificationView.ShowMessage(msg, duration, _notiCts.Token);
+                await UniTask.Delay(System.TimeSpan.FromSeconds(0.1f));
+            }
+
+            _isShowing = false;
+        }
+
+        private void OnDestroy()
+        {
+            _fadeCts?.Cancel();
+            _fadeCts?.Dispose();
             _notiCts?.Cancel();
             _notiCts?.Dispose();
-            _notiCts = new CancellationTokenSource();
-
-            notificationView.ShowMessage(message, duration, _notiCts.Token).Forget();
         }
 
         public async UniTask UpdateProgress(float val, float dur) => await loadingView.UpdateProgress(val, dur);
