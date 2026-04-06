@@ -93,7 +93,16 @@ public class FirebaseManager : BaseSingleton<FirebaseManager>
     public async UniTask SavePlayerData(string json)
     {
         if (!IsInitialized || User == null) return;
-        await DbRef.Child("users").Child(User.UserId).Child("playerData").SetValueAsync(json).AsUniTask();
+        try
+        {
+            await DbRef.Child("users").Child(User.UserId).Child("playerData").SetRawJsonValueAsync(json).AsUniTask();
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogError($"[Firebase] PlayerData 저장 실패: {e.Message}");
+            GlobalUIPresenter.Instance?.ShowNotification("서버 저장에 실패했습니다. 네트워크를 확인해주세요.");
+            throw;
+        }
     }
 
     public async UniTask<string> LoadPlayerData()
