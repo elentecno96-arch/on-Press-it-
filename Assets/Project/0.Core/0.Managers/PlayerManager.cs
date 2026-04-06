@@ -23,9 +23,17 @@ namespace Project.Core.Managers
         public event Action<float> OnTotalScoreUpdated;
         public event Action<int> OnRankUpdated;
 
+        private bool _isQuittingAndSaved = false;
+
         // 프로필 정보
         public PlayerData Data { get; private set; }
-        public string UserAccountTag => string.IsNullOrEmpty(Data?.userId) ? "#00000" : $"#{Data.userId.Substring(0, 5).ToUpper()}";
+        public string UserAccountTag => string.IsNullOrEmpty(Data?.userId) ? "#00000" : $"#{Data.userId.Substring(0, Math.Min(Data.userId.Length, 5)).ToUpper()}";
+
+        protected override void Awake()
+        {
+            base.Awake();
+            Application.wantsToQuit += OnWantsToQuit;
+        }
 
         public override async UniTask Initialize()
         {
@@ -116,11 +124,53 @@ namespace Project.Core.Managers
             Save();
         }
 
+        /// <summary>
+        /// 앱 종료 요청이 들어올 때 호출됨
+        /// </summary>
+        private bool OnWantsToQuit()
+        {
+            // 저장이 이미 완료되었다면 종료 허용
+            if (_isQuittingAndSaved) return true;
+
+            // 저장 프로세스 시작 (비동기)
+            HandleQuitSave().Forget();
+
+            // 일단 종료를 막음 (false 반환)
+            return false;
+        }
+
+        private async UniTaskVoid HandleQuitSave()
+        {
+            Debug.Log("<color=yellow>[PlayerManager] 앱 종료 전 최종 클라우드 저장 시퀀스 시작...</color>");
+
+            try
+            {
+                // 1. 로컬 저장 (동기 방식이라 즉시 완료)
+                SaveSystem.Save(Data);
+
+                // 2. 클라우드 저장 (비동기지만 완료를 기다림)
+                // SyncServer에 await 가능한 저장 메서드가 있어야 합니다.
+                // 만약 없다면 PerformCloudSave를 await 가능하게 수정하거나 
+                // 여기서 강제로 일정 시간 대기해야 합니다.
+                await _syncServer.PerformCloudSaveAsync(Data);
+
+                Debug.Log("<color=green>[PlayerManager] 최종 클라우드 저장 완료. 앱을 안전하게 종료합니다.</color>");
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"[PlayerManager] 종료 저장 중 에러 발생: {e.Message}");
+            }
+            finally
+            {
+                _isQuittingAndSaved = true;
+                Application.Quit(); // 다시 종료 시도 (이번엔 wantsToQuit에서 true가 반환됨)
+            }
+        }
+
         protected override void OnApplicationQuit()
         {
             base.OnApplicationQuit();
             SaveSystem.Save(Data);
-            _syncServer.PerformCloudSave(Data); // 종료 전 즉시 강제 전송
         }
 
         #endregion
