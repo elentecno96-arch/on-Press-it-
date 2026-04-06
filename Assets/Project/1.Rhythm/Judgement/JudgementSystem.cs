@@ -69,7 +69,7 @@ namespace Project.Rhythm.Judgement
             float score = CalculateFinalScore();
 
             // 데이터 저장
-            PlayerManager.Instance.SaveBestScore(_currentStageIndex, score);
+            PlayerManager.Instance.SaveStageResult(_currentStageIndex, score);
 
             // 결과 출력
             Debug.Log($"<color=yellow><b>[STAGE {_currentStageIndex} CLEAR]</b></color> " +

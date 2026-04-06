@@ -1,4 +1,6 @@
 using Cysharp.Threading.Tasks;
+using Project.Core.Systems.SaveLoad.Data;
+using Project.Core.Ui.GlobalUi;
 using Project.Core.Utilities;
 using Project.Rhythm.Data;
 using Project.Rhythm.Note;
@@ -81,6 +83,11 @@ namespace Project.Core.Managers
                 isUnlocked = true,
                 unlockDate = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")
             });
+
+            if (GlobalUIPresenter.Instance != null)
+            {
+                GlobalUIPresenter.Instance.ShowNotification($"업적 달성: {title}");
+            }
 
             // 업적 달성 시 하늘색 로그로 강조
             Debug.Log($"<color=cyan><b>[업적 달성!]</b></color> <color=cyan>{title}</color>");

@@ -6,7 +6,6 @@ using UnityEngine.UI;
 
 public class GlobalLoadingView : MonoBehaviour
 {
-    private const float DEFAULT_MOVE_DISTANCE = 500f;   // 이동 연출 거리
     private const float DEFAULT_TWEEN_DURATION = 0.4f;  // 연출 기본 시간
     private const float PROGRESS_ZERO = 0f;             // 초기 게이지 값
 
@@ -16,7 +15,6 @@ public class GlobalLoadingView : MonoBehaviour
     [SerializeField] private TextMeshProUGUI loadingText;
     [SerializeField] private RectTransform loadingBarRoot;
 
-    [SerializeField] private float moveDistance = DEFAULT_MOVE_DISTANCE;
     [SerializeField] private float tweenDuration = DEFAULT_TWEEN_DURATION;
 
     private Vector2 _originalPos;

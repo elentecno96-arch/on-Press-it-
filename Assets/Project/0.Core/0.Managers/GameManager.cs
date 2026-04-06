@@ -1,4 +1,5 @@
 using Cysharp.Threading.Tasks;
+using Project.Core.Ui.GlobalUi;
 using Project.Core.Utilities;
 using Project.Rhythm.Data;
 using UnityEngine;
@@ -22,8 +23,13 @@ namespace Project.Core.Managers
 
             if (IsInitialized) return;
 
-            await FirebaseManager.Instance.Initialize();
+            if (GlobalUIPresenter.Instance != null)
+            {
+                await GlobalUIPresenter.Instance.Initialize();
+            }
+
             await PlayerManager.Instance.Initialize();
+            await FirebaseManager.Instance.Initialize();
 
             if (FirebaseManager.Instance.IsInitialized)
             {
