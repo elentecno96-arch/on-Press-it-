@@ -31,7 +31,7 @@ namespace Project.Core.Systems.SaveLoad
             }
 
             // 데이터가 존재하지만 JSON 형식이 아닐 경우 방어
-            if (!json.StartsWith("{"))
+            if (!json.TrimStart().StartsWith("{"))
             {
                 Debug.LogWarning($"[SyncServer] 서버 데이터가 올바른 객체 형식이 아닙니다: {json}");
                 return;

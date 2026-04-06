@@ -68,7 +68,14 @@ namespace Project.Core.Ui.StageUi.View
                 if (i < topRecords.Count)
                 {
                     var record = topRecords[i];
-                    bestScoreTexts[i].text = $"{record.score:N0} : {record.date}";
+                    if (record.score > 0)
+                    {
+                        bestScoreTexts[i].text = $"{record.score:N0} ({record.date})";
+                    }
+                    else
+                    {
+                        bestScoreTexts[i].text = "-";
+                    }
                 }
                 else
                 {

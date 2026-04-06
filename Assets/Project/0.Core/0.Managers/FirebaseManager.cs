@@ -42,7 +42,10 @@ public class FirebaseManager : BaseSingleton<FirebaseManager>
             }
 
             await UniTask.SwitchToMainThread();
-            GlobalUIPresenter.Instance?.ShowNotification("서버 연결 성공");
+            if (GlobalUIPresenter.Instance != null)
+            {
+                GlobalUIPresenter.Instance.ShowNotification("서버 연결 성공");
+            }
 
             Debug.Log($"<color=green>Firebase 인증 성공! UID: {User.UserId}</color>");
             IsInitialized = true;
@@ -76,7 +79,10 @@ public class FirebaseManager : BaseSingleton<FirebaseManager>
 
             if (showNotification)
             {
-                GlobalUIPresenter.Instance?.ShowNotification("데이터가 서버에 안전하게 저장되었습니다.");
+                if (GlobalUIPresenter.Instance != null)
+                {
+                    GlobalUIPresenter.Instance.ShowNotification("데이터가 서버에 안전하게 저장되었습니다.");
+                }
             }
         }
         catch (System.OperationCanceledException)
@@ -86,7 +92,11 @@ public class FirebaseManager : BaseSingleton<FirebaseManager>
         catch (System.Exception e)
         {
             Debug.LogError($"[Firebase] 저장 실패: {e.Message}");
-            GlobalUIPresenter.Instance?.ShowNotification("서버 저장에 실패했습니다. 네트워크를 확인해주세요.");
+
+            if (GlobalUIPresenter.Instance != null)
+            {
+                GlobalUIPresenter.Instance.ShowNotification("서버 저장에 실패했습니다. 네트워크를 확인해주세요.");
+            }
         }
     }
 
@@ -100,7 +110,10 @@ public class FirebaseManager : BaseSingleton<FirebaseManager>
         catch (System.Exception e)
         {
             Debug.LogError($"[Firebase] PlayerData 저장 실패: {e.Message}");
-            GlobalUIPresenter.Instance?.ShowNotification("서버 저장에 실패했습니다. 네트워크를 확인해주세요.");
+            if (GlobalUIPresenter.Instance != null)
+            {
+                GlobalUIPresenter.Instance.ShowNotification("서버 저장에 실패했습니다. 네트워크를 확인해주세요.");
+            }
             throw;
         }
     }
