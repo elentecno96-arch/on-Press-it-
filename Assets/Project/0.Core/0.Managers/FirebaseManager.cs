@@ -2,6 +2,8 @@ using Cysharp.Threading.Tasks;
 using Firebase;
 using Firebase.Auth;
 using Firebase.Database;
+using Project.Core.Managers;
+using Project.Core.Ui.GlobalUi;
 using Project.Core.Utilities;
 using UnityEngine;
 
@@ -34,12 +36,25 @@ public class FirebaseManager : BaseSingleton<FirebaseManager>
             var authResult = await Auth.SignInAnonymouslyAsync().AsUniTask();
             User = authResult.User;
 
+            if (PlayerManager.Instance != null)
+            {
+                PlayerManager.Instance.SetUserIdentity(User.UserId);
+            }
+
+            await UniTask.SwitchToMainThread();
+            GlobalUIPresenter.Instance.ShowNotification("서버 연결 성공");
+
             Debug.Log($"<color=green>Firebase 인증 성공! UID: {User.UserId}</color>");
             IsInitialized = true;
         }
         catch (System.Exception e)
         {
-            Debug.LogError($"Firebase 로그인 실패: {e.GetBaseException().Message}");
+            Debug.LogError($"Firebase 실제 로그인 실패 원인: {e.GetBaseException().Message}");
+
+            if (GlobalUIPresenter.Instance != null)
+            {
+                GlobalUIPresenter.Instance.ShowNotification("서버 연결 실패. 오프라인 모드로 전환합니다.");
+            }
         }
     }
 
@@ -49,15 +64,20 @@ public class FirebaseManager : BaseSingleton<FirebaseManager>
         SaveDataAsync(path, json).Forget();
     }
 
-    private async UniTaskVoid SaveDataAsync(string path, string json)
+    private async UniTaskVoid SaveDataAsync(string path, string json, bool showNotification = false)
     {
         try
         {
             await DbRef.Child(path).SetRawJsonValueAsync(json)
-                .AsUniTask() 
-                .AttachExternalCancellation(this.GetCancellationTokenOnDestroy()); // 여기서 토큰 연결
+                .AsUniTask()
+                .AttachExternalCancellation(this.GetCancellationTokenOnDestroy());
 
             Debug.Log($"<color=cyan>[Firebase] 저장 성공: {path}</color>");
+
+            if (showNotification)
+            {
+                GlobalUIPresenter.Instance.ShowNotification("데이터가 서버에 안전하게 저장되었습니다.");
+            }
         }
         catch (System.OperationCanceledException)
         {
@@ -66,6 +86,7 @@ public class FirebaseManager : BaseSingleton<FirebaseManager>
         catch (System.Exception e)
         {
             Debug.LogError($"[Firebase] 저장 실패: {e.Message}");
+            GlobalUIPresenter.Instance.ShowNotification("서버 저장에 실패했습니다. 네트워크를 확인해주세요.");
         }
     }
 
@@ -121,12 +142,11 @@ public class FirebaseManager : BaseSingleton<FirebaseManager>
 
         string path = $"leaderboard/{User.UserId}";
         var data = new System.Collections.Generic.Dictionary<string, object>
-    {
-        { "userName", nickname },
-        { "score", totalScore },
-        { "lastUpdated", ServerValue.Timestamp } // 서버 시간 기준
-    };
-
+        {
+            { "userName", nickname },
+            { "score", totalScore },
+            { "lastUpdated", ServerValue.Timestamp }
+        };
         DbRef.Child(path).UpdateChildrenAsync(data).AsUniTask().Forget();
     }
 
@@ -141,10 +161,9 @@ public class FirebaseManager : BaseSingleton<FirebaseManager>
 
         try
         {
-            // 내 점수보다 높은 사람들만 필터링해서 가져옴
             var snapshot = await DbRef.Child("leaderboard")
                 .OrderByChild("score")
-                .StartAt(myTotalScore + 1) // 내 점수 초과인 유저들
+                .StartAt(myTotalScore + 1)
                 .GetValueAsync().AsUniTask();
 
             return (int)snapshot.ChildrenCount + 1;

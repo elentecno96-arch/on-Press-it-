@@ -68,7 +68,7 @@ namespace Project.Core.Systems.Intro
 
             await ExitAnimation();
 
-            EnterMain();
+            EnterMain().Forget();
         }
 
         private void InitUI()
@@ -93,11 +93,10 @@ namespace Project.Core.Systems.Intro
             logoGroup.alpha = 1;
             logoTransform.localScale = Vector3.zero;
 
-            Sequence seq = DOTween.Sequence();
-            seq.Append(logoTransform.DOScale(1.2f, 0.6f).SetEase(Ease.OutBounce));
-            seq.Append(logoTransform.DOScale(1f, 0.2f));
-
-            await seq.AsyncWaitForCompletion();
+            await DOTween.Sequence()
+                .Append(logoTransform.DOScale(1.2f, 0.6f).SetEase(Ease.OutBounce))
+                .Append(logoTransform.DOScale(1f, 0.2f))
+                .ToUniTask(); 
         }
 
         /// <summary>
@@ -142,11 +141,12 @@ namespace Project.Core.Systems.Intro
         private async UniTask ExitAnimation()
         {
             Sequence seq = DOTween.Sequence();
-            if (logoGroup != null) seq.Join(logoGroup.DOFade(0, FADE_OUT));
-            if (startGroup != null) seq.Join(startGroup.DOFade(0, FADE_OUT));
-            if (logoTransform != null) seq.Join(logoTransform.DOScale(0.8f, FADE_OUT).SetEase(Ease.InBack));
 
-            await seq.AsyncWaitForCompletion();
+            if (logoGroup != null) _ = seq.Join(logoGroup.DOFade(0, FADE_OUT));
+            if (startGroup != null) _ = seq.Join(startGroup.DOFade(0, FADE_OUT));
+            if (logoTransform != null) _ = seq.Join(logoTransform.DOScale(0.8f, FADE_OUT).SetEase(Ease.InBack));
+
+            await seq.ToUniTask(); 
         }
 
         private async UniTask WaitInput()
@@ -158,16 +158,14 @@ namespace Project.Core.Systems.Intro
             );
         }
 
-        private void EnterMain()
+        private async UniTaskVoid EnterMain() 
         {
             if (_isTransitioning) return;
             _isTransitioning = true;
 
-            //DOTween.KillAll();
             DOTween.Kill(gameObject);
 
-            GameManager.Instance.EnterGameScene("Main").Forget(); 
-            //GameManager.Instance.EnterGameScene("TestCore1").Forget();
+            await GameManager.Instance.EnterGameScene("Main");
         }
     }
 }

@@ -1,5 +1,6 @@
 using Cysharp.Threading.Tasks;
 using Project.Core.Utilities;
+using Project.Core.Systems.SaveLoad.Data;
 using UnityEngine;
 using UnityEngine.Audio;
 using System; // Action 사용을 위해 추가되었습니다.
@@ -39,16 +40,26 @@ namespace Project.Core.Managers
 
         public override async UniTask Initialize()
         {
-            await UniTask.Yield();
-            // PlayerManager 체크 로직 추가 (안전성)
-            if (PlayerManager.Instance != null && PlayerManager.Instance.Data != null)
+            if (PlayerManager.Instance != null)
             {
-                AudioSetting(PlayerManager.Instance.Data);
+                await UniTask.WaitUntil(() => PlayerManager.Instance.IsInitialized);
+
+                if (PlayerManager.Instance.Data != null)
+                {
+                    AudioSetting(PlayerManager.Instance.Data);
+                }
+            }
+            else
+            {
+                // 데이터가 없으면 기본값(0.5f)으로 세팅
+                SetVolume("BGM", _bgmVolume);
+                SetVolume("SFX", _sfxVolume);
             }
 
-            Debug.Log("AudioManager: 믹서 연결 및 초기화 완료");
+            Debug.Log("AudioManager: 초기화 완료");
             IsInitialized = true;
         }
+
         public void AudioSetting(PlayerData playerData)
         {
             SetVolume("BGM",playerData.bgmVolume);

@@ -19,7 +19,6 @@ namespace Project.Rhythm.Data
         [HideInInspector] public bool isClear;
         [HideInInspector] public int bestScore;
         //외부에서 stageData.isClear를 호출하면 PlayerManager의 데이터를 즉시 확인
-
         public int BestScore => PlayerManager.Instance != null ? PlayerManager.Instance.GetBestScore(stageIndex) : 0;
 
         [Header("Audio")]
