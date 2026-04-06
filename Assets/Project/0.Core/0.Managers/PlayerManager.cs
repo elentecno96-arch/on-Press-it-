@@ -5,6 +5,7 @@ using Project.Core.Utilities;
 using Project.Rhythm.Data;
 using System;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
 namespace Project.Core.Managers
@@ -134,8 +135,6 @@ namespace Project.Core.Managers
 
             // 저장 프로세스 시작 (비동기)
             HandleQuitSave().Forget();
-
-            // 일단 종료를 막음 (false 반환)
             return false;
         }
 
@@ -145,13 +144,7 @@ namespace Project.Core.Managers
 
             try
             {
-                // 1. 로컬 저장 (동기 방식이라 즉시 완료)
                 SaveSystem.Save(Data);
-
-                // 2. 클라우드 저장 (비동기지만 완료를 기다림)
-                // SyncServer에 await 가능한 저장 메서드가 있어야 합니다.
-                // 만약 없다면 PerformCloudSave를 await 가능하게 수정하거나 
-                // 여기서 강제로 일정 시간 대기해야 합니다.
                 await _syncServer.PerformCloudSaveAsync(Data);
 
                 Debug.Log("<color=green>[PlayerManager] 최종 클라우드 저장 완료. 앱을 안전하게 종료합니다.</color>");
@@ -228,6 +221,8 @@ namespace Project.Core.Managers
             if (AudioManager.Instance != null)
                 AudioManager.Instance.OnRequestAudioSave -= UpdateAudioSettings;
             StageData.OnStagePlayStatusChanged -= HandleStageStatusChanged;
+
+            Application.wantsToQuit -= OnWantsToQuit;
         }
 
         #endregion

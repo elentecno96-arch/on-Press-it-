@@ -20,11 +20,35 @@ namespace Project.Core.Systems.SaveLoad
         {
             if (FirebaseManager.Instance == null || !FirebaseManager.Instance.IsInitialized) return;
 
+            // 서버에서 데이터를 가져옴
             string json = await FirebaseManager.Instance.LoadPlayerData();
-            if (!string.IsNullOrEmpty(json))
+
+            // 데이터가 없으면 에러 없이 종료
+            if (string.IsNullOrEmpty(json) || json == "null")
+            {
+                Debug.Log("[SyncServer] 서버 데이터가 비어있습니다. 신규 유저로 간주합니다.");
+                return;
+            }
+
+            // 데이터가 존재하지만 JSON 형식이 아닐 경우 방어
+            if (!json.StartsWith("{"))
+            {
+                Debug.LogWarning($"[SyncServer] 서버 데이터가 올바른 객체 형식이 아닙니다: {json}");
+                return;
+            }
+
+            try
             {
                 PlayerData serverData = JsonUtility.FromJson<PlayerData>(json);
-                localData.Merge(serverData);
+                if (serverData != null)
+                {
+                    localData.Merge(serverData);
+                    Debug.Log("[SyncServer] 서버 데이터 병합 완료!");
+                }
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"[SyncServer] JSON 파싱 중 오류 발생: {e.Message}");
             }
         }
 
