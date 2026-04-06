@@ -117,8 +117,9 @@ MonoBehaviour:
   missFrameRate: 0.1
   audioSource: {fileID: 3128447557889203305}
   actionSfx: {fileID: 0}
-  successSfx: {fileID: 0}
+  successSfx: {fileID: 8300000, guid: 35e5280b8b5bf6b46acd4831954e4276, type: 3}
   missSfx: {fileID: 0}
+  countSfx: {fileID: 0}
 --- !u!82 &3128447557889203305
 AudioSource:
   m_ObjectHideFlags: 0
@@ -128,10 +129,10 @@ AudioSource:
   m_GameObject: {fileID: 4856286443119890342}
   m_Enabled: 1
   serializedVersion: 4
-  OutputAudioMixerGroup: {fileID: 0}
+  OutputAudioMixerGroup: {fileID: -8420590994951321076, guid: 7bf60e566cc86e7499b5ee5e7da480d1, type: 2}
   m_audioClip: {fileID: 0}
   m_PlayOnAwake: 1
-  m_Volume: 1
+  m_Volume: 0.317
   m_Pitch: 1
   Loop: 0
   Mute: 0

@@ -52,8 +52,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bd1de822997e3c94d874b329f90b55d1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  isPersistent: 0
   noteID: 
+  noteType: 0
 --- !u!222 &5125642643033508271
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -96,8 +96,9 @@ MonoBehaviour:
   missFrameRate: 0.1
   audioSource: {fileID: 3124196303754744611}
   actionSfx: {fileID: 0}
-  successSfx: {fileID: 0}
+  successSfx: {fileID: 8300000, guid: 7bff862b60133e344adf6ce6e8c9c5af, type: 3}
   missSfx: {fileID: 0}
+  countSfx: {fileID: 0}
   fallSpeed: 3000
 --- !u!114 &5073292206622749941
 MonoBehaviour:
@@ -138,10 +139,10 @@ AudioSource:
   m_GameObject: {fileID: 6487635070286732841}
   m_Enabled: 1
   serializedVersion: 4
-  OutputAudioMixerGroup: {fileID: 0}
+  OutputAudioMixerGroup: {fileID: -8420590994951321076, guid: 7bf60e566cc86e7499b5ee5e7da480d1, type: 2}
   m_audioClip: {fileID: 0}
   m_PlayOnAwake: 1
-  m_Volume: 1
+  m_Volume: 0.307
   m_Pitch: 1
   Loop: 0
   Mute: 0
