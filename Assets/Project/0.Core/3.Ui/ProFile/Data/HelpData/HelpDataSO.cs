@@ -9,6 +9,6 @@ namespace Project.UI.Profile.Data
     [CreateAssetMenu(fileName = "HelpData", menuName = "Project/UI/HelpData")]
     public class HelpDataSO : ScriptableObject
     {
-        public string description;
+        [TextArea(5, 10)] public string description;
     }
 }
