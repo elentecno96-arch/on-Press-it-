@@ -12,10 +12,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d04876fa1117aa34b9eea9b52f8b6fae, type: 3}
   m_Name: STAGE 1-2
   m_EditorClassIdentifier: 
+  stageImage: {fileID: 0}
   stageIndex: 2
+  skipGuide: 0
   isClear: 0
+  bestScore: 0
   stageName: "\uC2A4\uD14C\uC774\uC9C0 1-2"
-  masterTrack: {fileID: 8300000, guid: f862af8b09cb72849ad88f4300165523, type: 3}
+  masterTrack: {fileID: 8300000, guid: 0a3e6bb1789aab944b10f84eab038afa, type: 3}
   bpm: 120
   themeResources:
   - theme: 1
@@ -27,7 +30,7 @@ MonoBehaviour:
   goodWindow: 0.3
   missWindow: 0.36
   playStartTime: 4
-  endPosition: 54
+  endPosition: 84
   actions:
   - beat: 8
     type: 1
@@ -395,61 +398,7 @@ MonoBehaviour:
     duration: 0
     targetID: Stage3_Stone
     noteType: 2
-  - beat: 80.5
-    type: 1
-    role: 1
-    duration: 0
-    targetID: Stage3_Stone
-    noteType: 2
-  - beat: 82
-    type: 1
-    role: 0
-    duration: 0
-    targetID: 
-    noteType: 0
-  - beat: 82.5
-    type: 1
-    role: 0
-    duration: 0
-    targetID: 
-    noteType: 0
-  - beat: 84
-    type: 1
-    role: 1
-    duration: 0
-    targetID: Stage3_Stone
-    noteType: 2
-  - beat: 84.5
-    type: 1
-    role: 1
-    duration: 0
-    targetID: Stage3_Stone
-    noteType: 2
-  - beat: 86
-    type: 1
-    role: 0
-    duration: 0
-    targetID: 
-    noteType: 0
-  - beat: 86.5
-    type: 1
-    role: 0
-    duration: 0
-    targetID: 
-    noteType: 0
   - beat: 88
-    type: 1
-    role: 1
-    duration: 0
-    targetID: Stage3_Stone
-    noteType: 2
-  - beat: 90
-    type: 1
-    role: 0
-    duration: 0
-    targetID: 
-    noteType: 0
-  - beat: 92
     type: 1
     role: 1
     duration: 0
@@ -467,19 +416,373 @@ MonoBehaviour:
     duration: 0
     targetID: Stage3_Stone
     noteType: 2
-  - beat: 97
+  - beat: 100
+    type: 1
+    role: 1
+    duration: 0
+    targetID: 
+    noteType: 2
+  - beat: 81
     type: 1
     role: 1
     duration: 0
     targetID: Stage3_Stone
     noteType: 2
-  - beat: 100
+  - beat: 84
     type: 1
     role: 0
     duration: 0
     targetID: 
     noteType: 0
-  - beat: 101
+  - beat: 85
+    type: 1
+    role: 0
+    duration: 0
+    targetID: 
+    noteType: 0
+  - beat: 90
+    type: 1
+    role: 1
+    duration: 0
+    targetID: 
+    noteType: 2
+  - beat: 88.5
+    type: 1
+    role: 1
+    duration: 0
+    targetID: 
+    noteType: 2
+  - beat: 92.5
+    type: 1
+    role: 0
+    duration: 0
+    targetID: 
+    noteType: 0
+  - beat: 92
+    type: 1
+    role: 0
+    duration: 0
+    targetID: 
+    noteType: 0
+  - beat: 98
+    type: 1
+    role: 0
+    duration: 0
+    targetID: 
+    noteType: 0
+  - beat: 100.5
+    type: 1
+    role: 1
+    duration: 0
+    targetID: 
+    noteType: 2
+  - beat: 102
+    type: 1
+    role: 0
+    duration: 0
+    targetID: 
+    noteType: 0
+  - beat: 102.5
+    type: 1
+    role: 0
+    duration: 0
+    targetID: 
+    noteType: 0
+  - beat: 104
+    type: 1
+    role: 1
+    duration: 0
+    targetID: 
+    noteType: 2
+  - beat: 106
+    type: 1
+    role: 1
+    duration: 0
+    targetID: 
+    noteType: 2
+  - beat: 106.5
+    type: 1
+    role: 1
+    duration: 0
+    targetID: 
+    noteType: 2
+  - beat: 108
+    type: 1
+    role: 0
+    duration: 0
+    targetID: 
+    noteType: 0
+  - beat: 110
+    type: 1
+    role: 0
+    duration: 0
+    targetID: 
+    noteType: 0
+  - beat: 110.5
+    type: 1
+    role: 0
+    duration: 0
+    targetID: 
+    noteType: 0
+  - beat: 112
+    type: 1
+    role: 1
+    duration: 0
+    targetID: 
+    noteType: 2
+  - beat: 112.5
+    type: 1
+    role: 1
+    duration: 0
+    targetID: 
+    noteType: 2
+  - beat: 113
+    type: 1
+    role: 1
+    duration: 0
+    targetID: 
+    noteType: 2
+  - beat: 114
+    type: 1
+    role: 1
+    duration: 0
+    targetID: 
+    noteType: 2
+  - beat: 114.5
+    type: 1
+    role: 1
+    duration: 0
+    targetID: 
+    noteType: 2
+  - beat: 116
+    type: 1
+    role: 0
+    duration: 0
+    targetID: 
+    noteType: 0
+  - beat: 116.5
+    type: 1
+    role: 0
+    duration: 0
+    targetID: 
+    noteType: 0
+  - beat: 117
+    type: 1
+    role: 0
+    duration: 0
+    targetID: 
+    noteType: 0
+  - beat: 118
+    type: 1
+    role: 0
+    duration: 0
+    targetID: 
+    noteType: 0
+  - beat: 118.5
+    type: 1
+    role: 0
+    duration: 0
+    targetID: 
+    noteType: 0
+  - beat: 120
+    type: 1
+    role: 1
+    duration: 0
+    targetID: 
+    noteType: 2
+  - beat: 120.5
+    type: 1
+    role: 1
+    duration: 0
+    targetID: 
+    noteType: 2
+  - beat: 121.5
+    type: 1
+    role: 1
+    duration: 0
+    targetID: 
+    noteType: 2
+  - beat: 122
+    type: 1
+    role: 1
+    duration: 0
+    targetID: 
+    noteType: 2
+  - beat: 122.5
+    type: 1
+    role: 1
+    duration: 0
+    targetID: 
+    noteType: 2
+  - beat: 123
+    type: 1
+    role: 1
+    duration: 0
+    targetID: 
+    noteType: 2
+  - beat: 124
+    type: 1
+    role: 0
+    duration: 0
+    targetID: 
+    noteType: 0
+  - beat: 124.5
+    type: 1
+    role: 0
+    duration: 0
+    targetID: 
+    noteType: 0
+  - beat: 125.5
+    type: 1
+    role: 0
+    duration: 0
+    targetID: 
+    noteType: 0
+  - beat: 126
+    type: 1
+    role: 0
+    duration: 0
+    targetID: 
+    noteType: 0
+  - beat: 126.5
+    type: 1
+    role: 0
+    duration: 0
+    targetID: 
+    noteType: 0
+  - beat: 127
+    type: 1
+    role: 0
+    duration: 0
+    targetID: 
+    noteType: 0
+  - beat: 128
+    type: 1
+    role: 1
+    duration: 0
+    targetID: 
+    noteType: 2
+  - beat: 129
+    type: 1
+    role: 1
+    duration: 0
+    targetID: 
+    noteType: 2
+  - beat: 130
+    type: 1
+    role: 1
+    duration: 0
+    targetID: 
+    noteType: 2
+  - beat: 132
+    type: 1
+    role: 0
+    duration: 0
+    targetID: 
+    noteType: 0
+  - beat: 133
+    type: 1
+    role: 0
+    duration: 0
+    targetID: 
+    noteType: 0
+  - beat: 134
+    type: 1
+    role: 0
+    duration: 0
+    targetID: 
+    noteType: 0
+  - beat: 136
+    type: 1
+    role: 1
+    duration: 0
+    targetID: 
+    noteType: 2
+  - beat: 136.5
+    type: 1
+    role: 1
+    duration: 0
+    targetID: 
+    noteType: 2
+  - beat: 138
+    type: 1
+    role: 0
+    duration: 0
+    targetID: 
+    noteType: 0
+  - beat: 138.5
+    type: 1
+    role: 0
+    duration: 0
+    targetID: 
+    noteType: 0
+  - beat: 140
+    type: 1
+    role: 1
+    duration: 0
+    targetID: 
+    noteType: 2
+  - beat: 140.5
+    type: 1
+    role: 1
+    duration: 0
+    targetID: 
+    noteType: 2
+  - beat: 142
+    type: 1
+    role: 0
+    duration: 0
+    targetID: 
+    noteType: 0
+  - beat: 142.5
+    type: 1
+    role: 0
+    duration: 0
+    targetID: 
+    noteType: 0
+  - beat: 146
+    type: 1
+    role: 0
+    duration: 0
+    targetID: 
+    noteType: 0
+  - beat: 144
+    type: 1
+    role: 1
+    duration: 0
+    targetID: 
+    noteType: 2
+  - beat: 148
+    type: 1
+    role: 1
+    duration: 0
+    targetID: 
+    noteType: 2
+  - beat: 150
+    type: 1
+    role: 0
+    duration: 0
+    targetID: 
+    noteType: 0
+  - beat: 152
+    type: 1
+    role: 1
+    duration: 0
+    targetID: 
+    noteType: 2
+  - beat: 153
+    type: 1
+    role: 1
+    duration: 0
+    targetID: 
+    noteType: 2
+  - beat: 156
+    type: 1
+    role: 0
+    duration: 0
+    targetID: 
+    noteType: 0
+  - beat: 157
     type: 1
     role: 0
     duration: 0

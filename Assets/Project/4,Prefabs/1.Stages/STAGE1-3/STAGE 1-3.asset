@@ -12,12 +12,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d04876fa1117aa34b9eea9b52f8b6fae, type: 3}
   m_Name: STAGE 1-3
   m_EditorClassIdentifier: 
+  stageImage: {fileID: 0}
   stageIndex: 3
   skipGuide: 0
   isClear: 0
   bestScore: 0
   stageName: "\uC2A4\uD14C\uC774\uC9C0 1-3"
-  masterTrack: {fileID: 8300000, guid: 48761db433c601a428cb2d9377f38374, type: 3}
+  masterTrack: {fileID: 8300000, guid: 6e3db03e13f2bc34194b38406ef8c53b, type: 3}
   bpm: 120
   themeResources:
   - theme: 2
@@ -94,10 +95,76 @@ MonoBehaviour:
   - beat: 76
     type: 2
     role: 0
+    duration: 1
+    targetID: Stage3_Stone
+    noteType: 1
+  - beat: 78
+    type: 2
+    role: 0
+    duration: 1
+    targetID: Stage3_Stone
+    noteType: 1
+  - beat: 84
+    type: 2
+    role: 0
+    duration: 1.5
+    targetID: Stage3_Stone
+    noteType: 1
+  - beat: 86
+    type: 2
+    role: 0
+    duration: 1
+    targetID: Stage3_Stone
+    noteType: 1
+  - beat: 92
+    type: 2
+    role: 0
+    duration: 1.5
+    targetID: Stage3_Stone
+    noteType: 1
+  - beat: 94
+    type: 2
+    role: 0
+    duration: 1.5
+    targetID: Stage3_Stone
+    noteType: 1
+  - beat: 100
+    type: 2
+    role: 0
+    duration: 2.5
+    targetID: Stage3_Stone
+    noteType: 1
+  - beat: 103
+    type: 2
+    role: 0
+    duration: 0.5
+    targetID: Stage3_Stone
+    noteType: 1
+  - beat: 108
+    type: 2
+    role: 0
+    duration: 3
+    targetID: Stage3_Stone
+    noteType: 1
+  - beat: 116
+    type: 2
+    role: 0
+    duration: 1
+    targetID: Stage3_Stone
+    noteType: 1
+  - beat: 118
+    type: 2
+    role: 0
+    duration: 1
+    targetID: Stage3_Stone
+    noteType: 1
+  - beat: 124
+    type: 2
+    role: 0
     duration: 2
     targetID: Stage3_Stone
     noteType: 1
-  - beat: 88
+  - beat: 136
     type: 2
     role: 0
     duration: 7
