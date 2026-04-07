@@ -20,8 +20,6 @@ public class SettingUIView : MonoBehaviour
 
     private void Awake()
     {
-
-
         // 설정창 관련 버튼 이벤트 바인딩
         settingsButton.onClick.AddListener(() => OnSettingsClick?.Invoke());
         closeSettingsButton.onClick.AddListener(() => OnSettingsCloseClick?.Invoke());
