@@ -12,7 +12,7 @@ namespace Project.Core.Managers
     /// </summary>
     public class InputManager : BaseSingleton<InputManager>
     {
-        private GameInput _gameInput;
+        private readonly GameInput _gameInput;
 
         public event Action<Vector2> OnPointerDown; // Tap/Hold 시작 통합
         public event Action<Vector2> OnSlideAction;

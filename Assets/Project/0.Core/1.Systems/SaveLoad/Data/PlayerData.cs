@@ -12,6 +12,8 @@ namespace Project.Core.Systems.SaveLoad.Data
         public string userName = "New Player"; //유저 이름 기본값
         public string userId = "";
 
+        public bool isVibrationOn = true;
+
         public List<StageSaveData> stageRecords = new();
         public List<DetailedStageRecord> detailedRecords = new(); //각 스테이지 기록을 담는 리스트
         public List<AchievementData> achievements = new();
