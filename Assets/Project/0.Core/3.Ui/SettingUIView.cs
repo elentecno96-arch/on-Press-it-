@@ -9,6 +9,7 @@ public class SettingUIView : MonoBehaviour
     public event Action OnResetSettingsClick;
     public event Action<float> OnBgmVolumeChanged;
     public event Action<float> OnSfxVolumeChanged;
+    public event Action<bool> OnVibrationChanged;
 
     [Header("--- Settings Window ---")]
     [SerializeField] private GameObject settingsWindow;
@@ -17,6 +18,7 @@ public class SettingUIView : MonoBehaviour
     [SerializeField] private Button resetSettingsButton; // 되돌리기 (리셋)
     [SerializeField] private Slider bgmSlider;
     [SerializeField] private Slider sfxSlider;
+    [SerializeField] private Toggle vibrationToggle;
 
     private void Awake()
     {
@@ -28,6 +30,21 @@ public class SettingUIView : MonoBehaviour
         // 오디오 슬라이더 이벤트 바인딩
         bgmSlider.onValueChanged.AddListener(value => OnBgmVolumeChanged?.Invoke(value));
         sfxSlider.onValueChanged.AddListener(value => OnSfxVolumeChanged?.Invoke(value));
+
+        if (vibrationToggle != null)
+        {
+            vibrationToggle.onValueChanged.AddListener(isOn =>
+            {
+                OnVibrationChanged?.Invoke(isOn);
+
+                if (isOn)
+                {
+                    #if UNITY_ANDROID || UNITY_IOS
+                    Handheld.Vibrate();
+                    #endif
+                }
+            });
+        }
     }
 
     // 설정창 활성화/비활성화

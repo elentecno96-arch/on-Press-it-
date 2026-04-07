@@ -35,6 +35,7 @@ namespace Project.Core.Ui.StageUi.View
         [SerializeField] private Button openRestartPopupBtn;
         [SerializeField] private Button openExitPopupBtn;
         [SerializeField] private Button muteButton;
+        [SerializeField] private Button vibrationButton;
 
         private bool _isMuted = false;
         private bool _isActionStarted = false;
@@ -140,6 +141,29 @@ namespace Project.Core.Ui.StageUi.View
                 muteButton.onClick.AddListener(() => {
                     _isMuted = !_isMuted;
                     AudioListener.volume = _isMuted ? 0f : 1f;
+                    RefreshTimer();
+                });
+            }
+
+            if (vibrationButton != null)
+            {
+                vibrationButton.onClick.AddListener(() => {
+                    if (PlayerManager.Instance != null && PlayerManager.Instance.Data != null)
+                    {
+                        bool currentVib = PlayerManager.Instance.Data.isVibrationOn;
+                        PlayerManager.Instance.Data.isVibrationOn = !currentVib;
+
+                        PlayerManager.Instance.Save();
+
+                        if (PlayerManager.Instance.Data.isVibrationOn)
+                        {
+                            #if UNITY_ANDROID || UNITY_IOS
+                            Handheld.Vibrate();
+                            #endif
+                        }
+
+                        Debug.Log($"[Option] 진동 설정 변경: {PlayerManager.Instance.Data.isVibrationOn}");
+                    }
                     RefreshTimer();
                 });
             }

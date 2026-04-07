@@ -309,6 +309,21 @@ namespace Project.Rhythm.Presentation
             {
                 playUiView.ShowJudgement(result);
             }
+
+            PlayHaptic(result);
+        }
+
+        private void PlayHaptic(JudgeResult result)
+        {
+            if (PlayerManager.Instance != null && !PlayerManager.Instance.Data.isVibrationOn) return;
+
+            if (result == JudgeResult.Perfect || result == JudgeResult.Great)
+            {
+                #if UNITY_ANDROID || UNITY_IOS
+                Handheld.Vibrate();
+                #endif
+                Debug.Log("<color=yellow>[Haptic]</color> 진동 실행");
+            }
         }
 
         private void OnDestroy()

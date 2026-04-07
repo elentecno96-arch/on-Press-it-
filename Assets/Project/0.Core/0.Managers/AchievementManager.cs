@@ -48,7 +48,7 @@ namespace Project.Core.Managers
             // 1. 최초 클리어
             if (actualFirstClear)
             {
-                Unlock($"Clear_{index}", $"{data.stageName} 최초 클리어!");
+                Unlock($"Clear_{index}", $"{data.stageName} 클리어!");
             }
 
             // 2. All Perfect
