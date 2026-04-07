@@ -6,7 +6,8 @@ using UnityEngine.UI;
 public class StageSlot : MonoBehaviour
 {
     [Header("--- Data ---")]
-    [SerializeField] private StageData stageData;
+    // 여러 난이도 데이터를 담을 수 있도록 배열로 변경
+    [SerializeField] private StageData[] stageVariants;
 
     [Header("--- UI Components ---")]
     [SerializeField] private Button startButton;
@@ -15,7 +16,7 @@ public class StageSlot : MonoBehaviour
     [SerializeField] private GameObject lockIcon;
 
     // Presenter가 이 신호를 듣고 정보창을 띄울 수 있게 이벤트를 선언합니다.
-    public event Action<StageData> OnSlotClicked;
+    public event Action<StageData[]> OnSlotClicked;
 
     // 이 슬롯의 인덱스를 반환하는 프로퍼티
     public int StageIndex => GetStageIndex();
@@ -37,7 +38,7 @@ public class StageSlot : MonoBehaviour
     private void HandleButtonClick()
     {
         // "내가 눌렸어!"라고 데이터와 함께 Presenter에게 신호를 보냅니다.
-        OnSlotClicked?.Invoke(stageData);
+        OnSlotClicked?.Invoke(stageVariants);
 
         // 클릭 로그 출력
         LogClickInfo();
@@ -81,7 +82,7 @@ public class StageSlot : MonoBehaviour
     public int GetStageIndex()
     {
         // 이유: 데이터가 할당되지 않은 경우 -1을 반환하여 에러 상황을 인지할 수 있게 합니다.
-        return stageData != null ? stageData.stageIndex : -1;
+        return (stageVariants != null && stageVariants.Length > 0) ? stageVariants[0].stageIndex : -1;
     }
 
     /// 개발 중 확인을 위한 로그 출력 메서드입니다.

@@ -20,15 +20,28 @@ public class MainUiPresenter : MonoBehaviour
     [SerializeField] private List<StageSlot> _stageSlots;
 
     private StageData _currentSelectedStage;              // 현재 유저가 클릭한 스테이지 데이터
+    private StageData[] _activeVariants;                  // 현재 선택된 스테이지의 난이도 배열
+    private int _currentDifficultyIndex = 1;              // 기본 난이도 인덱스 (Normal = 1)
     private const float DefaultVolume = 0.5f;             // 초기화용 기본 볼륨 값
 
-    private bool _isSyncing = false; 
+    private bool _isSyncing = false;
+    
+
     private async void Start()
     {
+        // 시작하자마자 UI들이 떠 있다면 강제로 끈 상태로 시작
+        _settingView.ShowSettings(false);
+        _stageView.Hide();
+
         // 1. 모든 매니저가 초기화될 때까지 대기 (가장 중요)
         await UniTask.WaitUntil(() => GameManager.Instance != null && GameManager.Instance.IsInitialized);
         await UniTask.WaitUntil(() => PlayerManager.Instance != null && PlayerManager.Instance.IsInitialized);
         await UniTask.WaitUntil(() => AudioManager.Instance != null && AudioManager.Instance.IsInitialized);
+
+        _isSyncing = true;
+        SyncUiWithAudio(); // 여기서 슬라이더 값을 세팅할 때 UI가 켜지는지 확인 필요
+        RefreshAllStageUI();
+        _isSyncing = false;
 
         // 서버(Firebase)로부터 실제 유저 데이터를 완전히 받아올 때까지 대기
         // 이 과정이 끝나야 stageRecords에 실제 점수들이 채워집니다.
@@ -47,7 +60,64 @@ public class MainUiPresenter : MonoBehaviour
 
         // 3. BGM 재생 (기존 유지)
         _soundView.PlayMainBgmWithDelay(1.0f).Forget();
+
+        // 난이도 변경 이벤트 구독 (OnEnable에서도 수행하지만 Start 시점 보장)
+        _stageView.OnDifficultyDirectionClicked -= HandleDifficultyChange;
+        _stageView.OnDifficultyDirectionClicked += HandleDifficultyChange;
     }
+
+    // 슬롯 클릭 시 호출 (배열 데이터를 안전하게 처리)
+    public void HandleSlotClicked(StageData[] variants)
+    {
+        if (variants == null || variants.Length == 0)
+        {
+            Debug.LogError("[MainUiPresenter] 클릭된 슬롯에 데이터가 없습니다!");
+            return;
+        }
+
+        Debug.Log($"[MainUiPresenter] 슬롯 클릭 감지: {variants[0].stageName}");
+
+        _soundView.PlaySfxB();
+        _activeVariants = variants;
+
+        // 배열 크기에 맞춰 인덱스 초기화 (보통 Normal은 1번 인덱스)
+        _currentDifficultyIndex = (variants.Length > 1) ? 1 : 0;
+
+        SyncToGameManager();
+        _stageView.Show(); // 이제 비로소 창을 띄웁니다.
+    }
+
+    //  난이도 변경 버튼을 눌렀을 때 실행될 실제 로직
+    private void HandleDifficultyChange(int direction)
+    {
+        if (_activeVariants == null) return;
+
+        int nextIndex = _currentDifficultyIndex + direction;
+
+        if (nextIndex >= 0 && nextIndex < _activeVariants.Length)
+        {
+            _currentDifficultyIndex = nextIndex;
+            _soundView.PlaySfxA();
+
+            SyncToGameManager();
+
+            // difficultyType 대신 안전한 stageName이나 인덱스 번호를 출력
+            Debug.Log($"[MainUiPresenter] 난이도 변경됨! 현재 선택된 곡: {_currentSelectedStage.stageName} (인덱스: {_currentDifficultyIndex})");
+        }
+    }
+
+    //  현재 선택된 데이터를 확정하고 GameManager에 전달
+    private void SyncToGameManager()
+    {
+        if (_activeVariants != null && _activeVariants.Length > _currentDifficultyIndex)
+        {
+            _currentSelectedStage = _activeVariants[_currentDifficultyIndex];
+
+            // 이미지 흐름도대로 GameManager에 보관
+            GameManager.Instance.SetCurrentStage(_currentSelectedStage);
+        }
+    }
+
     //  외부에서도 호출 가능하도록 퍼블릭으로 선언된 새로고침 메서드
     public void RefreshAllStageUI()
     {
@@ -85,8 +155,7 @@ public class MainUiPresenter : MonoBehaviour
             }
             else if (myStageNum > 1)
             {
-                // 이전 스테이지(내 번호 - 1)가 클리어 되었는지 확인
-                // 예: 2번 슬롯은 1번이 클리어됐는지 물어봄
+                // 이전 스테이지(내 번호 - 1)가 클리어 되었는지 확인              
                 isUnlocked = PlayerManager.Instance.IsStageCleared(myStageNum - 1);
             }
 
@@ -96,26 +165,44 @@ public class MainUiPresenter : MonoBehaviour
             // 6. 로그로 확인
             Debug.Log($"[검사] 스테이지 {myStageNum}번 슬롯 | 이전(제{myStageNum - 1}번) 클리어여부: {isUnlocked}");
         }
-    }    
+    }
 
     private void OnEnable()
     {
+        // 중복 구독 방지를 위해 -= 후 += 진행
+        _settingView.OnSettingsClick -= OpenSettings;
         _settingView.OnSettingsClick += OpenSettings;
+        _settingView.OnSettingsCloseClick -= CloseSettings;
         _settingView.OnSettingsCloseClick += CloseSettings;
+        _settingView.OnBgmVolumeChanged -= HandleBgmVolumeChanged;
         _settingView.OnBgmVolumeChanged += HandleBgmVolumeChanged;
+        _settingView.OnSfxVolumeChanged -= HandleSfxVolumeChanged;
         _settingView.OnSfxVolumeChanged += HandleSfxVolumeChanged;
+        _settingView.OnResetSettingsClick -= HandleResetSettings;
         _settingView.OnResetSettingsClick += HandleResetSettings;
 
-        foreach (var slot in _stageSlots)
-            if (slot != null) slot.OnSlotClicked += HandleStageSelected;
+        if (_stageSlots != null)
+        {
+            foreach (var slot in _stageSlots)
+            {
+                if (slot != null)
+                {
+                    slot.OnSlotClicked -= HandleSlotClicked;
+                    slot.OnSlotClicked += HandleSlotClicked;
+                }
+            }
+        }
 
+        _stageView.OnPlayClick -= HandlePlayGame;
         _stageView.OnPlayClick += HandlePlayGame;
+        _stageView.OnCloseClick -= HideStageView;
         _stageView.OnCloseClick += HideStageView;
-    }    
+        _stageView.OnDifficultyDirectionClicked -= HandleDifficultyChange;
+        _stageView.OnDifficultyDirectionClicked += HandleDifficultyChange;
+    }
 
     private void OnDisable()
     {
-        // [메모리 누수 방지] 오브젝트가 비활성화될 때 모든 이벤트를 해제 (중복 구독 방지)
         if (_settingView != null)
         {
             _settingView.OnSettingsClick -= OpenSettings;
@@ -129,7 +216,7 @@ public class MainUiPresenter : MonoBehaviour
         {
             foreach (var slot in _stageSlots)
             {
-                if (slot != null) slot.OnSlotClicked -= HandleStageSelected;
+                if (slot != null) slot.OnSlotClicked -= HandleSlotClicked;
             }
         }
 
@@ -137,8 +224,9 @@ public class MainUiPresenter : MonoBehaviour
         {
             _stageView.OnPlayClick -= HandlePlayGame;
             _stageView.OnCloseClick -= HideStageView;
+            _stageView.OnDifficultyDirectionClicked -= HandleDifficultyChange;
         }
-    }   
+    }
 
     // OnDisable은 기존과 동일하게 유지 (이벤트 해제)
 
