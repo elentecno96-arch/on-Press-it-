@@ -1,7 +1,9 @@
+using DG.Tweening;
+using Project.Rhythm.Data;
 using System;
 using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.SceneManagement;
+using TMPro;
 
 public class StageUiView : MonoBehaviour
 {
@@ -9,6 +11,17 @@ public class StageUiView : MonoBehaviour
     public event Action OnCloseClick;
     // 난이도 변경 이벤트를 선언합니다. (int는 방향: -1 또는 1)
     public event Action<int> OnDifficultyDirectionClicked;
+
+    [SerializeField] private RectTransform infoPanel;
+    [SerializeField] private CanvasGroup infoCanvasGroup;
+
+    [SerializeField] private float startPositionY = -1000f; // 시작 위치
+    [SerializeField] private float duration = 0.4f;
+
+    [SerializeField] private Image stagePreviewImage;
+    [SerializeField] private TextMeshProUGUI stageNameText;
+    [SerializeField] private float animationScale = 1.1f;
+    [SerializeField] private float animationDuration = 0.15f;
 
     [Header("--- UI Windows ---")]
     [SerializeField] private GameObject infoWindow;
@@ -56,23 +69,61 @@ public class StageUiView : MonoBehaviour
         if (RightBtn != null)
             RightBtn.onClick.AddListener(() => OnDifficultyDirectionClicked?.Invoke(1));
 
-        Hide();
-        Debug.Log("[StageUiView] 초기화 완료. 창이 숨겨졌습니다.1");
+        if (infoPanel != null) infoPanel.anchoredPosition = new Vector2(0, startPositionY);
+        if (infoCanvasGroup != null) infoCanvasGroup.alpha = 0f;
+
+        infoWindow.SetActive(false);
+    }
+    public void UpdateStageDetails(StageData data)
+    {
+        if (data == null) return;
+
+        if (stagePreviewImage != null && data.stageImage != null)
+        {
+            stagePreviewImage.transform.DOKill();
+            stagePreviewImage.transform.localScale = Vector3.one * animationScale;
+            stagePreviewImage.sprite = data.stageImage;
+            stagePreviewImage.transform.DOScale(1.0f, animationDuration).SetEase(Ease.OutBack);
+        }
+
+        if (stageNameText != null)
+        {
+            stageNameText.transform.DOKill();
+
+            stageNameText.transform.DOComplete();
+            stageNameText.text = data.stageName; 
+
+            stageNameText.transform.localScale = Vector3.one * 1.05f;
+            stageNameText.transform.DOScale(1.0f, animationDuration);
+        }
     }
 
     // 매개변수 없이 창만 활성화하도록 수정
     public void Show()
     {
         _isActionStarted = false;
+        infoWindow.SetActive(true);
 
-        if (infoWindow != null)
-            infoWindow.SetActive(true);
+        infoPanel.DOKill();
+        infoCanvasGroup.DOKill();
+
+        infoPanel.anchoredPosition = new Vector2(0, startPositionY);
+        infoPanel.DOAnchorPosY(0, duration).SetEase(Ease.OutQuart); 
+
+        if (infoCanvasGroup != null)
+            infoCanvasGroup.DOFade(1f, duration * 0.5f);
     }
 
     public void Hide()
     {
-        if (infoWindow != null)
+        infoPanel.DOKill();
+        infoCanvasGroup.DOKill();
+
+        infoPanel.DOAnchorPosY(startPositionY, duration * 0.8f).SetEase(Ease.InQuart).OnComplete(() => {
             infoWindow.SetActive(false);
-        Debug.Log("[StageUiView] 창이 숨겨졌습니다.");
-    }   
+        });
+
+        if (infoCanvasGroup != null)
+            infoCanvasGroup.DOFade(0f, duration * 0.5f);
+    }
 }

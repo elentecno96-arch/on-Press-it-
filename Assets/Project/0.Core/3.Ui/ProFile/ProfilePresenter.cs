@@ -1,4 +1,5 @@
 using Cysharp.Threading.Tasks;
+using DG.Tweening;
 using Project.Core.Managers;
 using Project.Core.Ui.GlobalUi;
 using Project.UI.Profile.Data;
@@ -21,6 +22,9 @@ namespace Project.UI.Profile.Presenter
 
         [SerializeField] private Sprite defaultProfileIcon;
 
+        [SerializeField] private RectTransform profilePanel;
+        [SerializeField] private CanvasGroup profileCanvasGroup;
+
         private async void Start()
         {
             await UniTask.WaitUntil(() => GameManager.Instance != null && GameManager.Instance.IsInitialized);
@@ -29,6 +33,9 @@ namespace Project.UI.Profile.Presenter
             InitView(mainView);
             InitView(missionView);
             InitView(helpView);
+
+            if (profilePanel != null) profilePanel.localScale = Vector3.zero;
+            if (profileCanvasGroup != null) profileCanvasGroup.alpha = 0f;
 
             if (openProfileBtn != null)
             {
@@ -67,23 +74,32 @@ namespace Project.UI.Profile.Presenter
 
         private void ChangeTab(ProfileTabType type)
         {
-            mainView.SetVisible(type == ProfileTabType.Main);
-            missionView.SetVisible(type == ProfileTabType.Mission);
-            helpView.SetVisible(type == ProfileTabType.Help);
+            BaseProfileView targetView = type switch
+            {
+                ProfileTabType.Main => mainView,
+                ProfileTabType.Mission => missionView,
+                ProfileTabType.Help => helpView,
+                _ => null
+            };
+
+            mainView.SetVisible(false);
+            missionView.SetVisible(false);
+            helpView.SetVisible(false);
+
+            if (targetView != null)
+            {
+                targetView.SetVisible(true);
+
+                targetView.transform.DOKill();
+                targetView.transform.localPosition = new Vector3(0, -20, 0);
+                targetView.transform.DOLocalMoveY(0, 0.25f).SetEase(Ease.OutCubic);
+            }
 
             switch (type)
             {
-                case ProfileTabType.Main:
-                    UpdateMainPanel();
-                    break;
-                case ProfileTabType.Mission:
-                    missionView.RefreshAchievementList(); 
-                    break;
-                case ProfileTabType.Help:
-                    break;
+                case ProfileTabType.Main: UpdateMainPanel(); break;
+                case ProfileTabType.Mission: missionView.RefreshAchievementList(); break;
             }
-
-            Debug.Log($"[Profile] {type} 탭으로 전환");
         }
 
         private void UpdateMainPanel()
@@ -108,10 +124,28 @@ namespace Project.UI.Profile.Presenter
         public void Show()
         {
             gameObject.SetActive(true);
-            ChangeTab(ProfileTabType.Main); 
+
+            profilePanel.DOKill();
+            profileCanvasGroup.DOKill();
+
+            profileCanvasGroup.alpha = 0f;
+            profilePanel.localScale = Vector3.one * 0.8f;
+            profilePanel.DOScale(1.0f, 0.4f).SetEase(Ease.OutBack);
+            profileCanvasGroup.DOFade(1f, 0.3f);
+
+            ChangeTab(ProfileTabType.Main);
         }
 
-        public void Hide() => gameObject.SetActive(false);
+        public void Hide()
+        {
+            profilePanel.DOKill();
+            profileCanvasGroup.DOKill();
+
+            profilePanel.DOScale(0.8f, 0.2f).SetEase(Ease.InBack);
+            profileCanvasGroup.DOFade(0f, 0.2f).OnComplete(() => {
+                gameObject.SetActive(false);
+            });
+        }
 
         private void OnDestroy()
         {
@@ -121,6 +155,8 @@ namespace Project.UI.Profile.Presenter
             }
             mainView.OnTabRequest = null;
             mainView.OnCloseRequest = null;
+
+            profileCanvasGroup.DOKill();
         }
     }
 }
