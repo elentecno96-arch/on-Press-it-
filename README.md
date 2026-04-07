@@ -49,8 +49,11 @@ Team 9 Project
 
 ## 시스템 구조
 > 현재 구현된 구조를 기반으로 한 다이어그램
+
 > 시스템 간 책임 분리가 완전히 정리되지 않은 상태
+
 > 이후 리팩토링을 통해 레이어 및 흐름을 재정리할 예정
+
 <img width="949" height="523" alt="Manager" src="https://github.com/user-attachments/assets/4156c481-df65-4929-b296-f51b0d651edd" />
 <img width="872" height="708" alt="Core" src="https://github.com/user-attachments/assets/027e7f6a-a44b-41f3-9aea-eb32d8d38887" />
 
