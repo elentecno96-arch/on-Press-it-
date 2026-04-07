@@ -54,6 +54,8 @@ Team 9 Project
 
 > 이후 리팩토링을 통해 레이어 및 흐름을 재정리할 예정
 
+※ 일부 화살표는 데이터 흐름과 호출 흐름이 혼재되어 있습니다.
+
 <img width="949" height="523" alt="Manager" src="https://github.com/user-attachments/assets/4156c481-df65-4929-b296-f51b0d651edd" />
 <img width="872" height="708" alt="Core" src="https://github.com/user-attachments/assets/027e7f6a-a44b-41f3-9aea-eb32d8d38887" />
 
