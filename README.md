@@ -39,9 +39,9 @@ Team 9 Project
 
 ## 문제 해결 및 설계 개선 계획
 ### 1. CurrentTime 전역(static) 의존 문제
-문제 : 모든 시스템이 static CurrentTime에 의존
-해결 : ICurrentTime 인터페이스로 분리 예정
-효과 : 테스트 가능, 시스템 독립성 확보
+- 문제 : 모든 시스템이 static CurrentTime에 의존
+- 해결 : ICurrentTime 인터페이스로 분리 예정
+- 효과 : 테스트 가능, 시스템 독립성 확보
 
 ## 담당 역할
 - 전체 코어 시스템 설계 및 구현
