@@ -1,3 +1,4 @@
+using DG.Tweening;
 using System;
 using UnityEngine;
 using UnityEngine.UI;
@@ -10,6 +11,9 @@ public class SettingUIView : MonoBehaviour
     public event Action<float> OnBgmVolumeChanged;
     public event Action<float> OnSfxVolumeChanged;
     public event Action<bool> OnVibrationChanged;
+
+    [SerializeField] private CanvasGroup settingsCanvasGroup; 
+    [SerializeField] private RectTransform settingsPanel;
 
     [Header("--- Settings Window ---")]
     [SerializeField] private GameObject settingsWindow;
@@ -45,15 +49,53 @@ public class SettingUIView : MonoBehaviour
                 }
             });
         }
+        if (settingsPanel != null) settingsPanel.localScale = Vector3.zero;
+        if (settingsCanvasGroup != null) settingsCanvasGroup.alpha = 0f;
+        settingsWindow.SetActive(false);
     }
 
     // 설정창 활성화/비활성화
-    public void ShowSettings(bool isActive) => settingsWindow.SetActive(isActive);
+    public void ShowSettings(bool isActive)
+    {
+        // 모든 트윈 중복 실행 방지
+        settingsPanel.DOKill();
+        settingsCanvasGroup.DOKill();
 
-    // 슬라이더 값 강제 설정 (리셋 시 Presenter가 호출)
-    public void SetSliderValues(float bgm, float sfx)
+        if (isActive)
+        {
+            settingsWindow.SetActive(true);
+
+            settingsPanel.localScale = Vector3.one * 0.8f;
+            settingsPanel.DOScale(1.0f, 0.3f).SetEase(Ease.OutBack); 
+
+            if (settingsCanvasGroup != null)
+                settingsCanvasGroup.DOFade(1f, 0.2f);
+        }
+        else
+        {
+            settingsPanel.DOScale(0.8f, 0.2f).SetEase(Ease.InBack);
+
+            if (settingsCanvasGroup != null)
+            {
+                settingsCanvasGroup.DOFade(0f, 0.2f).OnComplete(() => {
+                    settingsWindow.SetActive(false);
+                });
+            }
+            else
+            {
+                settingsWindow.SetActive(false);
+            }
+        }
+    }
+
+    public void SetSettingValues(float bgm, float sfx, bool isVib)
     {
         bgmSlider.value = bgm;
         sfxSlider.value = sfx;
+
+        if (vibrationToggle != null)
+        {
+            vibrationToggle.SetIsOnWithoutNotify(isVib);
+        }
     }
 }

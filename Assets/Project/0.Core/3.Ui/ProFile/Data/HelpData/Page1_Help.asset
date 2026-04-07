@@ -12,4 +12,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 271d20373713a3b488bc01997851b466, type: 3}
   m_Name: Page1_Help
   m_EditorClassIdentifier: 
-  description: "\uCCAB\uBC88\uC9F8 \uD398\uC774\uC9C0 \uC785\uB2C8\uB2E4"
+  description: "\uB9AC\uB4EC\uC5D0 \uB9DE\uCDB0 \uD654\uBA74\uC744 \uD130\uCE58 \uD574\uBD10\uC694!\n\uC2A4\uD14C\uC774\uC9C0
+    \uB3C4\uC6B0\uBBF8\uAC00 \uC2DC\uC791 \uC804\uC5D0 \uC54C\uB824\uC918\uC694!"

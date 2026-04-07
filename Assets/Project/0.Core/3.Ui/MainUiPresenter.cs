@@ -1,6 +1,5 @@
 using Cysharp.Threading.Tasks;
-using Project.Core.Managers; 
-using Project.Core.Ui.StageUi.View;
+using Project.Core.Managers;
 using Project.Rhythm.Data;
 using System.Collections.Generic;
 using UnityEngine;
@@ -48,43 +47,37 @@ public class MainUiPresenter : MonoBehaviour
         Debug.Log("[MainUiPresenter] 최신 플레이어 데이터를 서버와 동기화합니다...");
         await PlayerManager.Instance.SyncWithServer();
 
-        // 2. UI 및 스테이지 해금 상태 갱신 (추가된 부분)
+        // UI 및 스테이지 해금 상태 갱신 (추가된 부분)
         _isSyncing = true;
         // 오디오 설정 UI 동기화
         SyncUiWithAudio();
-       
+        SyncUiWithSettings();
         // 단순히 자물쇠만 여는 것이 아니라, 전체적인 UI 상태를 동기화하는 관점입니다.
         RefreshAllStageUI();
 
         _isSyncing = false;
 
-        // 3. BGM 재생 (기존 유지)
+        // BGM 재생 (기존 유지)
         _soundView.PlayMainBgmWithDelay(1.0f).Forget();
 
         // 난이도 변경 이벤트 구독 (OnEnable에서도 수행하지만 Start 시점 보장)
-        _stageView.OnDifficultyDirectionClicked -= HandleDifficultyChange;
         _stageView.OnDifficultyDirectionClicked += HandleDifficultyChange;
     }
 
     // 슬롯 클릭 시 호출 (배열 데이터를 안전하게 처리)
     public void HandleSlotClicked(StageData[] variants)
     {
-        if (variants == null || variants.Length == 0)
-        {
-            Debug.LogError("[MainUiPresenter] 클릭된 슬롯에 데이터가 없습니다!");
-            return;
-        }
-
-        Debug.Log($"[MainUiPresenter] 슬롯 클릭 감지: {variants[0].stageName}");
+        if (variants == null || variants.Length == 0) return;
 
         _soundView.PlaySfxB();
         _activeVariants = variants;
-
-        // 배열 크기에 맞춰 인덱스 초기화 (보통 Normal은 1번 인덱스)
         _currentDifficultyIndex = (variants.Length > 1) ? 1 : 0;
 
         SyncToGameManager();
-        _stageView.Show(); // 이제 비로소 창을 띄웁니다.
+
+        _stageView.UpdateStageDetails(_activeVariants[_currentDifficultyIndex]);
+
+        _stageView.Show();
     }
 
     //  난이도 변경 버튼을 눌렀을 때 실행될 실제 로직
@@ -100,9 +93,7 @@ public class MainUiPresenter : MonoBehaviour
             _soundView.PlaySfxA();
 
             SyncToGameManager();
-
-            // difficultyType 대신 안전한 stageName이나 인덱스 번호를 출력
-            Debug.Log($"[MainUiPresenter] 난이도 변경됨! 현재 선택된 곡: {_currentSelectedStage.stageName} (인덱스: {_currentDifficultyIndex})");
+            _stageView.UpdateStageDetails(_currentSelectedStage);
         }
     }
 
@@ -180,6 +171,8 @@ public class MainUiPresenter : MonoBehaviour
         _settingView.OnSfxVolumeChanged += HandleSfxVolumeChanged;
         _settingView.OnResetSettingsClick -= HandleResetSettings;
         _settingView.OnResetSettingsClick += HandleResetSettings;
+        _settingView.OnVibrationChanged -= HandleVibrationChanged;
+        _settingView.OnVibrationChanged += HandleVibrationChanged;
 
         if (_stageSlots != null)
         {
@@ -210,6 +203,7 @@ public class MainUiPresenter : MonoBehaviour
             _settingView.OnBgmVolumeChanged -= HandleBgmVolumeChanged;
             _settingView.OnSfxVolumeChanged -= HandleSfxVolumeChanged;
             _settingView.OnResetSettingsClick -= HandleResetSettings;
+            _settingView.OnVibrationChanged -= HandleVibrationChanged;
         }
 
         if (_stageSlots != null)
@@ -232,39 +226,68 @@ public class MainUiPresenter : MonoBehaviour
 
     private void SyncUiWithAudio()
     {
-        // _soundView나 _settingView가 연결되지 않았을 경우를 대비한 방어 코드
-        if (_soundView == null || _settingView == null)
-        {
-            Debug.LogWarning("MainUiPresenter: _soundView 또는 _settingView가 연결되지 않았습니다!");
-            return;
-        }
+        if (_soundView == null || _settingView == null || PlayerManager.Instance == null) return;
 
-        // 두 뷰가 모두 존재할 때만 실행
-        _settingView.SetSliderValues(_soundView.BgmVolume, _soundView.SfxVolume);
-    }        
+        _settingView.SetSettingValues(
+            _soundView.BgmVolume,
+            _soundView.SfxVolume,
+            PlayerManager.Instance.Data.isVibrationOn
+        );
+    }
 
     private void HandleResetSettings()
     {
         try
         {
-            // 1. 리셋 과정 시작 (이벤트에 의한 효과음 차단)
             _isSyncing = true;
+            _soundView.PlaySfxC();
 
-            _soundView.PlaySfxC(); // 리셋 버튼 클릭 자체의 소리 (필요하다면 유지)
+            // 1. 데이터 리셋
             _soundView.SetVolume("BGM", DefaultVolume);
             _soundView.SetVolume("SFX", DefaultVolume);
 
-            // 이 함수 호출로 인해 HandleSfxVolumeChanged가 실행되지만, 
-            // _isSyncing이 true라 소리는 나지 않습니다.
-            _settingView.SetSliderValues(DefaultVolume, DefaultVolume);
-        }
+            bool defaultVib = true;
+            if (PlayerManager.Instance != null)
+            {
+                PlayerManager.Instance.Data.isVibrationOn = defaultVib;
+                PlayerManager.Instance.Save();
+            }
 
+            _settingView.SetSettingValues(DefaultVolume, DefaultVolume, defaultVib);
+        }
         finally
         {
-            // 어떤 상황에서도(에러가 나더라도) 다시 소리가 나도록 보장합니다.
             _isSyncing = false;
         }
     }
+
+    private void SyncUiWithSettings()
+    {
+        if (_soundView == null || _settingView == null || PlayerManager.Instance == null) return;
+
+        _isSyncing = true;
+
+        float bgm = _soundView.BgmVolume;
+        float sfx = _soundView.SfxVolume;
+        bool vib = PlayerManager.Instance.Data.isVibrationOn;
+
+        _settingView.SetSettingValues(bgm, sfx, vib);
+
+        _isSyncing = false;
+    }
+
+    private void HandleVibrationChanged(bool isOn)
+    {
+        if (PlayerManager.Instance == null || _isSyncing) return;
+
+        // 데이터 저장
+        PlayerManager.Instance.Data.isVibrationOn = isOn;
+        PlayerManager.Instance.Save();
+
+        Debug.Log($"[MainUiPresenter] 진동 설정 변경 및 저장됨: {isOn}");
+    }
+
+
     public void HandleBgmVolumeChanged(float vol)
     {
         _soundView.SetVolume("BGM", vol);
@@ -284,6 +307,9 @@ public class MainUiPresenter : MonoBehaviour
     private void OpenSettings()
     {
         _soundView.PlaySfxA();
+
+        SyncUiWithSettings();
+
         _settingView.ShowSettings(true);
     }
 
@@ -298,13 +324,6 @@ public class MainUiPresenter : MonoBehaviour
     {
         _soundView.PlaySfxC();
         _stageView.Hide();
-    }
-
-    private void HandleStageSelected(StageData data)
-    {
-        _soundView.PlaySfxB();
-        _currentSelectedStage = data;
-        _stageView.Show();
     }
 
     private void HandlePlayGame()

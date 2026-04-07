@@ -12,4 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 271d20373713a3b488bc01997851b466, type: 3}
   m_Name: Page2_Help
   m_EditorClassIdentifier: 
-  description: "\uB450\uBC88\uC9F8 \uD398\uC774\uC9C0 \uC785\uB2C8\uB2E4"
+  description: "\uD0ED - \uD654\uBA74\uC744 \uAC00\uBCCD\uAC8C \uB20C\uB800\uB2E4
+    \uB54C\uBD10\uC694\n\uD640\uB4DC - \uD654\uBA74\uC744 \uAFB8\uC6B1 \uB20C\uB800\uB2E4
+    \uB54C\uBD10\uC694\n\uC2AC\uB77C\uC774\uB4DC = \uD654\uBA74\uC744 \uB20C\uB800\uB2E4
+    \uC6C0\uC9C1\uC5EC\uBD10\uC694"
