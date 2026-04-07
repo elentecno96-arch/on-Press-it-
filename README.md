@@ -51,7 +51,7 @@ Team 9 Project
 <img width="949" height="523" alt="Manager" src="https://github.com/user-attachments/assets/4156c481-df65-4929-b296-f51b0d651edd" />
 <img width="872" height="708" alt="Core" src="https://github.com/user-attachments/assets/027e7f6a-a44b-41f3-9aea-eb32d8d38887" />
 
-## 📊 데이터 구조
+## 데이터 구조
 - 스테이지 데이터 기반으로 모든 이벤트 관리
 - JSON을 통해 플레이어 데이터 저장
 - Firebase를 통한 서버 동기화 지원
