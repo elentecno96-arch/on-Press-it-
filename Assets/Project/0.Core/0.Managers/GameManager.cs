@@ -12,6 +12,12 @@ namespace Project.Core.Managers
     public class GameManager : BaseSingleton<GameManager>
     {
         public StageData CurrentStageData { get; private set; }
+        // Presenter가 데이터를 넘겨줄 때 사용할 메서드
+        public void SetCurrentStage(StageData data)
+        {
+            CurrentStageData = data;
+            Debug.Log($"[GameManager] 현재 스테이지가 설정됨: {data.stageName}");
+        }
         public override async UniTask Initialize()
         {
             Debug.Log("모든 매니저 초기화 진행");

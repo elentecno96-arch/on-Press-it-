@@ -15,7 +15,7 @@ GameObject:
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
+  m_StaticEditorFlags: 2147483647
   m_IsActive: 1
 --- !u!4 &1409684188871571850
 Transform:
@@ -47,3 +47,5 @@ MonoBehaviour:
   infoWindow: {fileID: 0}
   playButton: {fileID: 0}
   closeButton: {fileID: 0}
+  LeftBtn: {fileID: 0}
+  RightBtn: {fileID: 0}
