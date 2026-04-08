@@ -1,45 +1,57 @@
 using Project.Rhythm.Data.Enum;
 using Project.Rhythm.Judgement;
 using Project.Rhythm.Visual;
+using UnityEngine;
 
 namespace Project.Data.Stage.STAGE2
 {
     /// <summary>
     /// 스테이지 2의 배경 비주얼
+    /// BaseRhythmVisual을 상속받아 판정 시 랜덤 리액션을 수행합니다.
     /// </summary>
     public class S2Background : BaseRhythmVisual
     {
+        [Header("--- S2 Custom Settings ---")]
+        [SerializeField] private float reactionDuration = 0.5f; 
+
         protected override void Awake()
         {
-            // 부모의 Awake에서 targetImage 할당 및 초기 idle 애니메이션 세팅이 수행됩니다.
             base.Awake();
         }
 
-        /// <summary>
-        /// 카운트 처리
-        /// </summary>
-        /// <param name="targetBeat"></param>
         public override void StartCountdown(float targetBeat)
         {
-            //스테이지1에 카운트를 사용한다면 채워주세요
+            
         }
 
-        /// <summary>
-        /// 타입에 따른 배경 연출용 메서드
-        /// </summary>
-        /// <param name="type"></param>
         public override void PlayAction(PatternType type)
         {
-            // 배경이 특정 입력에 반응해야 한다면 여기서 SetAnimation 등을 호출합니다.
+            
         }
 
         /// <summary>
-        /// 판정 결과에 따른 배경 연출 용 메서드
+        /// 판정 결과에 따른 배경 리액션
         /// </summary>
-        /// <param name="result"></param>
         public override void PlayAction(JudgeResult result)
         {
-            // 판정(Perfect/Miss)에 따라 배경 리액션을 넣고 싶을 때 구현합니다.
+            if (result == JudgeResult.Miss || successFrames == null || successFrames.Length == 0) return;
+
+            int randomIndex = Random.Range(0, successFrames.Length);
+            Sprite selectedSprite = successFrames[randomIndex];
+
+            Sprite[] fakeArray = new Sprite[] { selectedSprite, selectedSprite };
+
+            SetAnimation(fakeArray, reactionDuration, false);
+
+            PlaySfx(successSfx);
+        }
+
+        /// <summary>
+        /// 단일 프레임 애니메이션이 끝났을 때(reactionDuration 경과 후) 호출됨
+        /// </summary>
+        protected override void OnAnimationComplete()
+        {
+            SetAnimation(idleFrames, idleFrameRate, true);
         }
     }
 }

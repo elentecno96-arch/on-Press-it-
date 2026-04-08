@@ -5,13 +5,17 @@ using UnityEngine;
 
 namespace Project.Rhythm.Data
 {
+    
     /// <summary>
     /// 스테이지 데이터
     /// </summary>
     [CreateAssetMenu(fileName = "NewStage", menuName = "Project/Rhythm/Stage")]
     public class StageData : ScriptableObject
     {
+        public enum Difficulty { Normal, Hard }
+
         public Sprite stageImage;
+        public Difficulty difficulty; 
 
         [Header("Status")]
         public int stageIndex; // 1, 2, 3... 순서대로 기입        
