@@ -19,7 +19,7 @@ UI_SETTING_8,보기,View,表示
 UI_SETTING_9,되돌리기,Undo,元に戻す
 UI_SETTING_10,닫기,Close,閉じる
 UI_PROFILE_1,프로필,Profile,プロフィール
-UI_PROFILE_2,업적,Achievements,実績
+UI_PROFILE_2,업적,Mission,実績
 UI_PROFILE_3,도움말,Help,ヘルプ
 UI_PROFILE_4,플레이어 이름,Player Name,プレイヤー名
 UI_PROFILE_5,이름 변경,Change Name,名前変更
@@ -29,7 +29,7 @@ UI_PROFILE_8,상위,Top,上位
 UI_PROFILE_9,스테이지 총합,Stage Total,ステージ総合
 UI_PROFILE_10,클리어,Clear,クリア
 UI_PROFILE_11,달성률,Progress,達成率
-UI_PROFILE_12,업적 달성,Achievement Unlocked,実績達成
+UI_PROFILE_12,업적 달성,Mission Unlocked,実績達成
 UI_PROFILE_13,인트로 다시보기,Replay Intro,イントロを再生
 UI_PROFILE_14,업적 이름1,Achievement Name 1,実績名1
 UI_PROFILE_15,업적 이름2,Achievement Name 2,実績名2
