@@ -30,7 +30,7 @@ MonoBehaviour:
   goodWindow: 0.2
   missWindow: 0.25
   playStartTime: 4
-  endPosition: 84
+  endPosition: 76
   actions:
   - beat: 12
     type: 2

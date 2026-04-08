@@ -434,5 +434,11 @@ MonoBehaviour:
     duration: 0
     targetID: 
     noteType: 0
+  - beat: 75.5
+    type: 3
+    role: 0
+    duration: 0
+    targetID: 
+    noteType: 0
   themeEvents: []
   patterns: []

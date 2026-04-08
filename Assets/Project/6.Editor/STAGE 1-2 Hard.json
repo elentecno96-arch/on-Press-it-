@@ -1,0 +1,1015 @@
+{
+    "stageName": "스테이지 1-2",
+    "bpm": 120.0,
+    "actions": [
+        {
+            "beat": 10.0,
+            "type": 1,
+            "role": 0,
+            "duration": 0.0,
+            "targetID": "",
+            "noteType": 0
+        },
+        {
+            "beat": 14.0,
+            "type": 1,
+            "role": 0,
+            "duration": 0.0,
+            "targetID": "",
+            "noteType": 0
+        },
+        {
+            "beat": 18.0,
+            "type": 1,
+            "role": 0,
+            "duration": 0.0,
+            "targetID": "",
+            "noteType": 0
+        },
+        {
+            "beat": 22.0,
+            "type": 1,
+            "role": 0,
+            "duration": 0.0,
+            "targetID": "",
+            "noteType": 0
+        },
+        {
+            "beat": 22.5,
+            "type": 1,
+            "role": 0,
+            "duration": 0.0,
+            "targetID": "",
+            "noteType": 0
+        },
+        {
+            "beat": 26.0,
+            "type": 1,
+            "role": 0,
+            "duration": 0.0,
+            "targetID": "",
+            "noteType": 0
+        },
+        {
+            "beat": 26.5,
+            "type": 1,
+            "role": 0,
+            "duration": 0.0,
+            "targetID": "",
+            "noteType": 0
+        },
+        {
+            "beat": 30.0,
+            "type": 1,
+            "role": 0,
+            "duration": 0.0,
+            "targetID": "",
+            "noteType": 0
+        },
+        {
+            "beat": 30.5,
+            "type": 1,
+            "role": 0,
+            "duration": 0.0,
+            "targetID": "",
+            "noteType": 0
+        },
+        {
+            "beat": 31.0,
+            "type": 1,
+            "role": 0,
+            "duration": 0.0,
+            "targetID": "",
+            "noteType": 0
+        },
+        {
+            "beat": 34.0,
+            "type": 1,
+            "role": 0,
+            "duration": 0.0,
+            "targetID": "",
+            "noteType": 0
+        },
+        {
+            "beat": 34.5,
+            "type": 1,
+            "role": 0,
+            "duration": 0.0,
+            "targetID": "",
+            "noteType": 0
+        },
+        {
+            "beat": 35.0,
+            "type": 1,
+            "role": 0,
+            "duration": 0.0,
+            "targetID": "",
+            "noteType": 0
+        },
+        {
+            "beat": 54.0,
+            "type": 1,
+            "role": 0,
+            "duration": 0.0,
+            "targetID": "",
+            "noteType": 0
+        },
+        {
+            "beat": 54.5,
+            "type": 1,
+            "role": 0,
+            "duration": 0.0,
+            "targetID": "",
+            "noteType": 0
+        },
+        {
+            "beat": 55.0,
+            "type": 1,
+            "role": 0,
+            "duration": 0.0,
+            "targetID": "",
+            "noteType": 0
+        },
+        {
+            "beat": 58.0,
+            "type": 1,
+            "role": 0,
+            "duration": 0.0,
+            "targetID": "",
+            "noteType": 0
+        },
+        {
+            "beat": 58.5,
+            "type": 1,
+            "role": 0,
+            "duration": 0.0,
+            "targetID": "",
+            "noteType": 0
+        },
+        {
+            "beat": 59.0,
+            "type": 1,
+            "role": 0,
+            "duration": 0.0,
+            "targetID": "",
+            "noteType": 0
+        },
+        {
+            "beat": 61.0,
+            "type": 1,
+            "role": 0,
+            "duration": 0.0,
+            "targetID": "",
+            "noteType": 0
+        },
+        {
+            "beat": 63.0,
+            "type": 1,
+            "role": 0,
+            "duration": 0.0,
+            "targetID": "",
+            "noteType": 0
+        },
+        {
+            "beat": 68.0,
+            "type": 1,
+            "role": 0,
+            "duration": 0.0,
+            "targetID": "",
+            "noteType": 0
+        },
+        {
+            "beat": 68.5,
+            "type": 1,
+            "role": 0,
+            "duration": 0.0,
+            "targetID": "",
+            "noteType": 0
+        },
+        {
+            "beat": 69.0,
+            "type": 1,
+            "role": 0,
+            "duration": 0.0,
+            "targetID": "",
+            "noteType": 0
+        },
+        {
+            "beat": 70.0,
+            "type": 1,
+            "role": 0,
+            "duration": 0.0,
+            "targetID": "",
+            "noteType": 0
+        },
+        {
+            "beat": 76.0,
+            "type": 1,
+            "role": 0,
+            "duration": 0.0,
+            "targetID": "",
+            "noteType": 0
+        },
+        {
+            "beat": 76.5,
+            "type": 1,
+            "role": 0,
+            "duration": 0.0,
+            "targetID": "",
+            "noteType": 0
+        },
+        {
+            "beat": 77.0,
+            "type": 1,
+            "role": 0,
+            "duration": 0.0,
+            "targetID": "",
+            "noteType": 0
+        },
+        {
+            "beat": 77.5,
+            "type": 1,
+            "role": 0,
+            "duration": 0.0,
+            "targetID": "",
+            "noteType": 0
+        },
+        {
+            "beat": 78.0,
+            "type": 1,
+            "role": 0,
+            "duration": 0.0,
+            "targetID": "",
+            "noteType": 0
+        },
+        {
+            "beat": 94.0,
+            "type": 1,
+            "role": 0,
+            "duration": 0.0,
+            "targetID": "",
+            "noteType": 0
+        },
+        {
+            "beat": 84.0,
+            "type": 1,
+            "role": 0,
+            "duration": 0.0,
+            "targetID": "",
+            "noteType": 0
+        },
+        {
+            "beat": 85.0,
+            "type": 1,
+            "role": 0,
+            "duration": 0.0,
+            "targetID": "",
+            "noteType": 0
+        },
+        {
+            "beat": 92.5,
+            "type": 1,
+            "role": 0,
+            "duration": 0.0,
+            "targetID": "",
+            "noteType": 0
+        },
+        {
+            "beat": 92.0,
+            "type": 1,
+            "role": 0,
+            "duration": 0.0,
+            "targetID": "",
+            "noteType": 0
+        },
+        {
+            "beat": 98.0,
+            "type": 1,
+            "role": 0,
+            "duration": 0.0,
+            "targetID": "",
+            "noteType": 0
+        },
+        {
+            "beat": 102.0,
+            "type": 1,
+            "role": 0,
+            "duration": 0.0,
+            "targetID": "",
+            "noteType": 0
+        },
+        {
+            "beat": 102.5,
+            "type": 1,
+            "role": 0,
+            "duration": 0.0,
+            "targetID": "",
+            "noteType": 0
+        },
+        {
+            "beat": 108.0,
+            "type": 1,
+            "role": 0,
+            "duration": 0.0,
+            "targetID": "",
+            "noteType": 0
+        },
+        {
+            "beat": 110.0,
+            "type": 1,
+            "role": 0,
+            "duration": 0.0,
+            "targetID": "",
+            "noteType": 0
+        },
+        {
+            "beat": 110.5,
+            "type": 1,
+            "role": 0,
+            "duration": 0.0,
+            "targetID": "",
+            "noteType": 0
+        },
+        {
+            "beat": 116.0,
+            "type": 1,
+            "role": 0,
+            "duration": 0.0,
+            "targetID": "",
+            "noteType": 0
+        },
+        {
+            "beat": 116.5,
+            "type": 1,
+            "role": 0,
+            "duration": 0.0,
+            "targetID": "",
+            "noteType": 0
+        },
+        {
+            "beat": 117.0,
+            "type": 1,
+            "role": 0,
+            "duration": 0.0,
+            "targetID": "",
+            "noteType": 0
+        },
+        {
+            "beat": 118.0,
+            "type": 1,
+            "role": 0,
+            "duration": 0.0,
+            "targetID": "",
+            "noteType": 0
+        },
+        {
+            "beat": 118.5,
+            "type": 1,
+            "role": 0,
+            "duration": 0.0,
+            "targetID": "",
+            "noteType": 0
+        },
+        {
+            "beat": 124.0,
+            "type": 1,
+            "role": 0,
+            "duration": 0.0,
+            "targetID": "",
+            "noteType": 0
+        },
+        {
+            "beat": 124.5,
+            "type": 1,
+            "role": 0,
+            "duration": 0.0,
+            "targetID": "",
+            "noteType": 0
+        },
+        {
+            "beat": 125.5,
+            "type": 1,
+            "role": 0,
+            "duration": 0.0,
+            "targetID": "",
+            "noteType": 0
+        },
+        {
+            "beat": 126.0,
+            "type": 1,
+            "role": 0,
+            "duration": 0.0,
+            "targetID": "",
+            "noteType": 0
+        },
+        {
+            "beat": 126.5,
+            "type": 1,
+            "role": 0,
+            "duration": 0.0,
+            "targetID": "",
+            "noteType": 0
+        },
+        {
+            "beat": 127.0,
+            "type": 1,
+            "role": 0,
+            "duration": 0.0,
+            "targetID": "",
+            "noteType": 0
+        },
+        {
+            "beat": 132.0,
+            "type": 1,
+            "role": 0,
+            "duration": 0.0,
+            "targetID": "",
+            "noteType": 0
+        },
+        {
+            "beat": 133.0,
+            "type": 1,
+            "role": 0,
+            "duration": 0.0,
+            "targetID": "",
+            "noteType": 0
+        },
+        {
+            "beat": 134.0,
+            "type": 1,
+            "role": 0,
+            "duration": 0.0,
+            "targetID": "",
+            "noteType": 0
+        },
+        {
+            "beat": 138.0,
+            "type": 1,
+            "role": 0,
+            "duration": 0.0,
+            "targetID": "",
+            "noteType": 0
+        },
+        {
+            "beat": 138.5,
+            "type": 1,
+            "role": 0,
+            "duration": 0.0,
+            "targetID": "",
+            "noteType": 0
+        },
+        {
+            "beat": 142.0,
+            "type": 1,
+            "role": 0,
+            "duration": 0.0,
+            "targetID": "",
+            "noteType": 0
+        },
+        {
+            "beat": 142.5,
+            "type": 1,
+            "role": 0,
+            "duration": 0.0,
+            "targetID": "",
+            "noteType": 0
+        },
+        {
+            "beat": 146.0,
+            "type": 1,
+            "role": 0,
+            "duration": 0.0,
+            "targetID": "",
+            "noteType": 0
+        },
+        {
+            "beat": 150.0,
+            "type": 1,
+            "role": 0,
+            "duration": 0.0,
+            "targetID": "",
+            "noteType": 0
+        },
+        {
+            "beat": 156.0,
+            "type": 1,
+            "role": 0,
+            "duration": 0.0,
+            "targetID": "",
+            "noteType": 0
+        },
+        {
+            "beat": 157.0,
+            "type": 1,
+            "role": 0,
+            "duration": 0.0,
+            "targetID": "",
+            "noteType": 0
+        },
+        {
+            "beat": 8.0,
+            "type": 1,
+            "role": 0,
+            "duration": 0.0,
+            "targetID": "",
+            "noteType": 0
+        },
+        {
+            "beat": 12.0,
+            "type": 1,
+            "role": 0,
+            "duration": 0.0,
+            "targetID": "",
+            "noteType": 0
+        },
+        {
+            "beat": 16.0,
+            "type": 1,
+            "role": 0,
+            "duration": 0.0,
+            "targetID": "",
+            "noteType": 0
+        },
+        {
+            "beat": 20.0,
+            "type": 1,
+            "role": 0,
+            "duration": 0.0,
+            "targetID": "",
+            "noteType": 0
+        },
+        {
+            "beat": 20.5,
+            "type": 1,
+            "role": 0,
+            "duration": 0.0,
+            "targetID": "",
+            "noteType": 0
+        },
+        {
+            "beat": 24.0,
+            "type": 1,
+            "role": 0,
+            "duration": 0.0,
+            "targetID": "",
+            "noteType": 0
+        },
+        {
+            "beat": 24.5,
+            "type": 1,
+            "role": 0,
+            "duration": 0.0,
+            "targetID": "",
+            "noteType": 0
+        },
+        {
+            "beat": 28.0,
+            "type": 1,
+            "role": 0,
+            "duration": 0.0,
+            "targetID": "",
+            "noteType": 0
+        },
+        {
+            "beat": 28.5,
+            "type": 1,
+            "role": 0,
+            "duration": 0.0,
+            "targetID": "",
+            "noteType": 0
+        },
+        {
+            "beat": 29.0,
+            "type": 1,
+            "role": 0,
+            "duration": 0.0,
+            "targetID": "",
+            "noteType": 0
+        },
+        {
+            "beat": 32.0,
+            "type": 1,
+            "role": 0,
+            "duration": 0.0,
+            "targetID": "",
+            "noteType": 0
+        },
+        {
+            "beat": 32.5,
+            "type": 1,
+            "role": 0,
+            "duration": 0.0,
+            "targetID": "",
+            "noteType": 0
+        },
+        {
+            "beat": 33.0,
+            "type": 1,
+            "role": 0,
+            "duration": 0.0,
+            "targetID": "",
+            "noteType": 0
+        },
+        {
+            "beat": 52.0,
+            "type": 1,
+            "role": 0,
+            "duration": 0.0,
+            "targetID": "",
+            "noteType": 0
+        },
+        {
+            "beat": 52.5,
+            "type": 1,
+            "role": 0,
+            "duration": 0.0,
+            "targetID": "",
+            "noteType": 0
+        },
+        {
+            "beat": 53.0,
+            "type": 1,
+            "role": 0,
+            "duration": 0.0,
+            "targetID": "",
+            "noteType": 0
+        },
+        {
+            "beat": 56.0,
+            "type": 1,
+            "role": 0,
+            "duration": 0.0,
+            "targetID": "",
+            "noteType": 0
+        },
+        {
+            "beat": 56.5,
+            "type": 1,
+            "role": 0,
+            "duration": 0.0,
+            "targetID": "",
+            "noteType": 0
+        },
+        {
+            "beat": 57.0,
+            "type": 1,
+            "role": 0,
+            "duration": 0.0,
+            "targetID": "",
+            "noteType": 0
+        },
+        {
+            "beat": 60.0,
+            "type": 1,
+            "role": 0,
+            "duration": 0.0,
+            "targetID": "",
+            "noteType": 0
+        },
+        {
+            "beat": 62.0,
+            "type": 1,
+            "role": 0,
+            "duration": 0.0,
+            "targetID": "",
+            "noteType": 0
+        },
+        {
+            "beat": 64.0,
+            "type": 1,
+            "role": 0,
+            "duration": 0.0,
+            "targetID": "",
+            "noteType": 0
+        },
+        {
+            "beat": 64.5,
+            "type": 1,
+            "role": 0,
+            "duration": 0.0,
+            "targetID": "",
+            "noteType": 0
+        },
+        {
+            "beat": 65.0,
+            "type": 1,
+            "role": 0,
+            "duration": 0.0,
+            "targetID": "",
+            "noteType": 0
+        },
+        {
+            "beat": 66.0,
+            "type": 1,
+            "role": 0,
+            "duration": 0.0,
+            "targetID": "",
+            "noteType": 0
+        },
+        {
+            "beat": 72.0,
+            "type": 1,
+            "role": 0,
+            "duration": 0.0,
+            "targetID": "",
+            "noteType": 0
+        },
+        {
+            "beat": 72.5,
+            "type": 1,
+            "role": 0,
+            "duration": 0.0,
+            "targetID": "",
+            "noteType": 0
+        },
+        {
+            "beat": 73.0,
+            "type": 1,
+            "role": 0,
+            "duration": 0.0,
+            "targetID": "",
+            "noteType": 0
+        },
+        {
+            "beat": 73.5,
+            "type": 1,
+            "role": 0,
+            "duration": 0.0,
+            "targetID": "",
+            "noteType": 0
+        },
+        {
+            "beat": 74.0,
+            "type": 1,
+            "role": 0,
+            "duration": 0.0,
+            "targetID": "",
+            "noteType": 0
+        },
+        {
+            "beat": 80.0,
+            "type": 1,
+            "role": 0,
+            "duration": 0.0,
+            "targetID": "",
+            "noteType": 0
+        },
+        {
+            "beat": 81.0,
+            "type": 1,
+            "role": 0,
+            "duration": 0.0,
+            "targetID": "",
+            "noteType": 0
+        },
+        {
+            "beat": 88.0,
+            "type": 1,
+            "role": 0,
+            "duration": 0.0,
+            "targetID": "",
+            "noteType": 0
+        },
+        {
+            "beat": 88.5,
+            "type": 1,
+            "role": 0,
+            "duration": 0.0,
+            "targetID": "",
+            "noteType": 0
+        },
+        {
+            "beat": 90.0,
+            "type": 1,
+            "role": 0,
+            "duration": 0.0,
+            "targetID": "",
+            "noteType": 0
+        },
+        {
+            "beat": 96.0,
+            "type": 1,
+            "role": 0,
+            "duration": 0.0,
+            "targetID": "",
+            "noteType": 0
+        },
+        {
+            "beat": 100.0,
+            "type": 1,
+            "role": 0,
+            "duration": 0.0,
+            "targetID": "",
+            "noteType": 0
+        },
+        {
+            "beat": 100.5,
+            "type": 1,
+            "role": 0,
+            "duration": 0.0,
+            "targetID": "",
+            "noteType": 0
+        },
+        {
+            "beat": 104.0,
+            "type": 1,
+            "role": 0,
+            "duration": 0.0,
+            "targetID": "",
+            "noteType": 0
+        },
+        {
+            "beat": 106.0,
+            "type": 1,
+            "role": 0,
+            "duration": 0.0,
+            "targetID": "",
+            "noteType": 0
+        },
+        {
+            "beat": 106.5,
+            "type": 1,
+            "role": 0,
+            "duration": 0.0,
+            "targetID": "",
+            "noteType": 0
+        },
+        {
+            "beat": 112.0,
+            "type": 1,
+            "role": 0,
+            "duration": 0.0,
+            "targetID": "",
+            "noteType": 0
+        },
+        {
+            "beat": 112.5,
+            "type": 1,
+            "role": 0,
+            "duration": 0.0,
+            "targetID": "",
+            "noteType": 0
+        },
+        {
+            "beat": 113.0,
+            "type": 1,
+            "role": 0,
+            "duration": 0.0,
+            "targetID": "",
+            "noteType": 0
+        },
+        {
+            "beat": 114.0,
+            "type": 1,
+            "role": 0,
+            "duration": 0.0,
+            "targetID": "",
+            "noteType": 0
+        },
+        {
+            "beat": 114.5,
+            "type": 1,
+            "role": 0,
+            "duration": 0.0,
+            "targetID": "",
+            "noteType": 0
+        },
+        {
+            "beat": 120.0,
+            "type": 1,
+            "role": 0,
+            "duration": 0.0,
+            "targetID": "",
+            "noteType": 0
+        },
+        {
+            "beat": 120.5,
+            "type": 1,
+            "role": 0,
+            "duration": 0.0,
+            "targetID": "",
+            "noteType": 0
+        },
+        {
+            "beat": 121.5,
+            "type": 1,
+            "role": 0,
+            "duration": 0.0,
+            "targetID": "",
+            "noteType": 0
+        },
+        {
+            "beat": 122.0,
+            "type": 1,
+            "role": 0,
+            "duration": 0.0,
+            "targetID": "",
+            "noteType": 0
+        },
+        {
+            "beat": 122.5,
+            "type": 1,
+            "role": 0,
+            "duration": 0.0,
+            "targetID": "",
+            "noteType": 0
+        },
+        {
+            "beat": 123.0,
+            "type": 1,
+            "role": 0,
+            "duration": 0.0,
+            "targetID": "",
+            "noteType": 0
+        },
+        {
+            "beat": 128.0,
+            "type": 1,
+            "role": 0,
+            "duration": 0.0,
+            "targetID": "",
+            "noteType": 0
+        },
+        {
+            "beat": 129.0,
+            "type": 1,
+            "role": 0,
+            "duration": 0.0,
+            "targetID": "",
+            "noteType": 0
+        },
+        {
+            "beat": 130.0,
+            "type": 1,
+            "role": 0,
+            "duration": 0.0,
+            "targetID": "",
+            "noteType": 0
+        },
+        {
+            "beat": 136.0,
+            "type": 1,
+            "role": 0,
+            "duration": 0.0,
+            "targetID": "",
+            "noteType": 0
+        },
+        {
+            "beat": 136.5,
+            "type": 1,
+            "role": 0,
+            "duration": 0.0,
+            "targetID": "",
+            "noteType": 0
+        },
+        {
+            "beat": 140.0,
+            "type": 1,
+            "role": 0,
+            "duration": 0.0,
+            "targetID": "",
+            "noteType": 0
+        },
+        {
+            "beat": 140.5,
+            "type": 1,
+            "role": 0,
+            "duration": 0.0,
+            "targetID": "",
+            "noteType": 0
+        },
+        {
+            "beat": 144.0,
+            "type": 1,
+            "role": 0,
+            "duration": 0.0,
+            "targetID": "",
+            "noteType": 0
+        },
+        {
+            "beat": 148.0,
+            "type": 1,
+            "role": 0,
+            "duration": 0.0,
+            "targetID": "",
+            "noteType": 0
+        },
+        {
+            "beat": 152.0,
+            "type": 1,
+            "role": 0,
+            "duration": 0.0,
+            "targetID": "",
+            "noteType": 0
+        },
+        {
+            "beat": 153.0,
+            "type": 1,
+            "role": 0,
+            "duration": 0.0,
+            "targetID": "",
+            "noteType": 0
+        }
+    ],
+    "themeEvents": []
+}
