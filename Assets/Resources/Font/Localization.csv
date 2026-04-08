@@ -1,0 +1,48 @@
+Key,Korean,English,Japanese
+UI_MAIN_1,스테이지 선택,Stage Select,ステージ選択
+UI_MAIN_2,스테이지1 - 광산,Stage 1 - Mine,ステージ1 - 鉱山
+UI_MAIN_3,스테이지2 - 낚시,Stage 2 - Fishing,ステージ2 - 釣り
+UI_MAIN_4,스테이지3 - 농사,Stage 3 - Farming,ステージ3 - 農業
+UI_MAIN_5,스테이지4 - 요리,Stage 4 - Cooking,ステージ4 - 料理
+UI_MAIN_6,스테이지5 - 공장,Stage 5 - Factory,ステージ5 - 工場
+UI_MAIN_7,스테이지6 - 하늘,Stage 6 - Sky,ステージ6 - 空
+UI_MAIN_8,스테이지7 - 우주,Stage 7 - Space,ステージ7 - 宇宙
+UI_MAIN_9,해제하려면 위 스테이지 클리어,Clear above stage to unlock,上位ステージクリアで解放
+UI_SETTING_1,설정,Setting,設定
+UI_SETTING_2,배경음,Background Music,背景音
+UI_SETTING_3,효과음,Sound Effects,効果音
+UI_SETTING_4,타격음,Hit Sounds,打撃音
+UI_SETTING_5,진동,Vibration,振動
+UI_SETTING_6,언어,Language,言語
+UI_SETTING_7,크레딧,Credits,クレジット
+UI_SETTING_8,보기,View,表示
+UI_SETTING_9,되돌리기,Undo,元に戻す
+UI_SETTING_10,닫기,Close,閉じる
+UI_PROFILE_1,프로필,Profile,プロフィール
+UI_PROFILE_2,업적,Achievements,実績
+UI_PROFILE_3,도움말,Help,ヘルプ
+UI_PROFILE_4,플레이어 이름,Player Name,プレイヤー名
+UI_PROFILE_5,이름 변경,Change Name,名前変更
+UI_PROFILE_6,글로벌 랭킹,Global Ranking,グローバルランキング
+UI_PROFILE_7,위,,位
+UI_PROFILE_8,상위,Top,上位
+UI_PROFILE_9,스테이지 총합,Stage Total,ステージ総合
+UI_PROFILE_10,클리어,Clear,クリア
+UI_PROFILE_11,달성률,Progress,達成率
+UI_PROFILE_12,업적 달성,Achievement Unlocked,実績達成
+UI_PROFILE_13,인트로 다시보기,Replay Intro,イントロを再生
+UI_PROFILE_14,업적 이름1,Achievement Name 1,実績名1
+UI_PROFILE_15,업적 이름2,Achievement Name 2,実績名2
+UI_PROFILE_16,업적 이름3,Achievement Name 3,実績名3
+UI_PROFILE_17,업적 이름4,Achievement Name 4,実績名4
+UI_PROFILE_18,업적 이름5,Achievement Name 5,実績名5
+UI_PROFILE_19,도움말1,Help 1,ヘルプ1
+UI_PROFILE_20,도움말2,Help 2,ヘルプ2
+UI_PROFILE_21,도움말3,Help 3,ヘルプ3
+UI_ROCKED_1,현재 스테이지는 잠겨 있습니다!,This stage is locked!,ステージはロックされています
+UI_RESET_1,다시하기,Retry,リトライ
+UI_RESET_2,정말 다시 사작하겠습니까?,Are you sure you want to restart?,本当にやり直しますか？
+UI_RESET_3,닫기,Cancel,キャンセル
+UI_RESET_4,확인,Ok,確認
+UI_EXIT_1,나가기,Quit,終了
+UI_EXIT_2,정말 나가겠습니까?,Are you sure you want to quit?,終了しますか？
