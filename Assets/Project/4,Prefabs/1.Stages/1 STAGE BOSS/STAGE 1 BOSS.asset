@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d04876fa1117aa34b9eea9b52f8b6fae, type: 3}
   m_Name: STAGE 1 BOSS
   m_EditorClassIdentifier: 
+  stageImage: {fileID: 21300000, guid: 7ac7df6328a194f4b9cef1c904f30b7a, type: 3}
   stageIndex: 4
   skipGuide: 1
   isClear: 0
