@@ -88,8 +88,6 @@ public class StageUiView : MonoBehaviour
 
         if (stageNameText != null)
         {
-            stageNameText.transform.DOKill();
-
             stageNameText.transform.DOComplete();
             stageNameText.text = data.stageName; 
 
