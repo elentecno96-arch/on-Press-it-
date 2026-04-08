@@ -156,7 +156,9 @@ namespace Project.UI.Profile.Presenter
             mainView.OnTabRequest = null;
             mainView.OnCloseRequest = null;
 
+            profilePanel.DOKill();
             profileCanvasGroup.DOKill();
+
         }
     }
 }

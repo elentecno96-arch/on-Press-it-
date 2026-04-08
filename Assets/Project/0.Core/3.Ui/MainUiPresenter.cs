@@ -50,7 +50,6 @@ public class MainUiPresenter : MonoBehaviour
         // UI 및 스테이지 해금 상태 갱신 (추가된 부분)
         _isSyncing = true;
         // 오디오 설정 UI 동기화
-        SyncUiWithAudio();
         SyncUiWithSettings();
         // 단순히 자물쇠만 여는 것이 아니라, 전체적인 UI 상태를 동기화하는 관점입니다.
         RefreshAllStageUI();
@@ -61,13 +60,18 @@ public class MainUiPresenter : MonoBehaviour
         _soundView.PlayMainBgmWithDelay(1.0f).Forget();
 
         // 난이도 변경 이벤트 구독 (OnEnable에서도 수행하지만 Start 시점 보장)
+        _stageView.OnDifficultyDirectionClicked -= HandleDifficultyChange;
         _stageView.OnDifficultyDirectionClicked += HandleDifficultyChange;
     }
 
     // 슬롯 클릭 시 호출 (배열 데이터를 안전하게 처리)
     public void HandleSlotClicked(StageData[] variants)
     {
-        if (variants == null || variants.Length == 0) return;
+        if (variants == null || variants.Length == 0)
+        {
+            Debug.LogError("[MainUiPresenter] 클릭된 슬롯에 데이터가 없습니다!");
+            return;
+        }
 
         _soundView.PlaySfxB();
         _activeVariants = variants;
