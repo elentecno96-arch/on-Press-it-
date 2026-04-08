@@ -1035,22 +1035,6 @@
             "noteType": 0
         },
         {
-            "beat": 132.5,
-            "type": 3,
-            "role": 0,
-            "duration": 0.0,
-            "targetID": "",
-            "noteType": 0
-        },
-        {
-            "beat": 133.0,
-            "type": 3,
-            "role": 0,
-            "duration": 0.0,
-            "targetID": "",
-            "noteType": 0
-        },
-        {
             "beat": 136.0,
             "type": 3,
             "role": 0,
@@ -1084,6 +1068,22 @@
         },
         {
             "beat": 152.0,
+            "type": 3,
+            "role": 0,
+            "duration": 0.0,
+            "targetID": "",
+            "noteType": 0
+        },
+        {
+            "beat": 132.0,
+            "type": 3,
+            "role": 0,
+            "duration": 0.0,
+            "targetID": "",
+            "noteType": 0
+        },
+        {
+            "beat": 132.5,
             "type": 3,
             "role": 0,
             "duration": 0.0,

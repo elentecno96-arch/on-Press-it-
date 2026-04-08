@@ -806,18 +806,6 @@ MonoBehaviour:
     duration: 0
     targetID: 
     noteType: 0
-  - beat: 132.5
-    type: 3
-    role: 0
-    duration: 0
-    targetID: 
-    noteType: 0
-  - beat: 133
-    type: 3
-    role: 0
-    duration: 0
-    targetID: 
-    noteType: 0
   - beat: 136
     type: 3
     role: 0
@@ -843,6 +831,18 @@ MonoBehaviour:
     targetID: 
     noteType: 0
   - beat: 152
+    type: 3
+    role: 0
+    duration: 0
+    targetID: 
+    noteType: 0
+  - beat: 132
+    type: 3
+    role: 0
+    duration: 0
+    targetID: 
+    noteType: 0
+  - beat: 132.5
     type: 3
     role: 0
     duration: 0

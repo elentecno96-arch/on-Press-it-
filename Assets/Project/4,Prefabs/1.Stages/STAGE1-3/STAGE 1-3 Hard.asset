@@ -25,10 +25,10 @@ MonoBehaviour:
     backgroundPrefab: {fileID: 8384158712217755210, guid: e9590f6f20d58c04a8535c3c6a26f48c, type: 3}
     playerPrefab: {fileID: 6624654381867523225, guid: 9b8592670ee001546af040c8696aaa88, type: 3}
     notePrefab: {fileID: 1971174222979983983, guid: 06bfb19af13f0674c9f8bb9bc3e2ef1b, type: 3}
-  perfectWindow: 0.1
-  greatWindow: 0.15
-  goodWindow: 0.2
-  missWindow: 0.25
+  perfectWindow: 0.14
+  greatWindow: 0.23
+  goodWindow: 0.3
+  missWindow: 0.36
   playStartTime: 4
   endPosition: 76
   actions:
@@ -179,7 +179,7 @@ MonoBehaviour:
   - beat: 16
     type: 2
     role: 0
-    duration: 3
+    duration: 2
     targetID: Stage3_Stone
     noteType: 1
   - beat: 24
