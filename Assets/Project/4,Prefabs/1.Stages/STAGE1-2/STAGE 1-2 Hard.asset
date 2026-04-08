@@ -10,14 +10,14 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d04876fa1117aa34b9eea9b52f8b6fae, type: 3}
-  m_Name: STAGE 1-2
+  m_Name: STAGE 1-2 Hard
   m_EditorClassIdentifier: 
-  stageImage: {fileID: 21300000, guid: 6f9bc73fa10f52d4286bcbaaf91c0cb2, type: 3}
+  stageImage: {fileID: 21300000, guid: 7392b88946c320646a10e14950ddbf01, type: 3}
   stageIndex: 2
   skipGuide: 0
   isClear: 0
   bestScore: 0
-  stageName: "\uC2A4\uD14C\uC774\uC9C0 1-2 \uB178\uB9D0"
+  stageName: "\uC2A4\uD14C\uC774\uC9C0 1-2 \uD558\uB4DC"
   masterTrack: {fileID: 8300000, guid: 0a3e6bb1789aab944b10f84eab038afa, type: 3}
   bpm: 120
   themeResources:

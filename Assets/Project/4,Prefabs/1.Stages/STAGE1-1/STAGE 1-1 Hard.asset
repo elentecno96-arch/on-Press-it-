@@ -12,12 +12,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d04876fa1117aa34b9eea9b52f8b6fae, type: 3}
   m_Name: STAGE 1-1 Hard
   m_EditorClassIdentifier: 
-  stageImage: {fileID: 21300000, guid: 43aa8638ec7ac40debfb4e82e97fdda7, type: 3}
+  stageImage: {fileID: 21300000, guid: 57df3493a7865a147a50c1110a21103b, type: 3}
   stageIndex: 1
   skipGuide: 0
   isClear: 0
   bestScore: 0
-  stageName: "\uC2A4\uD14C\uC774\uC9C0 1-1"
+  stageName: "\uC2A4\uD14C\uC774\uC9C0 1-1 \uD558\uB4DC"
   masterTrack: {fileID: 8300000, guid: 9589fa5c2e3aba84e80ecc416fb92106, type: 3}
   bpm: 120
   themeResources:
@@ -30,7 +30,7 @@ MonoBehaviour:
   goodWindow: 0.3
   missWindow: 0.36
   playStartTime: 4
-  endPosition: 54
+  endPosition: 80
   actions:
   - beat: 9
     type: 3

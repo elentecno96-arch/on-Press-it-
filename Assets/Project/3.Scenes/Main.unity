@@ -166,6 +166,14 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: 151
       objectReference: {fileID: 0}
+    - target: {fileID: 3532325347976620294, guid: 8b17b056bb1b64242bb7adaa7857c7ff, type: 3}
+      propertyPath: m_fontAsset
+      value: 
+      objectReference: {fileID: 11400000, guid: e4ed84dd2addcca46b72f90235640a5d, type: 2}
+    - target: {fileID: 3532325347976620294, guid: 8b17b056bb1b64242bb7adaa7857c7ff, type: 3}
+      propertyPath: m_hasFontAssetChanged
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 6508458119255633763, guid: 8b17b056bb1b64242bb7adaa7857c7ff, type: 3}
       propertyPath: m_Pivot.x
       value: 0.5
@@ -949,10 +957,14 @@ PrefabInstance:
       objectReference: {fileID: 314011203}
     - target: {fileID: 1626633799590420943, guid: 94f8ede88aa5551469dc0ca66a6f3500, type: 3}
       propertyPath: stageVariants.Array.size
-      value: 1
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 1626633799590420943, guid: 94f8ede88aa5551469dc0ca66a6f3500, type: 3}
       propertyPath: stageVariants.Array.data[0]
+      value: 
+      objectReference: {fileID: 11400000, guid: 51cd5eab8563a1548b1bcd1c7f8fae57, type: 2}
+    - target: {fileID: 1626633799590420943, guid: 94f8ede88aa5551469dc0ca66a6f3500, type: 3}
+      propertyPath: stageVariants.Array.data[1]
       value: 
       objectReference: {fileID: 11400000, guid: 23fd7f346f6200c42b7950eedb291d37, type: 2}
     - target: {fileID: 2025690797522571624, guid: 94f8ede88aa5551469dc0ca66a6f3500, type: 3}
@@ -1581,10 +1593,14 @@ PrefabInstance:
       objectReference: {fileID: 314011201}
     - target: {fileID: 7063368833571658944, guid: 94f8ede88aa5551469dc0ca66a6f3500, type: 3}
       propertyPath: stageVariants.Array.size
-      value: 1
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 7063368833571658944, guid: 94f8ede88aa5551469dc0ca66a6f3500, type: 3}
       propertyPath: stageVariants.Array.data[0]
+      value: 
+      objectReference: {fileID: 11400000, guid: 26d379338b407ad47b9f54661b313405, type: 2}
+    - target: {fileID: 7063368833571658944, guid: 94f8ede88aa5551469dc0ca66a6f3500, type: 3}
+      propertyPath: stageVariants.Array.data[1]
       value: 
       objectReference: {fileID: 11400000, guid: 5c81803f925b2de4a881b898a89cf78b, type: 2}
     - target: {fileID: 7098410215209660182, guid: 94f8ede88aa5551469dc0ca66a6f3500, type: 3}
