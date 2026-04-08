@@ -102,25 +102,37 @@ namespace Project.UI.Profile.Presenter
             }
         }
 
+        // ProfilePresenter.cs
+
         private void UpdateMainPanel()
         {
-            var playerData = PlayerManager.Instance.Data;
+            var pData = PlayerManager.Instance.Data;
 
-            int clearedCount = playerData.achievements.FindAll(a => a.isUnlocked).Count;
+            int clearedStages = pData.stageRecords.FindAll(r => r.bestScore > 0).Count;
+            int totalStages = 28;
 
-            int totalScore = 0;
-            foreach (var record in playerData.stageRecords)
+            int unlockedAchi = pData.achievements.FindAll(a => a.isUnlocked).Count;
+            int totalAchi = 100; 
+
+            string rankStr = "1위";
+            string rankPercent = "0.1%";
+
+            if (mainView != null)
             {
-                totalScore += (int)record.bestScore;
+                mainView.Setup(
+                    defaultProfileIcon,      // 캐릭터 아이콘
+                    pData.userName,          // 유저 닉네임
+                    rankStr,                 // 글로벌 랭킹 텍스트
+                    rankPercent,             // 상위 % 텍스트
+                    clearedStages,           // 현재 클리어 수
+                    totalStages,             // 전체 스테이지 수
+                    unlockedAchi,            // 현재 업적 달성 수
+                    totalAchi                // 전체 업적 수
+                );
             }
-
-            mainView.Setup(
-                defaultProfileIcon,
-                playerData.userName,
-                clearedCount,
-                totalScore
-            );
         }
+
+
         public void Show()
         {
             gameObject.SetActive(true);
@@ -135,6 +147,7 @@ namespace Project.UI.Profile.Presenter
 
             ChangeTab(ProfileTabType.Main);
         }
+
 
         public void Hide()
         {

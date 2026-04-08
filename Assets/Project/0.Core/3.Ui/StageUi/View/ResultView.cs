@@ -6,11 +6,9 @@ using UnityEngine.UI;
 
 namespace Project.Core.Ui.StageUi.View
 {
-    /// <summary>
-    /// Game씬의 결과창 Ui View
-    /// </summary>
     public class ResultView : MonoBehaviour
     {
+        [SerializeField] private TextMeshProUGUI currentScoreText; // 이미지 중앙의 큰 점수 (1,000,000)
         [SerializeField] private TextMeshProUGUI perfact_T;
         [SerializeField] private TextMeshProUGUI great_T;
         [SerializeField] private TextMeshProUGUI good_T;
@@ -19,7 +17,8 @@ namespace Project.Core.Ui.StageUi.View
         [SerializeField] private Button retry;
         [SerializeField] private Button cancel;
 
-        [SerializeField] private TextMeshProUGUI[] bestScoreTexts; // 각 등급별 최고 기록을 표시할 텍스트 배열
+        [SerializeField] private TextMeshProUGUI[] bestNameTexts;  // 본인 이름 표시용 (이름)
+        [SerializeField] private TextMeshProUGUI[] bestScoreTexts; // 최고 기록 점수 표시용 (10,000,000)
 
         private bool _isActionStarted = false;
 
@@ -28,7 +27,6 @@ namespace Project.Core.Ui.StageUi.View
             retry.onClick.AddListener(() => {
                 if (_isActionStarted) return;
                 _isActionStarted = true;
-
                 var currentData = GameManager.Instance.CurrentStageData;
                 GameManager.Instance.StartStage(currentData).Forget();
             });
@@ -36,17 +34,18 @@ namespace Project.Core.Ui.StageUi.View
             cancel.onClick.AddListener(() => {
                 if (_isActionStarted) return;
                 _isActionStarted = true;
-
                 LoadingManager.Instance.LoadSceneAsync("Main").Forget();
             });
 
             gameObject.SetActive(false);
         }
 
-        public void DisplayResult(int p, int gr, int go, int m)
+        public void DisplayResult(int score, int p, int gr, int go, int m)
         {
             _isActionStarted = false;
             gameObject.SetActive(true);
+
+            if (currentScoreText != null) currentScoreText.text = $"{score:N0}";
 
             perfact_T.text = p.ToString();
             great_T.text = gr.ToString();
@@ -61,6 +60,8 @@ namespace Project.Core.Ui.StageUi.View
             var currentStage = GameManager.Instance.CurrentStageData;
             if (currentStage == null) return;
 
+            string myName = PlayerManager.Instance.Data.userName;
+
             var topRecords = PlayerManager.Instance.GetTopThreeRecords(currentStage.stageIndex);
 
             for (int i = 0; i < bestScoreTexts.Length; i++)
@@ -68,17 +69,23 @@ namespace Project.Core.Ui.StageUi.View
                 if (i < topRecords.Count)
                 {
                     var record = topRecords[i];
+
+                    if (i < bestNameTexts.Length && bestNameTexts[i] != null)
+                        bestNameTexts[i].text = myName;
+
                     if (record.score > 0)
                     {
-                        bestScoreTexts[i].text = $"{record.score:N0} ({record.date})";
+                        bestScoreTexts[i].text = $"{record.score:N0}";
                     }
                     else
                     {
-                        bestScoreTexts[i].text = "-";
+                        bestScoreTexts[i].text = "0";
                     }
                 }
                 else
                 {
+                    if (i < bestNameTexts.Length && bestNameTexts[i] != null)
+                        bestNameTexts[i].text = "-";
                     bestScoreTexts[i].text = "-";
                 }
             }

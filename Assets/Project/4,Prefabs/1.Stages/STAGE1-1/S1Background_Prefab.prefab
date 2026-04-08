@@ -96,17 +96,22 @@ MonoBehaviour:
   - {fileID: 21300000, guid: 4a57142b88c0f8841b9dee0b668207d0, type: 3}
   - {fileID: 21300000, guid: 0541f14640d3f5c41a43d2627931aabd, type: 3}
   actionFrames: []
-  successFrames: []
+  successFrames:
+  - {fileID: 21300000, guid: fffb7511f4537f24b98f12d668c1569f, type: 3}
+  - {fileID: 21300000, guid: 8b9658d6a0a14524da245dcfd1650c1b, type: 3}
+  - {fileID: 21300000, guid: b0d156830bf8f784d9afa23491bf3a53, type: 3}
+  - {fileID: 21300000, guid: 50c2fbc132e5acc498f10a0d6a2999d4, type: 3}
   missFrames: []
   idleFrameRate: 0.3
   actionFrameRate: 0.1
-  successFrameRate: 0.1
+  successFrameRate: 0.3
   missFrameRate: 0.1
   audioSource: {fileID: -2289106992875343597}
   actionSfx: {fileID: 0}
   successSfx: {fileID: 0}
   missSfx: {fileID: 0}
   countSfx: {fileID: 0}
+  reactionDuration: 0.15
 --- !u!82 &-2289106992875343597
 AudioSource:
   m_ObjectHideFlags: 0

@@ -1,5 +1,6 @@
 using Cysharp.Threading.Tasks;
 using Project.Core.Managers;
+using Project.Core.Ui.GlobalUi;
 using Project.Rhythm.Data;
 using System.Collections.Generic;
 using UnityEngine;
@@ -70,20 +71,16 @@ public class MainUiPresenter : MonoBehaviour
     // 슬롯 클릭 시 호출 (배열 데이터를 안전하게 처리)
     public void HandleSlotClicked(StageData[] variants)
     {
-        if (variants == null || variants.Length == 0)
-        {
-            Debug.LogError("[MainUiPresenter] 클릭된 슬롯에 데이터가 없습니다!");
-            return;
-        }
+        if (variants == null || variants.Length == 0) return;
 
         _soundView.PlaySfxB();
         _activeVariants = variants;
-        _currentDifficultyIndex = (variants.Length > 1) ? 1 : 0;
+
+        _currentDifficultyIndex = 0;
 
         SyncToGameManager();
 
         _stageView.UpdateStageDetails(_activeVariants[_currentDifficultyIndex]);
-
         _stageView.Show();
     }
 
@@ -96,6 +93,22 @@ public class MainUiPresenter : MonoBehaviour
 
         if (nextIndex >= 0 && nextIndex < _activeVariants.Length)
         {
+            StageData targetData = _activeVariants[nextIndex];
+
+            if (targetData.difficulty == StageData.Difficulty.Hard)
+            {
+                if (PlayerManager.Instance != null && !PlayerManager.Instance.IsStageCleared(4))
+                {
+                    Debug.LogWarning("<color=yellow>[MainUI]</color> 보스 스테이지(4번)를 클리어해야 하드 모드가 해금됩니다!");
+
+                    if (GlobalUIPresenter.Instance != null)
+                        GlobalUIPresenter.Instance.ShowNotification("보스 스테이지를 먼저 클리어하세요!");
+
+                    return;
+                }
+            }
+
+            // 해금되었거나 노말 난이도인 경우 변경 확정
             _currentDifficultyIndex = nextIndex;
             _soundView.PlaySfxA();
 

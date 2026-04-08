@@ -217,9 +217,12 @@ namespace Project.Rhythm.Presentation
 
             if (resultView != null)
             {
+                int scoreToDisplay = 0;
+
                 if (_judgementSystem != null && _stageData != null)
                 {
                     float finalScore = _judgementSystem.CalculateFinalScore();
+                    scoreToDisplay = Mathf.RoundToInt(finalScore);
 
                     PlayerManager.Instance.SaveStageResult(_stageData.stageIndex, finalScore);
 
@@ -231,7 +234,7 @@ namespace Project.Rhythm.Presentation
                         );
                     }
                 }
-                resultView.DisplayResult(p, gr, go, m);
+                resultView.DisplayResult(scoreToDisplay, p, gr, go, m);
             }
         }
 
