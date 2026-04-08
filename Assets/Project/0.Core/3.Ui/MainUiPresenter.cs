@@ -14,6 +14,7 @@ public class MainUiPresenter : MonoBehaviour
     [SerializeField] private SettingUIView _settingView;
     [SerializeField] private StageUiView _stageView;
     [SerializeField] private MainUiSoundView _soundView;  // 사운드 전담 뷰
+    [SerializeField] private StoryImageSequenceUI_DOTween _cutsceneView;
 
     [Header("--- Stage Slots ---")]
     [SerializeField] private List<StageSlot> _stageSlots;
@@ -46,6 +47,8 @@ public class MainUiPresenter : MonoBehaviour
         // 이 과정이 끝나야 stageRecords에 실제 점수들이 채워집니다.
         Debug.Log("[MainUiPresenter] 최신 플레이어 데이터를 서버와 동기화합니다...");
         await PlayerManager.Instance.SyncWithServer();
+
+        TryPlayIntroCutscene();
 
         // UI 및 스테이지 해금 상태 갱신 (추가된 부분)
         _isSyncing = true;
@@ -291,6 +294,27 @@ public class MainUiPresenter : MonoBehaviour
         Debug.Log($"[MainUiPresenter] 진동 설정 변경 및 저장됨: {isOn}");
     }
 
+    private void TryPlayIntroCutscene()
+    {
+        var player = PlayerManager.Instance;
+
+        if (!player.Data.hasSeenIntroCutscene)
+        {
+            Debug.Log("[Cutscene] 신규 유저 → 인트로 컷씬 재생");
+
+            _cutsceneView.gameObject.SetActive(true);
+            _cutsceneView.RestartSequence();
+
+            player.Data.hasSeenIntroCutscene = true;
+            player.Save();
+        }
+    }
+
+    public void PlayCutsceneAgain()
+    {
+        _cutsceneView.gameObject.SetActive(true);
+        _cutsceneView.RestartSequence();
+    }
 
     public void HandleBgmVolumeChanged(float vol)
     {

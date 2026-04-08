@@ -13,6 +13,7 @@ namespace Project.Core.Systems.SaveLoad.Data
         public string userId = "";
 
         public bool isVibrationOn = true;
+        public bool hasSeenIntroCutscene = false;
 
         public List<StageSaveData> stageRecords = new();
         public List<DetailedStageRecord> detailedRecords = new(); //각 스테이지 기록을 담는 리스트
