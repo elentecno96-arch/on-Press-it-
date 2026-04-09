@@ -26,6 +26,9 @@ namespace Project.Core.Ui.StageUi.View
         {
             retry.onClick.AddListener(() => {
                 if (_isActionStarted) return;
+
+                AudioManager.Instance.PlayUISound(UISoundType.Check);
+
                 _isActionStarted = true;
                 var currentData = GameManager.Instance.CurrentStageData;
                 GameManager.Instance.StartStage(currentData).Forget();
@@ -33,6 +36,9 @@ namespace Project.Core.Ui.StageUi.View
 
             cancel.onClick.AddListener(() => {
                 if (_isActionStarted) return;
+
+                AudioManager.Instance.PlayUISound(UISoundType.Cancel);
+
                 _isActionStarted = true;
                 LoadingManager.Instance.LoadSceneAsync("Main").Forget();
             });

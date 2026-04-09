@@ -7,6 +7,14 @@ using System; // Action 사용을 위해 추가되었습니다.
 
 namespace Project.Core.Managers
 {
+    public enum UISoundType
+    {
+        Click,      // 일반 버튼
+        Check,      // 확인/완료
+        Cancel,     // 취소/뒤로가기
+        Open,       // 팝업 열기
+        Error       // 경고/입력 제한
+    }
     /// <summary>
     /// 전역 오디오 담당 매지저
     /// </summary>
@@ -30,6 +38,15 @@ namespace Project.Core.Managers
         public float SfxVolume => _sfxVolume;
 
         public event Action<float, float> OnRequestAudioSave;
+
+        [SerializeField] private AudioClip uiClickClip;
+        [SerializeField] private AudioClip uiCheckClip;
+        [SerializeField] private AudioClip uiCancelClip;
+        [SerializeField] private AudioClip uiOpenClip;
+        [SerializeField] private AudioClip uiErrorClip;
+        [SerializeField] private AudioClip mainMenuBgmClip;
+
+        public AudioClip MainMenuBgmClip => mainMenuBgmClip;
 
         protected override void Awake()
         {
@@ -60,6 +77,23 @@ namespace Project.Core.Managers
             IsInitialized = true;
         }
 
+        public void PlayUISound(UISoundType type)
+        {
+            AudioClip targetClip = type switch
+            {
+                UISoundType.Click => uiClickClip,
+                UISoundType.Check => uiCheckClip,
+                UISoundType.Cancel => uiCancelClip,
+                UISoundType.Open => uiOpenClip,
+                UISoundType.Error => uiErrorClip,
+                _ => null
+            };
+
+            if (targetClip != null)
+            {
+                PlaySFX(targetClip);
+            }
+        }
         public void AudioSetting(PlayerData playerData)
         {
             SetVolume("BGM",playerData.bgmVolume);

@@ -14,7 +14,7 @@ public class MainUiPresenter : MonoBehaviour
     [Header("--- Views ---")]
     [SerializeField] private SettingUIView _settingView;
     [SerializeField] private StageUiView _stageView;
-    [SerializeField] private MainUiSoundView _soundView;  // 사운드 전담 뷰
+    //[SerializeField] private MainUiSoundView _soundView;  // 사운드 전담 뷰
     [SerializeField] private StoryImageSequenceUI_DOTween _cutsceneView;
 
     [Header("--- Stage Slots ---")]
@@ -60,8 +60,7 @@ public class MainUiPresenter : MonoBehaviour
 
         _isSyncing = false;
 
-        // BGM 재생 (기존 유지)
-        _soundView.PlayMainBgmWithDelay(1.0f).Forget();
+        AudioManager.Instance.PlayBGM(AudioManager.Instance.MainMenuBgmClip);
 
         // 난이도 변경 이벤트 구독 (OnEnable에서도 수행하지만 Start 시점 보장)
         _stageView.OnDifficultyDirectionClicked -= HandleDifficultyChange;
@@ -73,7 +72,7 @@ public class MainUiPresenter : MonoBehaviour
     {
         if (variants == null || variants.Length == 0) return;
 
-        _soundView.PlaySfxB();
+        AudioManager.Instance.PlayUISound(UISoundType.Open);
         _activeVariants = variants;
 
         _currentDifficultyIndex = 0;
@@ -99,6 +98,7 @@ public class MainUiPresenter : MonoBehaviour
             {
                 if (PlayerManager.Instance != null && !PlayerManager.Instance.IsStageCleared(4))
                 {
+                    AudioManager.Instance.PlayUISound(UISoundType.Error);
                     Debug.LogWarning("<color=yellow>[MainUI]</color> 보스 스테이지(4번)를 클리어해야 하드 모드가 해금됩니다!");
 
                     if (GlobalUIPresenter.Instance != null)
@@ -110,7 +110,7 @@ public class MainUiPresenter : MonoBehaviour
 
             // 해금되었거나 노말 난이도인 경우 변경 확정
             _currentDifficultyIndex = nextIndex;
-            _soundView.PlaySfxA();
+            AudioManager.Instance.PlayUISound(UISoundType.Click);
 
             SyncToGameManager();
             _stageView.UpdateStageDetails(_currentSelectedStage);
@@ -180,38 +180,23 @@ public class MainUiPresenter : MonoBehaviour
 
     private void OnEnable()
     {
-        // 중복 구독 방지를 위해 -= 후 += 진행
-        _settingView.OnSettingsClick -= OpenSettings;
         _settingView.OnSettingsClick += OpenSettings;
-        _settingView.OnSettingsCloseClick -= CloseSettings;
         _settingView.OnSettingsCloseClick += CloseSettings;
-        _settingView.OnBgmVolumeChanged -= HandleBgmVolumeChanged;
         _settingView.OnBgmVolumeChanged += HandleBgmVolumeChanged;
-        _settingView.OnSfxVolumeChanged -= HandleSfxVolumeChanged;
         _settingView.OnSfxVolumeChanged += HandleSfxVolumeChanged;
-        _settingView.OnResetSettingsClick -= HandleResetSettings;
         _settingView.OnResetSettingsClick += HandleResetSettings;
-        _settingView.OnVibrationChanged -= HandleVibrationChanged;
         _settingView.OnVibrationChanged += HandleVibrationChanged;
 
         if (_stageSlots != null)
         {
             foreach (var slot in _stageSlots)
             {
-                if (slot != null)
-                {
-                    slot.OnSlotClicked -= HandleSlotClicked;
-                    slot.OnSlotClicked += HandleSlotClicked;
-                }
+                if (slot != null) slot.OnSlotClicked += HandleSlotClicked;
             }
         }
 
-        _stageView.OnPlayClick -= HandlePlayGame;
         _stageView.OnPlayClick += HandlePlayGame;
-        _stageView.OnCloseClick -= HideStageView;
         _stageView.OnCloseClick += HideStageView;
-        _stageView.OnDifficultyDirectionClicked -= HandleDifficultyChange;
-        _stageView.OnDifficultyDirectionClicked += HandleDifficultyChange;
     }
 
     private void OnDisable()
@@ -246,11 +231,11 @@ public class MainUiPresenter : MonoBehaviour
 
     private void SyncUiWithAudio()
     {
-        if (_soundView == null || _settingView == null || PlayerManager.Instance == null) return;
+        if (_settingView == null || PlayerManager.Instance == null) return;
 
         _settingView.SetSettingValues(
-            _soundView.BgmVolume,
-            _soundView.SfxVolume,
+            AudioManager.Instance.BgmVolume,
+            AudioManager.Instance.SfxVolume,
             PlayerManager.Instance.Data.isVibrationOn
         );
     }
@@ -260,39 +245,32 @@ public class MainUiPresenter : MonoBehaviour
         try
         {
             _isSyncing = true;
-            _soundView.PlaySfxC();
+            AudioManager.Instance.PlayUISound(UISoundType.Check);
 
-            // 1. 데이터 리셋
-            _soundView.SetVolume("BGM", DefaultVolume);
-            _soundView.SetVolume("SFX", DefaultVolume);
+            AudioManager.Instance.SetVolume("BGM", DefaultVolume);
+            AudioManager.Instance.SetVolume("SFX", DefaultVolume);
 
-            bool defaultVib = true;
             if (PlayerManager.Instance != null)
             {
-                PlayerManager.Instance.Data.isVibrationOn = defaultVib;
+                PlayerManager.Instance.Data.isVibrationOn = true;
                 PlayerManager.Instance.Save();
             }
 
-            _settingView.SetSettingValues(DefaultVolume, DefaultVolume, defaultVib);
+            _settingView.SetSettingValues(DefaultVolume, DefaultVolume, true);
         }
-        finally
-        {
-            _isSyncing = false;
-        }
+        finally { _isSyncing = false; }
     }
 
     private void SyncUiWithSettings()
     {
-        if (_soundView == null || _settingView == null || PlayerManager.Instance == null) return;
+        if (_settingView == null || PlayerManager.Instance == null) return;
 
         _isSyncing = true;
-
-        float bgm = _soundView.BgmVolume;
-        float sfx = _soundView.SfxVolume;
-        bool vib = PlayerManager.Instance.Data.isVibrationOn;
-
-        _settingView.SetSettingValues(bgm, sfx, vib);
-
+        _settingView.SetSettingValues(
+            AudioManager.Instance.BgmVolume,
+            AudioManager.Instance.SfxVolume,
+            PlayerManager.Instance.Data.isVibrationOn
+        );
         _isSyncing = false;
     }
 
@@ -331,23 +309,19 @@ public class MainUiPresenter : MonoBehaviour
 
     public void HandleBgmVolumeChanged(float vol)
     {
-        _soundView.SetVolume("BGM", vol);
+        if (_isSyncing) return;
+        AudioManager.Instance.SetVolume("BGM", vol);
     }
 
     public void HandleSfxVolumeChanged(float vol)
     {
-        _soundView.SetVolume("SFX", vol);
-
-        // [중요] 동기화나 리셋 중이 아닐 때(사용자가 직접 조작할 때)만 효과음 재생
-        if (!_isSyncing)
-        {
-            _soundView.PlaySfxC();
-        }
+        if (_isSyncing) return;
+        AudioManager.Instance.SetVolume("SFX", vol);
     }
 
     private void OpenSettings()
     {
-        _soundView.PlaySfxA();
+        AudioManager.Instance.PlayUISound(UISoundType.Open);
 
         SyncUiWithSettings();
 
@@ -356,14 +330,14 @@ public class MainUiPresenter : MonoBehaviour
 
     private void CloseSettings()
     {
-        _soundView.PlaySfxC();
+        AudioManager.Instance.PlayUISound(UISoundType.Cancel);
         _settingView.ShowSettings(false);
-        _soundView.SaveAudioSettings(); // 저장 명령 위임
+        AudioManager.Instance.AudioSaveSettings();
     }
 
     private void HideStageView()
     {
-        _soundView.PlaySfxC();
+        AudioManager.Instance.PlayUISound(UISoundType.Cancel);
         _stageView.Hide();
     }
 
@@ -371,9 +345,9 @@ public class MainUiPresenter : MonoBehaviour
     {
         if (_currentSelectedStage != null)
         {
-            _soundView.PlaySfxC();
-            _soundView.StopBgm();
+            AudioManager.Instance.PlayUISound(UISoundType.Check);
+            AudioManager.Instance.StopBGM();
             GameManager.Instance.StartStage(_currentSelectedStage).Forget();
         }
-    }    
+    }
 }

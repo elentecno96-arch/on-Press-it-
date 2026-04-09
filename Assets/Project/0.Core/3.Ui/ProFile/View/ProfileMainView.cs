@@ -1,3 +1,4 @@
+using Project.Core.Managers;
 using System;
 using TMPro;
 using UnityEngine;
@@ -39,6 +40,8 @@ namespace Project.UI.Profile.View
         {
             if (!_isEditMode)
             {
+                AudioManager.Instance.PlayUISound(UISoundType.Click);
+
                 _isEditMode = true;
                 nameInputField.interactable = true;
                 nameInputField.ActivateInputField(); 
@@ -46,6 +49,8 @@ namespace Project.UI.Profile.View
             }
             else
             {
+                AudioManager.Instance.PlayUISound(UISoundType.Check);
+
                 _isEditMode = false;
                 nameInputField.interactable = false;
                 if (editBtnText != null) editBtnText.text = "변경";

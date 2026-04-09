@@ -1,3 +1,4 @@
+using Project.Core.Managers;
 using Project.UI.Profile.Data;
 using Project.UI.Profile.View;
 using System.Collections.Generic;
@@ -45,7 +46,13 @@ namespace Project.UI.Profile.View
         private void ChangePage(int direction)
         {
             int nextIndex = _currentPageIndex + direction;
-            if (nextIndex < 0 || nextIndex >= pages.Length) return;
+
+            if (nextIndex < 0 || nextIndex >= pages.Length)
+            {
+                AudioManager.Instance.PlayUISound(UISoundType.Error);
+                return;
+            }
+            AudioManager.Instance.PlayUISound(UISoundType.Click);
 
             _currentPageIndex = nextIndex;
             UpdateUI();
