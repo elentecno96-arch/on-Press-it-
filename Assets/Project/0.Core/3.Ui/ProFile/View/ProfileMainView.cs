@@ -61,7 +61,7 @@ namespace Project.UI.Profile.View
             if (nameInputField != null) nameInputField.text = playerName;
 
             globalRankText.text = rank;
-            rankPercentText.text = $"상위 {rankPercent}";
+            rankPercentText.text = $" {rankPercent}";
 
             stageClearCountText.text = $"{clearedStage}/{totalStage}";
             float stageRate = (float)clearedStage / totalStage * 100f;

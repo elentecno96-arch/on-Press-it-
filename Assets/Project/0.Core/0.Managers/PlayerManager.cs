@@ -116,10 +116,13 @@ namespace Project.Core.Managers
 
         public async UniTask SyncWithServer()
         {
-            // 서버 동기화 로직 위임
             await _syncServer.SyncFromCloud(Data);
 
-            // 병합 후 UI 갱신 알림
+            if (FirebaseManager.Instance != null)
+            {
+                await FirebaseManager.Instance.RefreshMyRankData(GetTotalSumScore());
+            }
+
             OnTotalScoreUpdated?.Invoke(GetTotalSumScore());
             OnNameChanged?.Invoke(Data.userName);
 
@@ -209,12 +212,16 @@ namespace Project.Core.Managers
         /// 외부(Firebase 등)에서 내 랭킹 정보를 갱신할 때 호출합니다.
         /// </summary>
         /// <param name="newRank">새로운 순위</param>
-        public void UpdateRank(int newRank)
+        public void UpdateRank(int newRank, float newPercent)
         {
-            // 이벤트를 발생시켜 UI 등이 순위 변경을 알 수 있게 합니다.
+            if (Data == null) return;
+
+            Data.currentRank = newRank;
+            Data.currentPercent = newPercent;
+
             OnRankUpdated?.Invoke(newRank);
 
-            Debug.Log($"[PlayerManager] 내 랭킹 업데이트됨: {newRank}위");
+            Save();
         }
 
         private void OnDisable()

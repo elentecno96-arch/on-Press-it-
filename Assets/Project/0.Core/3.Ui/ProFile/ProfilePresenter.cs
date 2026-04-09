@@ -47,6 +47,12 @@ namespace Project.UI.Profile.Presenter
                 mainView.OnNameChanged += NameChanged;
             }
 
+            if (PlayerManager.Instance != null)
+            {
+                PlayerManager.Instance.OnRankUpdated -= HandleRankUpdate;
+                PlayerManager.Instance.OnRankUpdated += HandleRankUpdate;
+            }
+
             gameObject.SetActive(false);
 
             Debug.Log("[ProfilePresenter] 초기화 및 버튼 연결 완료");
@@ -62,6 +68,11 @@ namespace Project.UI.Profile.Presenter
             if (GlobalUIPresenter.Instance != null)
                 GlobalUIPresenter.Instance.ShowNotification("닉네임이 변경되었습니다.");
 
+            UpdateMainPanel();
+        }
+
+        private void HandleRankUpdate(int newRank)
+        {
             UpdateMainPanel();
         }
 
@@ -109,13 +120,13 @@ namespace Project.UI.Profile.Presenter
             var pData = PlayerManager.Instance.Data;
 
             int clearedStages = pData.stageRecords.FindAll(r => r.bestScore > 0).Count;
-            int totalStages = 28;
+            int totalStages = 7;
 
             int unlockedAchi = pData.achievements.FindAll(a => a.isUnlocked).Count;
-            int totalAchi = 100; 
+            int totalAchi = 100;
 
-            string rankStr = "1위";
-            string rankPercent = "0.1%";
+            string rankStr = pData.currentRank > 0 ? $"{pData.currentRank}" : "조회 중..";
+            string rankPercent = pData.currentRank > 0 ? $"{pData.currentPercent:F1}%" : "계산 중..";
 
             if (mainView != null)
             {
@@ -162,6 +173,10 @@ namespace Project.UI.Profile.Presenter
 
         private void OnDestroy()
         {
+            if (PlayerManager.Instance != null)
+            {
+                PlayerManager.Instance.OnRankUpdated -= HandleRankUpdate;
+            }
             if (mainView != null)
             {
                 mainView.OnNameChanged -= NameChanged;

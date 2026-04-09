@@ -198,13 +198,15 @@ namespace Project.Core.Managers
                 _audioTimeline.StartTimeline();
                 await UniTask.WaitUntil(() => _audioTimeline.GetStageTime() >= data.endPosition, cancellationToken: token);
 
+                float finalScore = _judgementSystem.CalculateFinalScore();
+
                 // 1. 점수 저장 전, 최초 클리어 여부를 미리 계산합니다.
                 bool isFirstClear = false;
                 if (PlayerManager.Instance != null && PlayerManager.Instance.Data != null)
                 {
                     var record = PlayerManager.Instance.Data.stageRecords.Find(r => r.stageIndex == data.stageIndex);
                     // 기록이 없거나 베스트 점수가 0이면 최초 클리어입니다.
-                    if (record == null || record.bestScore <= 0) isFirstClear = true;
+                    if (record == null || record.bestScore <= 70000) isFirstClear = true;
                 }
 
                 // 2. 점수 계산 및 저장은 JudgementSystem이 담당 (데이터 무결성)
@@ -214,12 +216,12 @@ namespace Project.Core.Managers
                 _activeStageData.SetPlayComplete(true);
 
                 // 4. 데이터 수집 및 업적 체크
-                int p = _judgementSystem.GetCount(JudgeResult.Perfect);               
+                int p = _judgementSystem.GetCount(JudgeResult.Perfect);
 
                 // 5. 업적 매니저 호출 (미리 계산한 isFirstClear로 전달합니다)
                 if (AchievementManager.Instance != null)
                 {
-                    AchievementManager.Instance.CheckStageAchievements(data, p, isFirstClear);
+                    AchievementManager.Instance.CheckStageAchievements(data, p, finalScore, isFirstClear);
                 }
                 // -----------------------------
 
