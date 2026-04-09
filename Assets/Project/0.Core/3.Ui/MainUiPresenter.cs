@@ -14,7 +14,6 @@ public class MainUiPresenter : MonoBehaviour
     [Header("--- Views ---")]
     [SerializeField] private SettingUIView _settingView;
     [SerializeField] private StageUiView _stageView;
-    //[SerializeField] private MainUiSoundView _soundView;  // 사운드 전담 뷰
     [SerializeField] private StoryImageSequenceUI_DOTween _cutsceneView;
 
     [Header("--- Stage Slots ---")]
@@ -197,6 +196,7 @@ public class MainUiPresenter : MonoBehaviour
 
         _stageView.OnPlayClick += HandlePlayGame;
         _stageView.OnCloseClick += HideStageView;
+        _stageView.OnDifficultyDirectionClicked += HandleDifficultyChange;
     }
 
     private void OnDisable()
@@ -245,7 +245,6 @@ public class MainUiPresenter : MonoBehaviour
         try
         {
             _isSyncing = true;
-            AudioManager.Instance.PlayUISound(UISoundType.Check);
 
             AudioManager.Instance.SetVolume("BGM", DefaultVolume);
             AudioManager.Instance.SetVolume("SFX", DefaultVolume);
@@ -321,8 +320,6 @@ public class MainUiPresenter : MonoBehaviour
 
     private void OpenSettings()
     {
-        AudioManager.Instance.PlayUISound(UISoundType.Open);
-
         SyncUiWithSettings();
 
         _settingView.ShowSettings(true);
@@ -330,14 +327,12 @@ public class MainUiPresenter : MonoBehaviour
 
     private void CloseSettings()
     {
-        AudioManager.Instance.PlayUISound(UISoundType.Cancel);
         _settingView.ShowSettings(false);
         AudioManager.Instance.AudioSaveSettings();
     }
 
     private void HideStageView()
     {
-        AudioManager.Instance.PlayUISound(UISoundType.Cancel);
         _stageView.Hide();
     }
 

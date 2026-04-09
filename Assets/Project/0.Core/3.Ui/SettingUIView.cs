@@ -137,9 +137,9 @@ public class SettingUIView : MonoBehaviour
     /// </summary>
     private void PlaySfxPreview()
     {
-        if (Time.time - _lastSfxPlayTime < SfxInterval) return;
+        if (Time.unscaledTime - _lastSfxPlayTime < SfxInterval) return;
 
         AudioManager.Instance.PlayUISound(UISoundType.Click);
-        _lastSfxPlayTime = Time.time;
+        _lastSfxPlayTime = Time.unscaledTime;
     }
 }
