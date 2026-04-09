@@ -4261,7 +4261,8 @@ PrefabInstance:
       propertyPath: _stageSlots.Array.data[3]
       value: 
       objectReference: {fileID: 314011200}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 2644660243334106111, guid: 2fcd811090827e740972114f5c7f25b1, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []
