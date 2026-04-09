@@ -69,6 +69,10 @@ namespace Project.Core.Ui.StageUi.View
                     if (settingPanel == null) return;
 
                     bool nextState = !settingPanel.activeSelf;
+
+                    if (nextState) AudioManager.Instance.PlayUISound(UISoundType.Open);
+                    else AudioManager.Instance.PlayUISound(UISoundType.Cancel);
+
                     settingPanel.SetActive(nextState);
 
                     if (nextState) StartAutoHideTimer().Forget();
@@ -79,6 +83,7 @@ namespace Project.Core.Ui.StageUi.View
             if (openRestartPopupBtn != null)
             {
                 openRestartPopupBtn.onClick.AddListener(() => {
+                    AudioManager.Instance.PlayUISound(UISoundType.Open);
                     if (restartConfirmPopup != null) restartConfirmPopup.SetActive(true);
                     RefreshTimer();
                 });
@@ -87,6 +92,7 @@ namespace Project.Core.Ui.StageUi.View
             if (restartCancelBtn != null)
             {
                 restartCancelBtn.onClick.AddListener(() => {
+                    AudioManager.Instance.PlayUISound(UISoundType.Cancel);
                     if (restartConfirmPopup != null) restartConfirmPopup.SetActive(false);
                     RefreshTimer();
                 });
@@ -100,6 +106,8 @@ namespace Project.Core.Ui.StageUi.View
                     var currentData = GameManager.Instance.CurrentStageData;
                     if (currentData != null)
                     {
+                        AudioManager.Instance.PlayUISound(UISoundType.Check);
+
                         _isActionStarted = true;
                         CancelTimer();
                         if (restartConfirmPopup != null) restartConfirmPopup.SetActive(false);
@@ -113,6 +121,7 @@ namespace Project.Core.Ui.StageUi.View
             if (openExitPopupBtn != null)
             {
                 openExitPopupBtn.onClick.AddListener(() => {
+                    AudioManager.Instance.PlayUISound(UISoundType.Open);
                     if (exitConfirmPopup != null) exitConfirmPopup.SetActive(true);
                     RefreshTimer();
                 });
@@ -121,6 +130,7 @@ namespace Project.Core.Ui.StageUi.View
             if (exitCancelBtn != null)
             {
                 exitCancelBtn.onClick.AddListener(() => {
+                    AudioManager.Instance.PlayUISound(UISoundType.Cancel);
                     if (exitConfirmPopup != null) exitConfirmPopup.SetActive(false);
                     RefreshTimer();
                 });
@@ -129,6 +139,7 @@ namespace Project.Core.Ui.StageUi.View
             if (exitConfirmBtn != null)
             {
                 exitConfirmBtn.onClick.AddListener(() => {
+                    AudioManager.Instance.PlayUISound(UISoundType.Check);
                     CancelTimer();
                     if (exitConfirmPopup != null) exitConfirmPopup.SetActive(false);
                     if (settingPanel != null) settingPanel.SetActive(false);
@@ -140,6 +151,7 @@ namespace Project.Core.Ui.StageUi.View
             {
                 muteButton.onClick.AddListener(() => {
                     _isMuted = !_isMuted;
+                    AudioManager.Instance.PlayUISound(UISoundType.Click);
                     AudioListener.volume = _isMuted ? 0f : 1f;
                     RefreshTimer();
                 });
@@ -150,6 +162,8 @@ namespace Project.Core.Ui.StageUi.View
                 vibrationButton.onClick.AddListener(() => {
                     if (PlayerManager.Instance != null && PlayerManager.Instance.Data != null)
                     {
+                        AudioManager.Instance.PlayUISound(UISoundType.Click);
+
                         bool currentVib = PlayerManager.Instance.Data.isVibrationOn;
                         PlayerManager.Instance.Data.isVibrationOn = !currentVib;
 

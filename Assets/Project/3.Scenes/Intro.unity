@@ -456,9 +456,33 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 629042843}
     - target: {fileID: 2768522855545072584, guid: c948a6933b97fe64eaad0c9a34a1f736, type: 3}
+      propertyPath: uiOpenClip
+      value: 
+      objectReference: {fileID: 8300000, guid: 20e1cf622ce84ab488f491d8e9855d2d, type: 3}
+    - target: {fileID: 2768522855545072584, guid: c948a6933b97fe64eaad0c9a34a1f736, type: 3}
       propertyPath: musicSource
       value: 
       objectReference: {fileID: 629042842}
+    - target: {fileID: 2768522855545072584, guid: c948a6933b97fe64eaad0c9a34a1f736, type: 3}
+      propertyPath: uiCheckClip
+      value: 
+      objectReference: {fileID: 8300000, guid: 61face0606353f240915ebdc779a6ac1, type: 3}
+    - target: {fileID: 2768522855545072584, guid: c948a6933b97fe64eaad0c9a34a1f736, type: 3}
+      propertyPath: uiClickClip
+      value: 
+      objectReference: {fileID: 8300000, guid: 20e1cf622ce84ab488f491d8e9855d2d, type: 3}
+    - target: {fileID: 2768522855545072584, guid: c948a6933b97fe64eaad0c9a34a1f736, type: 3}
+      propertyPath: uiErrorClip
+      value: 
+      objectReference: {fileID: 8300000, guid: 8e8cb5bedf23e334eb16f80c91e42db8, type: 3}
+    - target: {fileID: 2768522855545072584, guid: c948a6933b97fe64eaad0c9a34a1f736, type: 3}
+      propertyPath: uiCancelClip
+      value: 
+      objectReference: {fileID: 8300000, guid: 8e8cb5bedf23e334eb16f80c91e42db8, type: 3}
+    - target: {fileID: 2768522855545072584, guid: c948a6933b97fe64eaad0c9a34a1f736, type: 3}
+      propertyPath: mainMenuBgmClip
+      value: 
+      objectReference: {fileID: 8300000, guid: a84faf45e0164204db219efff4948c7c, type: 3}
     - target: {fileID: 4080338357289802496, guid: c948a6933b97fe64eaad0c9a34a1f736, type: 3}
       propertyPath: m_Name
       value: AudioManager
@@ -1223,6 +1247,10 @@ PrefabInstance:
     - target: {fileID: 4337290575179174275, guid: f538388cd76ea254296157df0a99c22b, type: 3}
       propertyPath: m_Name
       value: GameManager
+      objectReference: {fileID: 0}
+    - target: {fileID: 4337290575179174275, guid: f538388cd76ea254296157df0a99c22b, type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

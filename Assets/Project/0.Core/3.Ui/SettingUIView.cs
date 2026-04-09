@@ -1,4 +1,5 @@
 using DG.Tweening;
+using Project.Core.Managers;
 using System;
 using UnityEngine;
 using UnityEngine.UI;
@@ -24,21 +25,48 @@ public class SettingUIView : MonoBehaviour
     [SerializeField] private Slider sfxSlider;
     [SerializeField] private Toggle vibrationToggle;
 
+    private bool _isInitialSetting = false; // 초기 설정값 적용 여부 체크
+
+    private float _lastSfxPlayTime;
+    private const float SfxInterval = 0.12f;
+
     private void Awake()
     {
-        // 설정창 관련 버튼 이벤트 바인딩
-        settingsButton.onClick.AddListener(() => OnSettingsClick?.Invoke());
-        closeSettingsButton.onClick.AddListener(() => OnSettingsCloseClick?.Invoke());
-        resetSettingsButton.onClick.AddListener(() => OnResetSettingsClick?.Invoke());
+        settingsButton.onClick.AddListener(() => {
+            AudioManager.Instance.PlayUISound(UISoundType.Open);
+            OnSettingsClick?.Invoke();
+        });
 
-        // 오디오 슬라이더 이벤트 바인딩
-        bgmSlider.onValueChanged.AddListener(value => OnBgmVolumeChanged?.Invoke(value));
-        sfxSlider.onValueChanged.AddListener(value => OnSfxVolumeChanged?.Invoke(value));
+        closeSettingsButton.onClick.AddListener(() => {
+            AudioManager.Instance.PlayUISound(UISoundType.Cancel);
+            OnSettingsCloseClick?.Invoke();
+        });
+
+        resetSettingsButton.onClick.AddListener(() => {
+            AudioManager.Instance.PlayUISound(UISoundType.Check);
+            OnResetSettingsClick?.Invoke();
+        });
+
+        // 2. 오디오 슬라이더 이벤트 바인딩
+        bgmSlider.onValueChanged.AddListener(value => {
+            if (_isInitialSetting) return;
+            OnBgmVolumeChanged?.Invoke(value);
+        });
+
+        sfxSlider.onValueChanged.AddListener(value => {
+            if (_isInitialSetting) return;
+
+            OnSfxVolumeChanged?.Invoke(value);
+            PlaySfxPreview();
+        });
 
         if (vibrationToggle != null)
         {
             vibrationToggle.onValueChanged.AddListener(isOn =>
             {
+                if (_isInitialSetting) return;
+
+                AudioManager.Instance.PlayUISound(UISoundType.Click);
                 OnVibrationChanged?.Invoke(isOn);
 
                 if (isOn)
@@ -49,6 +77,7 @@ public class SettingUIView : MonoBehaviour
                 }
             });
         }
+
         if (settingsPanel != null) settingsPanel.localScale = Vector3.zero;
         if (settingsCanvasGroup != null) settingsCanvasGroup.alpha = 0f;
         settingsWindow.SetActive(false);
@@ -90,6 +119,8 @@ public class SettingUIView : MonoBehaviour
 
     public void SetSettingValues(float bgm, float sfx, bool isVib)
     {
+        _isInitialSetting = true;
+
         bgmSlider.value = bgm;
         sfxSlider.value = sfx;
 
@@ -97,5 +128,18 @@ public class SettingUIView : MonoBehaviour
         {
             vibrationToggle.SetIsOnWithoutNotify(isVib);
         }
+
+        _isInitialSetting = false; 
+    }
+
+    /// <summary>
+    /// SFX 볼륨 조절 시 유저가 크기를 체감할 수 있도록 짧은 효과음을 재생합니다.
+    /// </summary>
+    private void PlaySfxPreview()
+    {
+        if (Time.time - _lastSfxPlayTime < SfxInterval) return;
+
+        AudioManager.Instance.PlayUISound(UISoundType.Click);
+        _lastSfxPlayTime = Time.time;
     }
 }

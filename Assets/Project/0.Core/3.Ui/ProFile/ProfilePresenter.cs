@@ -99,6 +99,8 @@ namespace Project.UI.Profile.Presenter
 
             if (targetView != null)
             {
+                AudioManager.Instance.PlayUISound(UISoundType.Click);
+
                 targetView.SetVisible(true);
 
                 targetView.transform.DOKill();
@@ -148,6 +150,8 @@ namespace Project.UI.Profile.Presenter
         {
             gameObject.SetActive(true);
 
+            AudioManager.Instance.PlayUISound(UISoundType.Open);
+
             profilePanel.DOKill();
             profileCanvasGroup.DOKill();
 
@@ -162,6 +166,8 @@ namespace Project.UI.Profile.Presenter
 
         public void Hide()
         {
+            AudioManager.Instance.PlayUISound(UISoundType.Cancel);
+
             profilePanel.DOKill();
             profileCanvasGroup.DOKill();
 

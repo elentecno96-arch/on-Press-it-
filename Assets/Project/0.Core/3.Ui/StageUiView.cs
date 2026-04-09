@@ -1,9 +1,10 @@
 using DG.Tweening;
+using Project.Core.Managers;
 using Project.Rhythm.Data;
 using System;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using TMPro;
 
 public class StageUiView : MonoBehaviour
 {
@@ -46,7 +47,7 @@ public class StageUiView : MonoBehaviour
             {
                 if (_isActionStarted) return;
                 _isActionStarted = true;
-
+                AudioManager.Instance.PlayUISound(UISoundType.Check);
                 OnPlayClick?.Invoke();
             });
         }
@@ -57,7 +58,7 @@ public class StageUiView : MonoBehaviour
             closeButton.onClick.AddListener(() =>
             {
                 if (_isActionStarted) return;
-
+                AudioManager.Instance.PlayUISound(UISoundType.Cancel);
                 OnCloseClick?.Invoke();
             });
         }
@@ -101,6 +102,8 @@ public class StageUiView : MonoBehaviour
     {
         _isActionStarted = false;
         infoWindow.SetActive(true);
+
+        AudioManager.Instance.PlayUISound(UISoundType.Open);
 
         infoPanel.DOKill();
         infoCanvasGroup.DOKill();
