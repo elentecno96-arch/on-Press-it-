@@ -171,27 +171,36 @@ public class FirebaseManager : BaseSingleton<FirebaseManager>
     }
 
     /// <summary>
-    /// 내 글로벌 랭킹 조회
+    /// 내 랭킹과 백분율을 한 번에 가져와서 PlayerManager에 전달합니다.
     /// </summary>
-    /// <param name="myTotalScore"></param>
-    /// <returns></returns>
-    public async UniTask<int> GetMyRank(float myTotalScore)
+    public async UniTask RefreshMyRankData(float myTotalScore)
     {
-        if (!IsInitialized || User == null || myTotalScore <= 0) return 0;
+        if (!IsInitialized || User == null || myTotalScore <= 0) return;
 
         try
         {
-            var snapshot = await DbRef.Child("leaderboard")
+            var rankSnapshot = await DbRef.Child("leaderboard")
                 .OrderByChild("score")
-                .StartAt(myTotalScore + 1)
+                .StartAt(myTotalScore + 0.0001f)
                 .GetValueAsync().AsUniTask();
 
-            return (int)snapshot.ChildrenCount + 1;
+            int myRank = (int)rankSnapshot.ChildrenCount + 1;
+
+            var totalSnapshot = await DbRef.Child("leaderboard").GetValueAsync().AsUniTask();
+            long totalUsers = totalSnapshot.ChildrenCount;
+
+            float percent = totalUsers > 0 ? (float)myRank / totalUsers * 100f : 0f;
+
+            if (PlayerManager.Instance != null)
+            {
+                PlayerManager.Instance.UpdateRank(myRank, percent);
+            }
+
+            Debug.Log($"[Firebase] 랭킹 갱신 완료: {myRank}위 / 전체 {totalUsers}명 (상위 {percent:F1}%)");
         }
         catch (System.Exception e)
         {
-            Debug.LogError($"[Rank] 등수 조회 실패: {e.Message}");
-            return 0;
+            Debug.LogError($"[Firebase] 랭킹 데이터 갱신 실패: {e.Message}");
         }
     }
 }

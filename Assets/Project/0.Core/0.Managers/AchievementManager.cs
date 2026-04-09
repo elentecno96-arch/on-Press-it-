@@ -18,9 +18,12 @@ namespace Project.Core.Managers
             IsInitialized = true;
         }
 
-        public void CheckStageAchievements(StageData data, int perfectCount, bool isFirstClear)
+        public void CheckStageAchievements(StageData data, int perfectCount, float finalScore, bool isFirstClear)
         {
             if (data == null) return;
+
+            const float CLEAR_THRESHOLD = 70000f;
+            bool isScoreQualified = finalScore >= CLEAR_THRESHOLD;
 
             int index = data.stageIndex;
             int totalNotes = 0;
@@ -41,7 +44,7 @@ namespace Project.Core.Managers
             bool alreadyHasClearAchi = PlayerManager.Instance.Data.achievements.Exists(a => a.id == clearId);
 
             // 외부 판단(isFirstClear) 혹은 데이터 기반 판단(!alreadyHasClearAchi) 둘 중 하나라도 맞으면 진행
-            bool actualFirstClear = isFirstClear || !alreadyHasClearAchi;
+            bool actualFirstClear = isScoreQualified && (isFirstClear || !alreadyHasClearAchi);
 
             Debug.Log($"[업적 체크] 스테이지: {data.stageName}, Perfect: {perfectCount}/{totalNotes}, 최종판정_최초클리어: {actualFirstClear}");
 
@@ -52,7 +55,7 @@ namespace Project.Core.Managers
             }
 
             // 2. All Perfect
-            if (totalNotes > 0 && perfectCount >= totalNotes)
+            if (isScoreQualified && totalNotes > 0 && perfectCount >= totalNotes)
             {
                 Unlock($"AllPerfect_{index}", $"{data.stageName} ALL PERFECT!");
             }
@@ -67,6 +70,8 @@ namespace Project.Core.Managers
 
             PlayerManager.Instance.Save();
         }
+
+
         private void Unlock(string id, string title)
         {
             if (PlayerManager.Instance == null || PlayerManager.Instance.Data == null) return;

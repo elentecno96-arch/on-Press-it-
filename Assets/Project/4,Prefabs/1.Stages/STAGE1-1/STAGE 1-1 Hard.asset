@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   stageImage: {fileID: 21300000, guid: 57df3493a7865a147a50c1110a21103b, type: 3}
   difficulty: 1
-  stageIndex: 1
+  stageIndex: 5
   skipGuide: 0
   isClear: 0
   bestScore: 0
