@@ -59,14 +59,20 @@ namespace Project.Core.Ui.GlobalUi
 
         public async UniTask ShowLoading(CancellationToken token = default)
         {
-            var linkedToken = GetLinkedToken(token);
-            await fadeView.PlayFade(FADE_IN_VALUE, -1f, linkedToken);
+            _fadeCts?.Cancel();
+            _fadeCts?.Dispose();
+            _fadeCts = new CancellationTokenSource();
 
-            if (messageData != null)
-                loadingView.SetText(messageData.GetRandomMessage());
+            using (var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(_fadeCts.Token, token))
+            {
+                await fadeView.PlayFade(FADE_IN_VALUE, -1f, linkedCts.Token);
 
-            loadingView.SetVisible(true);
-            await loadingView.Show();
+                if (messageData != null)
+                    loadingView.SetText(messageData.GetRandomMessage());
+
+                loadingView.SetVisible(true);
+                await loadingView.Show();
+            }
         }
 
         public async UniTask HideLoading(CancellationToken token = default)
@@ -85,14 +91,28 @@ namespace Project.Core.Ui.GlobalUi
 
         public async UniTask FadeIn(float duration, CancellationToken token = default)
         {
-            var linkedToken = GetLinkedToken(token);
-            await fadeView.PlayFade(FADE_IN_VALUE, duration, linkedToken);
+            // 1. 내부 전용 토큰 생성 (새로운 요청 시 이전 페이드 취소)
+            _fadeCts?.Cancel();
+            _fadeCts?.Dispose();
+            _fadeCts = new CancellationTokenSource();
+
+            // 2. 외부 토큰과 내부 토큰을 연결 (using으로 자동 Dispose)
+            using (var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(_fadeCts.Token, token))
+            {
+                await fadeView.PlayFade(FADE_IN_VALUE, duration, linkedCts.Token);
+            }
         }
 
         public async UniTask FadeOut(float duration, CancellationToken token = default)
         {
-            var linkedToken = GetLinkedToken(token);
-            await fadeView.PlayFade(FADE_OUT_VALUE, duration, linkedToken);
+            _fadeCts?.Cancel();
+            _fadeCts?.Dispose();
+            _fadeCts = new CancellationTokenSource();
+
+            using (var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(_fadeCts.Token, token))
+            {
+                await fadeView.PlayFade(FADE_OUT_VALUE, duration, linkedCts.Token);
+            }
         }
 
         /// <summary>

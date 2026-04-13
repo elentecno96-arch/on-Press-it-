@@ -38,8 +38,6 @@ namespace Project.Core.Systems.Stage
             float score = _judgement.CalculateFinalScore();
             _judgement.FinalizeAndSaveResult();
 
-            data.SetPlayComplete(true);
-
             ProcessAchievements(data, score);
 
             _presenter.ShowResult(
