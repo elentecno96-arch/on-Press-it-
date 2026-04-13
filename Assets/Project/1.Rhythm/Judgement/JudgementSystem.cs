@@ -27,7 +27,7 @@ namespace Project.Rhythm.Judgement
 
         private readonly ICurrentTime _timeProvider;
         private readonly Queue<JudgeData> _judgeQueue = new();
-        private readonly ScoreSystem _scoreSystem = new ScoreSystem();
+        private readonly ScoreSystem _scoreSystem = new();
 
         private float _perfectWin, _greatWin, _goodWin, _missWin;
         private float _secondsPerBeat;

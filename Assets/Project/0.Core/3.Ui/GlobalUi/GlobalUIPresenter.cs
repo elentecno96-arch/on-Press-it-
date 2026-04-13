@@ -39,13 +39,13 @@ namespace Project.Core.Ui.GlobalUi
             return UniTask.CompletedTask;
         }
 
-        private CancellationToken GetLinkedToken(CancellationToken externalToken)
+        private CancellationTokenSource CreateLinkedFadeTokenSource(CancellationToken externalToken)
         {
             _fadeCts?.Cancel();
             _fadeCts?.Dispose();
             _fadeCts = new CancellationTokenSource();
 
-            return CancellationTokenSource.CreateLinkedTokenSource(_fadeCts.Token, externalToken).Token;
+            return CancellationTokenSource.CreateLinkedTokenSource(_fadeCts.Token, externalToken);
         }
 
         public void ResetFade()
@@ -77,11 +77,13 @@ namespace Project.Core.Ui.GlobalUi
 
         public async UniTask HideLoading(CancellationToken token = default)
         {
-            var linkedToken = GetLinkedToken(token);
-            await loadingView.Hide();
-            loadingView.SetVisible(false);
+            using (var linkedSource = CreateLinkedFadeTokenSource(token))
+            {
+                await loadingView.Hide();
+                loadingView.SetVisible(false);
 
-            await fadeView.PlayFade(FADE_OUT_VALUE, -1f, linkedToken);
+                await fadeView.PlayFade(FADE_OUT_VALUE, -1f, linkedSource.Token);
+            }
         }
 
         public void SetProgress(float val)
@@ -91,27 +93,17 @@ namespace Project.Core.Ui.GlobalUi
 
         public async UniTask FadeIn(float duration, CancellationToken token = default)
         {
-            // 1. 내부 전용 토큰 생성 (새로운 요청 시 이전 페이드 취소)
-            _fadeCts?.Cancel();
-            _fadeCts?.Dispose();
-            _fadeCts = new CancellationTokenSource();
-
-            // 2. 외부 토큰과 내부 토큰을 연결 (using으로 자동 Dispose)
-            using (var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(_fadeCts.Token, token))
+            using (var linkedSource = CreateLinkedFadeTokenSource(token))
             {
-                await fadeView.PlayFade(FADE_IN_VALUE, duration, linkedCts.Token);
+                await fadeView.PlayFade(FADE_IN_VALUE, duration, linkedSource.Token);
             }
         }
 
         public async UniTask FadeOut(float duration, CancellationToken token = default)
         {
-            _fadeCts?.Cancel();
-            _fadeCts?.Dispose();
-            _fadeCts = new CancellationTokenSource();
-
-            using (var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(_fadeCts.Token, token))
+            using (var linkedSource = CreateLinkedFadeTokenSource(token))
             {
-                await fadeView.PlayFade(FADE_OUT_VALUE, duration, linkedCts.Token);
+                await fadeView.PlayFade(FADE_OUT_VALUE, duration, linkedSource.Token);
             }
         }
 
