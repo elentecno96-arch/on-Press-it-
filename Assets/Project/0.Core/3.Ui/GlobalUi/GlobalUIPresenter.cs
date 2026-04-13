@@ -59,13 +59,9 @@ namespace Project.Core.Ui.GlobalUi
 
         public async UniTask ShowLoading(CancellationToken token = default)
         {
-            _fadeCts?.Cancel();
-            _fadeCts?.Dispose();
-            _fadeCts = new CancellationTokenSource();
-
-            using (var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(_fadeCts.Token, token))
+            using (var linkedSource = CreateLinkedFadeTokenSource(token))
             {
-                await fadeView.PlayFade(FADE_IN_VALUE, -1f, linkedCts.Token);
+                await fadeView.PlayFade(FADE_IN_VALUE, -1f, linkedSource.Token);
 
                 if (messageData != null)
                     loadingView.SetText(messageData.GetRandomMessage());
