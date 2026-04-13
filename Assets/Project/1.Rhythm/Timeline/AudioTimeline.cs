@@ -1,4 +1,4 @@
-using Project.Rhythm.Data;
+using Rhythm.Interface;
 using UnityEngine;
 
 namespace Project.Rhythm.Timeline
@@ -6,8 +6,10 @@ namespace Project.Rhythm.Timeline
     /// <summary>
     /// AudioSource를 기반으로 실제 리듬 게임 플레이 시간(StageTime)을 계산하는 타임라인
     /// </summary>
-    public class AudioTimeline
+    public class AudioTimeline : ICurrentTime
     {
+        public float CurrentTime => GetStageTime();
+
         private AudioSource _audioSource;
         private float _playStartTimeOffset;                                         //곡의 실제 시작 전 공백 
         private bool _isStarted;
@@ -19,19 +21,19 @@ namespace Project.Rhythm.Timeline
 
         /// <summary>
         /// 초기화
+        /// (ReFactoring) 스테이지 데이터가 아닌 그 데이터 중 필요한 정보만 받아서 초기화
         /// </summary>
         /// <param name="source"></param>
         /// <param name="data"></param>
-        public void Initialize(AudioSource source, StageData data)
+        public void Initialize(AudioSource source, AudioClip clip, float offset)
         {
             _audioSource = source;
-
-            _audioSource.clip = data.masterTrack;
+            _audioSource.clip = clip;
             _audioSource.loop = false;
             _audioSource.playOnAwake = false;
             _audioSource.Stop();
 
-            _playStartTimeOffset = data.playStartTime;
+            _playStartTimeOffset = offset;
             _isStarted = false;
         }
 

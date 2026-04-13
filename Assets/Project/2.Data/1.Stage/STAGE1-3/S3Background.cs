@@ -51,7 +51,7 @@ namespace Project.Data.Stage.STAGE3
 
             while (true)
             {
-                float currentTime = StageManager.CurrentTime;
+                float currentTime = CurrentTime;
                 float currentMusicBeat = (currentTime * _bpm) / 60f;
 
                 float beatGap = targetBeat - currentMusicBeat;

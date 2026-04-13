@@ -3,6 +3,7 @@ using Project.Rhythm.Data;
 using Project.Rhythm.Data.Enum;
 using Project.Rhythm.Data.Struct;
 using Project.Rhythm.Note;
+using Rhythm.Interface;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -11,6 +12,10 @@ namespace Project.Rhythm.Judgement
 {
     public enum JudgeResult { Perfect, Great, Good, Miss }
 
+    /// <summary>
+    /// 판정을 담당하는 시스템
+    /// 노트가 등록되면 타이밍을 계산하여 판정 결과를 결정하고, ScoreSystem에 결과를 전달
+    /// </summary>
     public class JudgementSystem
     {
         private struct JudgeData
@@ -20,19 +25,22 @@ namespace Project.Rhythm.Judgement
             public float targetTime;
         }
 
-        private float _perfectWin, _greatWin, _goodWin, _missWin;
-
+        private readonly ICurrentTime _timeProvider;
         private readonly Queue<JudgeData> _judgeQueue = new();
-        private readonly Dictionary<JudgeResult, int> _judgeCounts = new();
+        private readonly ScoreSystem _scoreSystem = new ScoreSystem();
+
+        private float _perfectWin, _greatWin, _goodWin, _missWin;
         private float _secondsPerBeat;
         private JudgeData? _activeHoldNote = null;
         private int _currentStageIndex;
-
+        
         public event Action<JudgeResult, Note.Note> OnJudged;
-
-        private int _totalNotes; // 총 노트 수 (점수 계산용)
-
         public bool IsHolding => _activeHoldNote.HasValue;
+
+        public JudgementSystem(ICurrentTime timeProvider)
+        {
+            _timeProvider = timeProvider;
+        }
 
         public void Initialize(StageData data)
         {
@@ -40,26 +48,24 @@ namespace Project.Rhythm.Judgement
             _secondsPerBeat = 60f / data.bpm;
             _judgeQueue.Clear();
             _activeHoldNote = null;
-            _judgeCounts.Clear();
 
-            foreach (JudgeResult res in Enum.GetValues(typeof(JudgeResult)))
-                _judgeCounts[res] = 0;
-
-            _totalNotes = 0;
+            int total = 0;
             if (data.actions != null)
             {
-                foreach (var action in data.actions)
+                for (int i = 0; i < data.actions.Count; i++)
                 {
-                    if (action.noteType != NoteType.Signal)
-                        _totalNotes++;
+                    if (data.actions[i].noteType != NoteType.Signal) total++;
                 }
             }
+            _scoreSystem.Initialize(total);
 
             _perfectWin = data.perfectWindow;
             _greatWin = data.greatWindow;
             _goodWin = data.goodWindow;
             _missWin = data.missWindow;
         }
+
+
         /// <summary>
         /// 게임 종료 시 호출: 점수 저장 및 간단한 결과 콘솔 출력
         /// </summary>
@@ -71,39 +77,20 @@ namespace Project.Rhythm.Judgement
             // 데이터 저장
             PlayerManager.Instance.SaveStageResult(_currentStageIndex, score);
 
-            // 결과 출력
             Debug.Log($"<color=yellow><b>[STAGE {_currentStageIndex} CLEAR]</b></color> " +
-                      $"Final Score: {score:N0} / 100,000 | " +
-                      $"P:{_judgeCounts[JudgeResult.Perfect]} G:{_judgeCounts[JudgeResult.Great]} " +
-                      $"Go:{_judgeCounts[JudgeResult.Good]} M:{_judgeCounts[JudgeResult.Miss]}");
+                      $"Score: {score:N0} | P:{GetCount(JudgeResult.Perfect)} G:{GetCount(JudgeResult.Great)} " +
+                      $"Go:{GetCount(JudgeResult.Good)} M:{GetCount(JudgeResult.Miss)}");
         }
 
         /// <summary>
         /// 만점 고정 점수 계산 로직
         /// </summary>
-        public float CalculateFinalScore()
-        {
-            if (_totalNotes <= 0) return 0f;
-
-            // 가중치 합산
-            float weightedSum = (_judgeCounts[JudgeResult.Perfect] * 1.0f) +
-                               (_judgeCounts[JudgeResult.Great] * 0.7f) +
-                               (_judgeCounts[JudgeResult.Good] * 0.4f);
-
-            // (가중치 합 / 총 노트 수) * 100,000
-            float finalScore = (weightedSum / _totalNotes) * 100000f;
-
-            // 부동 소수점 오차 방지를 위해 반올림 처리
-            return Mathf.Round(finalScore);
-        }
-
+        public float CalculateFinalScore() => _scoreSystem.CalculateScore();
+        public int GetCount(JudgeResult result) => _scoreSystem.GetCount(result);
 
         public void RegisterNote(RhythmAction action, Note.Note note)
         {
-            if (note == null) return;
-
-            if (note.Judged) return;
-
+            if (note == null || note.Judged) return;
             _judgeQueue.Enqueue(new JudgeData
             {
                 action = action,
@@ -113,12 +100,13 @@ namespace Project.Rhythm.Judgement
         }
 
 
-        public void ProcessTap(float stageTime)
+        public void ProcessTap()
         {
             if (_judgeQueue.Count == 0) return;
             var target = _judgeQueue.Peek();
             if (target.action.type == PatternType.Hold || target.action.type == PatternType.Slide) return;
-            float absDiff = Mathf.Abs(stageTime - target.targetTime);
+
+            float absDiff = Mathf.Abs(_timeProvider.CurrentTime - target.targetTime);
             if (absDiff <= _missWin) ApplyResult(target, CalculateResult(absDiff));
         }
 
@@ -127,54 +115,50 @@ namespace Project.Rhythm.Judgement
             return _activeHoldNote?.note;
         }
 
-        public void ProcessSlide(float stageTime)
+        public void ProcessSlide()
         {
             if (_judgeQueue.Count == 0) return;
             var target = _judgeQueue.Peek();
-            if (target.action.type == PatternType.Slide)
-            {
-                float absDiff = Mathf.Abs(stageTime - target.targetTime);
-                if (absDiff <= _missWin) ApplyResult(target, CalculateResult(absDiff));
-            }
+            if (target.action.type != PatternType.Slide) return;
+
+            float absDiff = Mathf.Abs(_timeProvider.CurrentTime - target.targetTime);
+            if (absDiff <= _missWin) ApplyResult(target, CalculateResult(absDiff));
         }
 
-        public void ProcessHoldDown(float stageTime)
+        public void ProcessHoldDown()
         {
             if (_judgeQueue.Count == 0 || _activeHoldNote.HasValue) return;
-
             var target = _judgeQueue.Peek();
-            if (target.action.type == PatternType.Hold)
-            {
-                float absDiff = Mathf.Abs(stageTime - target.targetTime);
+            if (target.action.type != PatternType.Hold) return;
 
-                if (absDiff <= _missWin)
-                {
-                    _judgeQueue.Dequeue();
-                    _activeHoldNote = target;
-                }
+            float absDiff = Mathf.Abs(_timeProvider.CurrentTime - target.targetTime);
+            if (absDiff <= _missWin)
+            {
+                _judgeQueue.Dequeue();
+                _activeHoldNote = target;
             }
         }
 
-        public void UpdateHoldCheck(bool isPressing, float stageTime)
+        public void UpdateHoldCheck(bool isPressing)
         {
             if (!_activeHoldNote.HasValue) return;
 
+            float stageTime = _timeProvider.CurrentTime;
             var target = _activeHoldNote.Value;
+
             float releaseTime = target.targetTime + (target.action.duration * _secondsPerBeat);
 
             if (isPressing)
             {
                 if (stageTime > releaseTime + _missWin)
                 {
-                    _activeHoldNote = null; 
+                    _activeHoldNote = null;
                     LogAndNotify(JudgeResult.Miss, target.note);
                 }
             }
-
             else
             {
                 float absDiff = Mathf.Abs(stageTime - releaseTime);
-
                 _activeHoldNote = null;
 
                 if (stageTime < releaseTime - _missWin)
@@ -188,10 +172,15 @@ namespace Project.Rhythm.Judgement
             }
         }
 
-        private void ApplyResult(JudgeData target, JudgeResult result) { _judgeQueue.Dequeue(); LogAndNotify(result, target.note); }
+        private void ApplyResult(JudgeData target, JudgeResult result)
+        {
+            _judgeQueue.Dequeue();
+            LogAndNotify(result, target.note);
+        }
+
         private void LogAndNotify(JudgeResult result, Note.Note note)
         {
-            _judgeCounts[result]++;
+            _scoreSystem.AddResult(result);
             OnJudged?.Invoke(result, note);
         }
 
@@ -202,70 +191,47 @@ namespace Project.Rhythm.Judgement
             if (absDiff <= _goodWin) return JudgeResult.Good;
             return JudgeResult.Miss;
         }
-        public void CheckMiss(float stageTime)
+
+        public void CheckMiss()
         {
+            float stageTime = _timeProvider.CurrentTime;
+
             while (_judgeQueue.Count > 0 && stageTime > _judgeQueue.Peek().targetTime + _missWin)
                 ApplyResult(_judgeQueue.Peek(), JudgeResult.Miss);
         }
 
-        public float GetHoldProgress(float stageTime)
+        public float GetHoldProgress()
         {
             if (!_activeHoldNote.HasValue) return 0f;
-            return Mathf.Clamp01((stageTime - _activeHoldNote.Value.targetTime) / (_activeHoldNote.Value.action.duration * _secondsPerBeat));
+            float duration = _activeHoldNote.Value.action.duration * _secondsPerBeat;
+            if (duration <= 0) return 1f;
+            return Mathf.Clamp01((_timeProvider.CurrentTime - _activeHoldNote.Value.targetTime) / duration);
         }
 
-        public void Reset()
+        public void Reset() { _judgeQueue.Clear(); _activeHoldNote = null; _scoreSystem.Initialize(0); }
+
+        public void SyncToTime()
         {
-            _judgeQueue.Clear();
-            _activeHoldNote = null;
-
-            _judgeCounts.Clear();
-            foreach (JudgeResult res in Enum.GetValues(typeof(JudgeResult)))
-            {
-                _judgeCounts[res] = 0;
-            }
-        }
-
-        public void SyncToTime(float stageTime)
-        {
-            while (_judgeQueue.Count > 0)
-            {
-                var target = _judgeQueue.Peek();
-
-                if (stageTime > target.targetTime + _missWin)
-                {
-                    _judgeQueue.Dequeue();
-                }
-                else break;
-            }
+            float stageTime = _timeProvider.CurrentTime;
+            while (_judgeQueue.Count > 0 && stageTime > _judgeQueue.Peek().targetTime + _missWin)
+                _judgeQueue.Dequeue();
 
             if (_activeHoldNote.HasValue)
             {
                 var hold = _activeHoldNote.Value;
-                float endTime = hold.targetTime + (hold.action.duration * _secondsPerBeat);
-
-                if (stageTime > endTime + _missWin)
-                {
+                if (stageTime > (hold.targetTime + hold.action.duration * _secondsPerBeat) + _missWin)
                     _activeHoldNote = null;
-                }
             }
         }
 
         public void ForceCompleteAll()
         {
-            while (_judgeQueue.Count > 0)
-            {
-                var target = _judgeQueue.Dequeue();
-                LogAndNotify(JudgeResult.Miss, target.note);
-            }
-
+            while (_judgeQueue.Count > 0) ApplyResult(_judgeQueue.Peek(), JudgeResult.Miss);
             if (_activeHoldNote.HasValue)
             {
                 LogAndNotify(JudgeResult.Miss, _activeHoldNote.Value.note);
                 _activeHoldNote = null;
             }
         }
-
-        public int GetCount(JudgeResult result) => _judgeCounts[result];
     }
 }

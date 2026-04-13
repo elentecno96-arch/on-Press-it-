@@ -4,7 +4,9 @@ using Project.Rhythm.Data;
 using Project.Rhythm.Data.Enum;
 using Project.Rhythm.Interface;
 using Project.Rhythm.Judgement;
+using Project.Rhythm.Timeline;
 using Project.Rhythm.Visual;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -19,6 +21,7 @@ namespace Project.Rhythm.Presentation
         [SerializeField] private GuideView guideView;
 
         private StageData _stageData;
+        private AudioTimeline _audioTimeline;
         private BaseRhythmVisual _currentEnvironment;
         private JudgementSystem _judgementSystem;
 
@@ -34,9 +37,11 @@ namespace Project.Rhythm.Presentation
         private ITouchVisual _currentTouchVisual;
         private StageThemeType _currentTheme = (StageThemeType)(-1);
 
-        public void Initialize(StageData data)
+        public void Initialize(StageData data, AudioTimeline timeline)
         {
             _stageData = data;
+            _audioTimeline = timeline;
+
             if (stageView == null) return;
 
             stageView.Clear();
@@ -137,6 +142,7 @@ namespace Project.Rhythm.Presentation
                 if (_currentEnvironment != null)
                 {
                     _currentEnvironment.SetBpm(_stageData.bpm);
+                    _currentEnvironment.SetTimeProvider(_audioTimeline);
                 }
             }
 
