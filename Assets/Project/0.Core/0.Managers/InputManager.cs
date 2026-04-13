@@ -1,5 +1,6 @@
 using Cysharp.Threading.Tasks;
 using Project.Core.Utilities;
+using Project.Rhythm.Interface;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -10,8 +11,9 @@ namespace Project.Core.Managers
 {
     /// <summary>
     /// 인풋 시스템을 관리하는 매니저 (멀티 터치 및 개별 손가락 추적 지원)
+    /// (리펙토링) UI 터치 구분 하는 로직을 유틸리티로 분리
     /// </summary>
-    public class InputManager : BaseSingleton<InputManager>
+    public class InputManager : BaseSingleton<InputManager>, IInputProvider
     {
         public event Action<Vector2> OnPointerDown; // Tap/Hold 시작 통합
         public event Action<Vector2> OnSlideAction;
@@ -46,42 +48,35 @@ namespace Project.Core.Managers
         {
             if (_isInputBlocked) return;
 
-            // UI를 터치한 손가락은 추적 목록에 넣지 않고 무시합니다.
-            if (IsPointerOverUI(finger.currentTouch.screenPosition))
+            if (UIUtils.IsPointerOverUI(finger.currentTouch.screenPosition))
             {
                 _lastInputType = "UI_TOUCHED";
                 return;
             }
 
-            // [수정됨] 게임 영역을 터치한 유효한 손가락을 등록합니다.
             _validGameTouches.Add(finger);
             _lastInputType = "DOWN";
-
             OnPointerDown?.Invoke(finger.currentTouch.screenPosition);
         }
 
         private void OnFingerMove(Finger finger)
         {
-            if (_isInputBlocked) return;
-
-            // [수정됨] 유효한 게임 터치가 아니거나, 이미 슬라이드 처리된 손가락이면 무시합니다.
-            if (!_validGameTouches.Contains(finger) || _slideProcessedTouches.Contains(finger)) return;
+            if (_isInputBlocked || !_validGameTouches.Contains(finger)) return;
+            if (_slideProcessedTouches.Contains(finger)) return;
 
             if (finger.currentTouch.delta.magnitude > SLIDE_THRESHOLD)
             {
                 _lastInputType = "SLIDE";
-                _slideProcessedTouches.Add(finger); // 이 손가락은 슬라이드 처리됨을 기록
+                _slideProcessedTouches.Add(finger);
                 OnSlideAction?.Invoke(finger.currentTouch.delta);
             }
         }
 
         private void OnFingerUp(Finger finger)
         {
-            // [수정됨] 떼어진 손가락이 우리가 추적하던 '게임 영역 터치' 손가락인지 확인합니다.
-            if (_validGameTouches.Contains(finger))
+            if (_validGameTouches.Remove(finger))
             {
-                _validGameTouches.Remove(finger);
-                _slideProcessedTouches.Remove(finger); // 슬라이드 상태도 초기화
+                _slideProcessedTouches.Remove(finger);
 
                 if (!_isInputBlocked)
                 {
@@ -89,32 +84,6 @@ namespace Project.Core.Managers
                     OnPointerUp?.Invoke();
                 }
             }
-        }
-
-        private bool IsPointerOverUI(Vector2 screenPosition)
-        {
-            if (UnityEngine.EventSystems.EventSystem.current == null)
-            {
-                Debug.LogWarning("<color=red>[InputManager]</color> 씬에 EventSystem이 없습니다!");
-                return false;
-            }
-
-            var eventData = new UnityEngine.EventSystems.PointerEventData(UnityEngine.EventSystems.EventSystem.current)
-            {
-                position = screenPosition
-            };
-            var results = new System.Collections.Generic.List<UnityEngine.EventSystems.RaycastResult>();
-            UnityEngine.EventSystems.EventSystem.current.RaycastAll(eventData, results);
-
-            if (results.Count > 0)
-            {
-                foreach (var result in results)
-                {
-                    Debug.Log($"<color=yellow>[UI Hit]</color> Object Name: <b>{result.gameObject.name}</b> | Layer: {LayerMask.LayerToName(result.gameObject.layer)}");
-                }
-            }
-
-            return results.Count > 0;
         }
 
         /// <summary>
@@ -126,16 +95,9 @@ namespace Project.Core.Managers
             _isInputBlocked = block;
             if (block)
             {
-                // 인풋이 차단될 때 잡고 있던 모든 홀드를 강제로 풀어줍니다.
-                if (_validGameTouches.Count > 0)
-                {
-                    OnPointerUp?.Invoke();
-                }
-
+                if (_validGameTouches.Count > 0) OnPointerUp?.Invoke();
                 _validGameTouches.Clear();
                 _slideProcessedTouches.Clear();
-
-                _lastInputType = "BLOCKED";
             }
         }
 

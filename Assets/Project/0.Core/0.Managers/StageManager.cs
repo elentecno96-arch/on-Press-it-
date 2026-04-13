@@ -1,5 +1,5 @@
 using Cysharp.Threading.Tasks;
-using Project.Core.Ui.GlobalUi;
+using Project.Core.Systems.Stage;
 using Project.Rhythm;
 using Project.Rhythm.Data;
 using Project.Rhythm.Data.Enum;
@@ -11,38 +11,43 @@ using Project.Rhythm.Presentation;
 using Project.Rhythm.Timeline;
 using System;
 using System.Collections.Generic;
-using System.Threading;
 using UnityEngine;
 
 namespace Project.Core.Managers
 {
     public class StageManager : MonoBehaviour
     {
+        [Header("References")]
         [SerializeField] private StageData testStageData;
         [SerializeField] private AudioSource musicSource;
         [SerializeField] private StagePresenter presenter;
 
+        [Header("Settings")]
         [SerializeField] private float noteAppearDuration = 2.0f;
         [SerializeField] private float stageStartDelay = 1.5f;
 
+        // 핵심 시스템 부품들
         private AudioTimeline _audioTimeline;
         private RhythmEventSystem _eventSystem;
+        private CountdownSystem _countdownSystem;
         private JudgementSystem _judgementSystem;
         private NoteSpawnSystem _noteSpawner;
         private RhythmInputController _inputController;
 
+        // 분리된 전담 관리자들
+        private StageFlow _stageFlow;
+        private ThemeSwitcher _themeSwitcher;
+
         private bool _isInitialized;
         private StageData _activeStageData;
+        private bool _isThemeChanging = false;
+
+        private readonly List<Note> _activeNotes = new();
+        private List<(float time, StageThemeType theme)> _themeQueue = new();
+        private int _themeIndex = 0;
 
         public event Action OnStageStart;
         public event Action OnStageComplete;
-
-        private readonly List<Note> _activeNotes = new();
-        public static float CurrentTime { get; private set; }
-
-        private List<(float time, StageThemeType theme)> _themeQueue = new();
-        private int _themeIndex = 0;
-        private bool _isThemeChanging = false;
 
         public async UniTask Initialize()
         {
@@ -53,41 +58,41 @@ namespace Project.Core.Managers
             InitializeSystems(_activeStageData);
 
             presenter.SetJudgementSystem(_judgementSystem);
-            presenter.Initialize(_activeStageData);
+            presenter.Initialize(_activeStageData, _audioTimeline);
 
             BuildThemeQueue(_activeStageData);
-
             _noteSpawner = new NoteSpawnSystem(presenter);
-            _inputController = new RhythmInputController(_judgementSystem, () => CurrentTime);
-            _inputController.OnInputTriggered += InputTriggered;
 
             BindSystems();
+
             _isInitialized = true;
-
             await UniTask.CompletedTask;
-        }
-
-        public void Play()
-        {
-            if (!_isInitialized) return;
-            StartSequence(_activeStageData, this.GetCancellationTokenOnDestroy()).Forget();
         }
 
         private void InitializeSystems(StageData stageData)
         {
             _audioTimeline = new AudioTimeline();
-            _audioTimeline.Initialize(musicSource, stageData);
+            _audioTimeline.Initialize(musicSource, stageData.masterTrack, stageData.playStartTime);
 
-            _eventSystem = new RhythmEventSystem();
+            _eventSystem = new RhythmEventSystem(_audioTimeline);
             _eventSystem.Initialize(stageData, noteAppearDuration);
 
-            _judgementSystem = new JudgementSystem();
+            _countdownSystem = new CountdownSystem(_audioTimeline);
+            _countdownSystem.Initialize(stageData);
+
+            _judgementSystem = new JudgementSystem(_audioTimeline);
             _judgementSystem.Initialize(stageData);
+
+            _inputController = new RhythmInputController(_judgementSystem, InputManager.Instance);
+            _inputController.OnInputTriggered += InputTriggered;
+
+            _stageFlow = new StageFlow(_judgementSystem, _audioTimeline, presenter);
+            _themeSwitcher = new ThemeSwitcher(_judgementSystem, _eventSystem, _countdownSystem, _audioTimeline, presenter);
         }
 
         private void BindSystems()
         {
-            _eventSystem.OnCountdownTriggered += (targetBeat) => presenter.StartCountdown(targetBeat);
+            _countdownSystem.OnCountdownTriggered += (targetBeat) => presenter.StartCountdown(targetBeat);
 
             _judgementSystem.OnJudged += (result, note) =>
             {
@@ -97,179 +102,115 @@ namespace Project.Core.Managers
 
             _eventSystem.OnSpawnTriggered += (action, hitTime, duration) =>
             {
+                float currentTime = _audioTimeline.GetStageTime();
                 switch (action.noteType)
                 {
-                    case NoteType.Signal:
-                        HandleSignal(action);
-                        return;
-
-                    case NoteType.Persistent:
-                        HandlePersistent(action, hitTime, duration);
-                        return;
-
-                    case NoteType.Runtime:
-                        HandleRuntime(action, duration);
-                        return;
+                    case NoteType.Signal: HandleSignal(action); break;
+                    case NoteType.Persistent: HandlePersistent(action, currentTime, duration); break;
+                    case NoteType.Runtime: HandleRuntime(action, currentTime, duration); break;
                 }
             };
         }
 
-        private void HandleRuntime(RhythmAction action, float duration)
+        public void Play()
         {
-            var noteObj = _noteSpawner.GetOrSpawn(action, CurrentTime, duration);
-            var note = noteObj?.GetComponent<Note>();
+            if (!_isInitialized) return;
+            OnStageStart?.Invoke();
 
-            if (note == null) return;
-
-            _judgementSystem.RegisterNote(action, note);
-
-            if (!_activeNotes.Contains(note))
-                _activeNotes.Add(note);
-        }
-
-        private void HandlePersistent(RhythmAction action, float hitTime, float duration)
-        {
-            Note note = presenter.GetOrSpawnPersistent(action.targetID);
-
-            if (note == null)
-            {
-                Debug.LogError($"Persistent Note 생성/조회 실패: {action.targetID}");
-                return;
-            }
-            note.gameObject.SetActive(true);
-
-            note.ResetJudgedState();
-            note.InitializePersistent(CurrentTime, duration);
-
-            _judgementSystem.RegisterNote(action, note);
-
-            if (!_activeNotes.Contains(note))
-                _activeNotes.Add(note);
-        }
-
-        private void HandleSignal(RhythmAction action)
-        {
-            var note = presenter.GetFixedNote(action.targetID);
-            note?.PlaySignal();
+            // 시퀀스 제어를 StageFlow에게 위임
+            _stageFlow.PlaySequence(_activeStageData, stageStartDelay, this.GetCancellationTokenOnDestroy())
+                .ContinueWith(() => OnStageComplete?.Invoke())
+                .Forget();
         }
 
         private void Update()
         {
+            // 테마 변경 중에는 모든 업데이트 로직을 정지
             if (!_isInitialized || _isThemeChanging) return;
 
-            CurrentTime = _audioTimeline.GetStageTime();
-            if (CurrentTime < 0f) return;
+            float currentTime = _audioTimeline.GetStageTime();
+            if (currentTime < 0f) return;
 
-            presenter.UpdateUI(CurrentTime);
-            ProcessThemeChange();
-            _eventSystem.Process(CurrentTime);
+            // 각 시스템에 Process 신호 전파
+            presenter.UpdateUI(currentTime);
+            ProcessThemeChange(currentTime);
 
-            _judgementSystem.UpdateHoldCheck(InputManager.Instance.IsPressing, CurrentTime);
-            _judgementSystem.CheckMiss(CurrentTime);
+            _eventSystem.Process();
+            _countdownSystem.Process();
+            _judgementSystem.UpdateHoldCheck(InputManager.Instance.IsPressing);
+            _judgementSystem.CheckMiss();
 
-            for (int i = _activeNotes.Count - 1; i >= 0; i--)
-            {
-                if (_activeNotes[i] == null) { _activeNotes.RemoveAt(i); continue; }
-                _activeNotes[i].UpdateNote(CurrentTime);
-            }
+            UpdateActiveNotes(currentTime);
+            UpdateVisuals();
+        }
 
+        private void UpdateVisuals()
+        {
             if (_judgementSystem.IsHolding)
             {
-                float progress = _judgementSystem.GetHoldProgress(CurrentTime);
-                presenter.GetTouchVisual()?.UpdateVisual(progress);
+                presenter.GetTouchVisual()?.UpdateVisual(_judgementSystem.GetHoldProgress());
             }
         }
 
-        private void InputTriggered(PatternType type)
+        private void UpdateActiveNotes(float currentTime)
         {
-            var visual = presenter.GetTouchVisual();
-            if (type == PatternType.None) visual?.StopHoldAction();
-            else visual?.PlayAction(type);
-        }
-
-        private async UniTask StartSequence(StageData data, CancellationToken token)
-        {
-            try
+            for (int i = _activeNotes.Count - 1; i >= 0; i--)
             {
-                await UniTask.Yield();
-                await UniTask.Delay((int)(stageStartDelay * 1000), cancellationToken: token);
-
-                OnStageStart?.Invoke();
-                _audioTimeline.StartTimeline();
-                await UniTask.WaitUntil(() => _audioTimeline.GetStageTime() >= data.endPosition, cancellationToken: token);
-
-                float finalScore = _judgementSystem.CalculateFinalScore();
-
-                // 1. 점수 저장 전, 최초 클리어 여부를 미리 계산합니다.
-                bool isFirstClear = false;
-                if (PlayerManager.Instance != null && PlayerManager.Instance.Data != null)
-                {
-                    var record = PlayerManager.Instance.Data.stageRecords.Find(r => r.stageIndex == data.stageIndex);
-                    // 기록이 없거나 베스트 점수가 0이면 최초 클리어입니다.
-                    if (record == null || record.bestScore <= 70000) isFirstClear = true;
-                }
-
-                // 2. 점수 계산 및 저장은 JudgementSystem이 담당 (데이터 무결성)
-                _judgementSystem.FinalizeAndSaveResult();
-
-                // 3. 스테이지를 끝까지 완주했으므로 'true'를 전달하여 플레이 기록을 확정함
-                _activeStageData.SetPlayComplete(true);
-
-                // 4. 데이터 수집 및 업적 체크
-                int p = _judgementSystem.GetCount(JudgeResult.Perfect);
-
-                // 5. 업적 매니저 호출 (미리 계산한 isFirstClear로 전달합니다)
-                if (AchievementManager.Instance != null)
-                {
-                    AchievementManager.Instance.CheckStageAchievements(data, p, finalScore, isFirstClear);
-                }
-                // -----------------------------
-
-                presenter.ShowResult(p, _judgementSystem.GetCount(JudgeResult.Great),
-                                     _judgementSystem.GetCount(JudgeResult.Good),
-                                     _judgementSystem.GetCount(JudgeResult.Miss));
-
-                OnStageComplete?.Invoke();
-            }
-            catch (OperationCanceledException) { }
-        }
-        private void BuildThemeQueue(StageData data)
-        {
-            _themeQueue.Clear();
-            _themeIndex = 0;
-            if (data.themeEvents == null) return;
-            foreach (var evt in data.themeEvents)
-            {
-                float time = evt.beat * (60f / data.bpm);
-                _themeQueue.Add((time, evt.theme));
+                var note = _activeNotes[i];
+                if (note == null) { _activeNotes.RemoveAt(i); continue; }
+                note.UpdateNote(currentTime);
             }
         }
-        private void ProcessThemeChange()
+
+        private void ProcessThemeChange(float currentTime)
         {
             if (_themeIndex >= _themeQueue.Count) return;
-            var next = _themeQueue[_themeIndex];
-            if (CurrentTime >= next.time - 0.1f)
+
+            if (currentTime >= _themeQueue[_themeIndex].time - 0.1f)
             {
-                ChangeThemeWithFade(next.theme).Forget();
+                var theme = _themeQueue[_themeIndex].theme;
+                _isThemeChanging = true;
+
+                // 테마 스위칭 책임을 ThemeSwitcher에게 위임
+                _themeSwitcher.Switch(theme, () => {
+                    ClearAllNotes();
+                    _isThemeChanging = false;
+                }).Forget();
+
                 _themeIndex++;
             }
         }
-        private async UniTaskVoid ChangeThemeWithFade(StageThemeType theme)
+
+        #region Note Handling
+        private void HandleRuntime(RhythmAction action, float currentTime, float duration)
         {
-            if (_isThemeChanging) return;
-            _isThemeChanging = true;
+            var noteObj = _noteSpawner.GetOrSpawn(action, currentTime, duration);
+            var note = noteObj?.GetComponent<Note>();
+            if (note == null) return;
 
-            InputManager.Instance.SetBlockInput(true);
-            await GlobalUIPresenter.Instance.FadeIn(0.1f);
+            note.UpdateNote(currentTime);
+            _judgementSystem.RegisterNote(action, note);
 
-            _judgementSystem.ForceCompleteAll();
-            ClearAllNotes();
-            presenter.ChangeTheme(theme);
-            _eventSystem.SyncToTime(CurrentTime);
+            if (!_activeNotes.Contains(note)) _activeNotes.Add(note);
+        }
 
-            await GlobalUIPresenter.Instance.FadeOut(0.1f);
-            InputManager.Instance.SetBlockInput(false);
-            _isThemeChanging = false;
+        private void HandlePersistent(RhythmAction action, float currentTime, float duration)
+        {
+            Note note = presenter.GetOrSpawnPersistent(action.targetID);
+            if (note == null) return;
+
+            note.gameObject.SetActive(true);
+            note.ResetJudgedState();
+            note.InitializePersistent(currentTime, duration);
+            note.UpdateNote(currentTime);
+
+            _judgementSystem.RegisterNote(action, note);
+            if (!_activeNotes.Contains(note)) _activeNotes.Add(note);
+        }
+
+        private void HandleSignal(RhythmAction action)
+        {
+            presenter.GetFixedNote(action.targetID)?.PlaySignal();
         }
 
         private void ClearAllNotes()
@@ -279,21 +220,38 @@ namespace Project.Core.Managers
                 var note = _activeNotes[i];
                 if (note == null) continue;
 
-                if (note.IsPersistent)
-                {
-                    note.gameObject.SetActive(false);
-                    continue;
-                }
-
-                Destroy(note.gameObject);
+                if (note.IsPersistent) note.gameObject.SetActive(false);
+                else Destroy(note.gameObject);
             }
-
             _activeNotes.RemoveAll(n => n == null || !n.IsPersistent);
+        }
+        #endregion
+
+        private void InputTriggered(PatternType type)
+        {
+            var visual = presenter.GetTouchVisual();
+            if (type == PatternType.None) visual?.StopHoldAction();
+            else visual?.PlayAction(type);
+        }
+
+        private void BuildThemeQueue(StageData data)
+        {
+            _themeQueue.Clear();
+            _themeIndex = 0;
+            if (data.themeEvents == null) return;
+
+            float bpm = data.bpm;
+            foreach (var evt in data.themeEvents)
+                _themeQueue.Add((evt.beat * (60f / bpm), evt.theme));
         }
 
         private void OnDestroy()
         {
-            _inputController?.Dispose();
+            if (_inputController != null)
+            {
+                _inputController.OnInputTriggered -= InputTriggered;
+                _inputController.Dispose();
+            }
             _audioTimeline?.Stop();
         }
     }

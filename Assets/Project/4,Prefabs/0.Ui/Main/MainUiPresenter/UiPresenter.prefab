@@ -10,7 +10,6 @@ GameObject:
   m_Component:
   - component: {fileID: 6731593352885508003}
   - component: {fileID: 8286876541523773224}
-  - component: {fileID: 2644660243334106111}
   m_Layer: 0
   m_Name: UiPresenter
   m_TagString: Untagged
@@ -47,25 +46,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _settingView: {fileID: 0}
   _stageView: {fileID: 0}
-  _soundView: {fileID: 2644660243334106111}
+  _cutsceneView: {fileID: 0}
   _stageSlots:
   - {fileID: 0}
   - {fileID: 0}
   - {fileID: 0}
   - {fileID: 0}
---- !u!114 &2644660243334106111
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3088997914741607770}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fe94ce4ec69979c4591a1e4d672b47a2, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _mainBgmClip: {fileID: 8300000, guid: 9589fa5c2e3aba84e80ecc416fb92106, type: 3}
-  _clipA: {fileID: 8300000, guid: 20e1cf622ce84ab488f491d8e9855d2d, type: 3}
-  _clipB: {fileID: 8300000, guid: 61face0606353f240915ebdc779a6ac1, type: 3}
-  _clipC: {fileID: 8300000, guid: 8e8cb5bedf23e334eb16f80c91e42db8, type: 3}

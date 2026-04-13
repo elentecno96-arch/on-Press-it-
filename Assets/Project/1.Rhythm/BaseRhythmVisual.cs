@@ -3,6 +3,7 @@ using Project.Core.Managers;
 using Project.Rhythm.Data.Enum;
 using Project.Rhythm.Interface;
 using Project.Rhythm.Judgement;
+using Project.Rhythm.Timeline;
 using System.Threading;
 using UnityEngine;
 using UnityEngine.UI;
@@ -29,6 +30,11 @@ namespace Project.Rhythm.Visual
         [SerializeField] protected AudioClip missSfx;    // 실패 시
 
         protected float _bpm;
+        protected AudioTimeline _timeline;
+
+        protected float CurrentTime => _timeline?.GetStageTime() ?? 0f;
+        protected float CurrentBeat => (CurrentTime * _bpm) / 60f;
+
         [SerializeField] protected AudioClip countSfx;
         public virtual void SetBpm(float bpm) => _bpm = bpm;
 
@@ -41,6 +47,11 @@ namespace Project.Rhythm.Visual
         protected bool _isHolding;
 
         protected CancellationTokenSource _visualCts;
+
+        public virtual void SetTimeProvider(AudioTimeline timeline)
+        {
+            _timeline = timeline;
+        }
 
         protected virtual void Awake()
         {

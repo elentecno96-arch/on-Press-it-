@@ -1,8 +1,9 @@
 using Project.Rhythm.Data;
+using Project.Rhythm.Data.Enum;
+using Project.Rhythm.Data.Struct;
+using Rhythm.Interface;
 using System;
 using System.Collections.Generic;
-using Project.Rhythm.Data.Struct;
-using Project.Rhythm.Data.Enum;
 
 namespace Project.Rhythm.Event
 {
@@ -20,25 +21,27 @@ namespace Project.Rhythm.Event
         }
 
         private readonly List<EventData> _events = new();
+        private readonly ICurrentTime _timeProvider;
         private int _currentIndex;
         private float _secondsPerBeat;
-        private int _nextAutoCountIndex; // 카운트다운용 인덱스 별도 관리
-        private const float BEAT_LEAD_TIME = 2.0f; 
-        private float _lastTriggeredBeat = -1f;
 
-        public event Action<float> OnCountdownTriggered;
         public event Action<RhythmAction, float, float> OnSpawnTriggered;
+
+        public RhythmEventSystem(ICurrentTime timeProvider)
+        {
+            _timeProvider = timeProvider;
+        }
 
         public void Initialize(StageData data, float defaultAppearDuration)
         {
             _events.Clear();
             _currentIndex = 0;
-            _nextAutoCountIndex = 0;
-            _lastTriggeredBeat = -1f;
 
             if (data == null || data.bpm <= 0) return;
 
             _secondsPerBeat = 60f / data.bpm;
+
+            if (data.actions != null) _events.Capacity = data.actions.Count;
 
             foreach (var action in data.actions)
             {
@@ -48,12 +51,11 @@ namespace Project.Rhythm.Event
                 float duration = (action.type == PatternType.Hold)
                                  ? action.duration * _secondsPerBeat
                                  : defaultAppearDuration;
-                float spawnTime = hitTime - duration;
 
                 _events.Add(new EventData
                 {
                     action = action,
-                    spawnTriggerTime = spawnTime,
+                    spawnTriggerTime = hitTime - duration,
                     targetHitTime = hitTime,
                     duration = duration
                 });
@@ -65,33 +67,15 @@ namespace Project.Rhythm.Event
         /// <summary>
         /// StageManager의 Update에서 호출되어 시간을 체크함
         /// </summary>
-        public void Process(float stageTime)
+        public void Process()
         {
+            float stageTime = _timeProvider.CurrentTime;
             if (stageTime < 0) return;
 
-            if (_nextAutoCountIndex < _events.Count)
-            {
-                var evt = _events[_nextAutoCountIndex];
-
-                if (evt.action.type == PatternType.Hold && evt.action.role == ActionRole.Hit)
-                {
-                    float countdownStartTime = evt.targetHitTime - (BEAT_LEAD_TIME * _secondsPerBeat);
-
-                    if (stageTime >= countdownStartTime && _lastTriggeredBeat < evt.action.beat)
-                    {
-                        OnCountdownTriggered?.Invoke(evt.action.beat);
-                        _lastTriggeredBeat = evt.action.beat;
-                        _nextAutoCountIndex++;
-                    }
-                }
-                else
-                {
-                    _nextAutoCountIndex++;
-                }
-            }
             while (_currentIndex < _events.Count)
             {
                 EventData evt = _events[_currentIndex];
+
                 if (stageTime < evt.spawnTriggerTime) break;
 
                 OnSpawnTriggered?.Invoke(evt.action, evt.targetHitTime, evt.duration);
@@ -102,33 +86,27 @@ namespace Project.Rhythm.Event
         public void SyncToTime(float stageTime)
         {
             _currentIndex = 0;
-            _nextAutoCountIndex = 0;
-            _lastTriggeredBeat = -1f;
 
             while (_currentIndex < _events.Count && _events[_currentIndex].targetHitTime < stageTime)
             {
                 _currentIndex++;
             }
 
-            int spawnCheckIndex = 0;
-            while (spawnCheckIndex < _events.Count)
+            int tempSpawnIndex = _currentIndex;
+            while (tempSpawnIndex < _events.Count)
             {
-                var evt = _events[spawnCheckIndex];
+                var evt = _events[tempSpawnIndex];
 
-                if (evt.spawnTriggerTime <= stageTime && evt.targetHitTime >= stageTime)
+                if (evt.spawnTriggerTime <= stageTime && evt.targetHitTime > stageTime)
                 {
                     OnSpawnTriggered?.Invoke(evt.action, evt.targetHitTime, evt.duration);
+                    _currentIndex = tempSpawnIndex + 1;
                 }
 
-                spawnCheckIndex++;
+                tempSpawnIndex++;
 
-                if (evt.spawnTriggerTime > stageTime + 2.0f) 
+                if (tempSpawnIndex < _events.Count && _events[tempSpawnIndex].spawnTriggerTime > stageTime + 2.0f)
                     break;
-            }
-
-            while (_nextAutoCountIndex < _events.Count && _events[_nextAutoCountIndex].targetHitTime < stageTime)
-            {
-                _nextAutoCountIndex++;
             }
         }
     }
