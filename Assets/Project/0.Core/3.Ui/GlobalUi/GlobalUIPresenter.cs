@@ -39,12 +39,13 @@ namespace Project.Core.Ui.GlobalUi
             return UniTask.CompletedTask;
         }
 
-        private CancellationToken GetFreshToken()
+        private CancellationToken GetLinkedToken(CancellationToken externalToken)
         {
             _fadeCts?.Cancel();
             _fadeCts?.Dispose();
             _fadeCts = new CancellationTokenSource();
-            return _fadeCts.Token;
+
+            return CancellationTokenSource.CreateLinkedTokenSource(_fadeCts.Token, externalToken).Token;
         }
 
         public void ResetFade()
@@ -56,27 +57,25 @@ namespace Project.Core.Ui.GlobalUi
             fadeView.SetAlphaImmediate(FADE_OUT_VALUE);
         }
 
-        public async UniTask ShowLoading()
+        public async UniTask ShowLoading(CancellationToken token = default)
         {
-            var token = GetFreshToken();
-            await fadeView.PlayFade(FADE_IN_VALUE, -1f, token);
+            var linkedToken = GetLinkedToken(token);
+            await fadeView.PlayFade(FADE_IN_VALUE, -1f, linkedToken);
 
             if (messageData != null)
-            {
                 loadingView.SetText(messageData.GetRandomMessage());
-            }
 
             loadingView.SetVisible(true);
             await loadingView.Show();
         }
 
-        public async UniTask HideLoading()
+        public async UniTask HideLoading(CancellationToken token = default)
         {
-            var token = GetFreshToken();
+            var linkedToken = GetLinkedToken(token);
             await loadingView.Hide();
             loadingView.SetVisible(false);
 
-            await fadeView.PlayFade(FADE_OUT_VALUE, -1f, token);
+            await fadeView.PlayFade(FADE_OUT_VALUE, -1f, linkedToken);
         }
 
         public void SetProgress(float val)
@@ -84,16 +83,16 @@ namespace Project.Core.Ui.GlobalUi
             loadingView.UpdateProgress(val, 0f).Forget();
         }
 
-        public async UniTask FadeIn(float duration)
+        public async UniTask FadeIn(float duration, CancellationToken token = default)
         {
-            var token = GetFreshToken();
-            await fadeView.PlayFade(FADE_IN_VALUE, duration, token);
+            var linkedToken = GetLinkedToken(token);
+            await fadeView.PlayFade(FADE_IN_VALUE, duration, linkedToken);
         }
 
-        public async UniTask FadeOut(float duration)
+        public async UniTask FadeOut(float duration, CancellationToken token = default)
         {
-            var token = GetFreshToken();
-            await fadeView.PlayFade(FADE_OUT_VALUE, duration, token);
+            var linkedToken = GetLinkedToken(token);
+            await fadeView.PlayFade(FADE_OUT_VALUE, duration, linkedToken);
         }
 
         /// <summary>
