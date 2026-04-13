@@ -117,10 +117,21 @@ namespace Project.Core.Managers
             if (!_isInitialized) return;
             OnStageStart?.Invoke();
 
-            // 시퀀스 제어를 StageFlow에게 위임
-            _stageFlow.PlaySequence(_activeStageData, stageStartDelay, this.GetCancellationTokenOnDestroy())
-                .ContinueWith(() => OnStageComplete?.Invoke())
-                .Forget();
+            PlayAsync().Forget();
+        }
+
+        private async UniTaskVoid PlayAsync()
+        {
+            try
+            {
+                await _stageFlow.PlaySequence(_activeStageData, stageStartDelay, this.GetCancellationTokenOnDestroy());
+
+                OnStageComplete?.Invoke();
+            }
+            catch (OperationCanceledException)
+            {
+                Debug.Log("Stage Play Canceled");
+            }
         }
 
         private void Update()
@@ -175,7 +186,7 @@ namespace Project.Core.Managers
                 _themeSwitcher.Switch(theme, () => {
                     ClearAllNotes();
                     _isThemeChanging = false;
-                }).Forget();
+                }, this.GetCancellationTokenOnDestroy()).Forget();
 
                 _themeIndex++;
             }

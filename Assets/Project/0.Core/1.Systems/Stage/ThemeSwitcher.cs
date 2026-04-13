@@ -7,6 +7,7 @@ using Project.Rhythm.Judgement;
 using Project.Rhythm.Presentation;
 using Project.Rhythm.Timeline;
 using System;
+using System.Threading;
 
 namespace Project.Core.Systems.Stage
 {
@@ -36,21 +37,21 @@ namespace Project.Core.Systems.Stage
             _presenter = presenter;
         }
 
-        public async UniTask Switch(StageThemeType theme, Action onClearNotes)
+        public async UniTask Switch(StageThemeType theme, Action onClearNotes, CancellationToken token)
         {
             InputManager.Instance.SetBlockInput(true);
-            await GlobalUIPresenter.Instance.FadeIn(0.1f);
+
+            await GlobalUIPresenter.Instance.FadeIn(0.1f,token);
 
             _judgement.ForceCompleteAll();
-            onClearNotes?.Invoke(); 
-
+            onClearNotes?.Invoke();
             _presenter.ChangeTheme(theme);
 
             float syncTime = _timeline.GetStageTime();
             _eventSystem.SyncToTime(syncTime);
             _countdownSystem.SyncToTime(syncTime);
 
-            await GlobalUIPresenter.Instance.FadeOut(0.1f);
+            await GlobalUIPresenter.Instance.FadeOut(0.1f,token);
             InputManager.Instance.SetBlockInput(false);
         }
     }

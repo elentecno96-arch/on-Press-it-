@@ -28,27 +28,26 @@ namespace Project.Core.Systems.Stage
 
         public async UniTask PlaySequence(StageData data, float delay, CancellationToken token)
         {
-            try
-            {
-                await UniTask.Yield();
-                await UniTask.Delay((int)(delay * 1000), cancellationToken: token);
+            await UniTask.Yield();
+            await UniTask.Delay((int)(delay * 1000), cancellationToken: token);
 
-                _timeline.StartTimeline();
+            _timeline.StartTimeline();
 
-                await UniTask.WaitUntil(() => _timeline.GetStageTime() >= data.endPosition, cancellationToken: token);
+            await UniTask.WaitUntil(() => _timeline.GetStageTime() >= data.endPosition, cancellationToken: token);
 
-                float score = _judgement.CalculateFinalScore();
-                _judgement.FinalizeAndSaveResult();
+            float score = _judgement.CalculateFinalScore();
+            _judgement.FinalizeAndSaveResult();
 
-                ProcessAchievements(data, score);
-                _presenter.ShowResult(
-                    _judgement.GetCount(JudgeResult.Perfect),
-                    _judgement.GetCount(JudgeResult.Great),
-                    _judgement.GetCount(JudgeResult.Good),
-                    _judgement.GetCount(JudgeResult.Miss)
-                );
-            }
-            catch (OperationCanceledException) { }
+            data.SetPlayComplete(true);
+
+            ProcessAchievements(data, score);
+
+            _presenter.ShowResult(
+                _judgement.GetCount(JudgeResult.Perfect),
+                _judgement.GetCount(JudgeResult.Great),
+                _judgement.GetCount(JudgeResult.Good),
+                _judgement.GetCount(JudgeResult.Miss)
+            );
         }
 
         private void ProcessAchievements(StageData data, float score)
@@ -57,7 +56,15 @@ namespace Project.Core.Systems.Stage
 
             int pCount = _judgement.GetCount(JudgeResult.Perfect);
 
-            AchievementManager.Instance.CheckStageAchievements(data, pCount, score, true);
+            bool isFirstClear = false;
+            if (PlayerManager.Instance != null && PlayerManager.Instance.Data != null)
+            {
+                var record = PlayerManager.Instance.Data.stageRecords.Find(r => r.stageIndex == data.stageIndex);
+
+                if (record == null || record.bestScore <= 70000) isFirstClear = true;
+            }
+
+            AchievementManager.Instance.CheckStageAchievements(data, pCount, score, isFirstClear);
         }
     }
 }
