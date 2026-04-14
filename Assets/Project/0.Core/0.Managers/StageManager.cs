@@ -103,11 +103,21 @@ namespace Project.Core.Managers
             _eventSystem.OnSpawnTriggered += (action, hitTime, duration) =>
             {
                 float currentTime = _audioTimeline.GetStageTime();
-                switch (action.noteType)
+
+                if (action.noteType == NoteType.Signal)
                 {
-                    case NoteType.Signal: HandleSignal(action); break;
-                    case NoteType.Persistent: HandlePersistent(action, currentTime, duration); break;
-                    case NoteType.Runtime: HandleRuntime(action, currentTime, duration); break;
+                    HandleSignal(action);
+                    return;
+                }
+
+                var note = _noteSpawner.GetOrSpawn(action, currentTime, duration);
+                if (note != null)
+                {
+                    note.UpdateNote(currentTime);
+                    _judgementSystem.RegisterNote(action, note);
+
+                    if (!_activeNotes.Contains(note))
+                        _activeNotes.Add(note);
                 }
             };
         }
@@ -168,7 +178,13 @@ namespace Project.Core.Managers
             for (int i = _activeNotes.Count - 1; i >= 0; i--)
             {
                 var note = _activeNotes[i];
-                if (note == null) { _activeNotes.RemoveAt(i); continue; }
+
+                if (note == null || !note.gameObject.activeSelf)
+                {
+                    _activeNotes.RemoveAt(i);
+                    continue;
+                }
+
                 note.UpdateNote(currentTime);
             }
         }
@@ -193,35 +209,10 @@ namespace Project.Core.Managers
         }
 
         #region Note Handling
-        private void HandleRuntime(RhythmAction action, float currentTime, float duration)
-        {
-            var noteObj = _noteSpawner.GetOrSpawn(action, currentTime, duration);
-            var note = noteObj?.GetComponent<Note>();
-            if (note == null) return;
-
-            note.UpdateNote(currentTime);
-            _judgementSystem.RegisterNote(action, note);
-
-            if (!_activeNotes.Contains(note)) _activeNotes.Add(note);
-        }
-
-        private void HandlePersistent(RhythmAction action, float currentTime, float duration)
-        {
-            Note note = presenter.GetOrSpawnPersistent(action.targetID);
-            if (note == null) return;
-
-            note.gameObject.SetActive(true);
-            note.ResetJudgedState();
-            note.InitializePersistent(currentTime, duration);
-            note.UpdateNote(currentTime);
-
-            _judgementSystem.RegisterNote(action, note);
-            if (!_activeNotes.Contains(note)) _activeNotes.Add(note);
-        }
 
         private void HandleSignal(RhythmAction action)
         {
-            presenter.GetFixedNote(action.targetID)?.PlaySignal();
+            _noteSpawner.GetStaticNote(action.targetID)?.PlaySignal();
         }
 
         private void ClearAllNotes()
@@ -234,7 +225,8 @@ namespace Project.Core.Managers
                 if (note.IsPersistent) note.gameObject.SetActive(false);
                 else Destroy(note.gameObject);
             }
-            _activeNotes.RemoveAll(n => n == null || !n.IsPersistent);
+            _activeNotes.Clear();
+            _noteSpawner.Reset(); 
         }
         #endregion
 

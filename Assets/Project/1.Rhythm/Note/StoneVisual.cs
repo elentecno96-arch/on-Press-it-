@@ -31,8 +31,21 @@ namespace Project.Rhythm.Note
                     holdSlider.value = progress;
                 }
 
-                float shake = Mathf.Sin(Time.time * 50f) * (progress * 5f);
-                targetImage.rectTransform.anchoredPosition = new Vector2(shake, 0);
+                float startThreshold = 0.4f;
+                float shakeIntensity = 0f;
+
+                if (progress > startThreshold)
+                {
+                    float normalizedProgress = (progress - startThreshold) / (1.0f - startThreshold);
+
+                    shakeIntensity = Mathf.Pow(normalizedProgress, 2.5f) * 20f;
+                }
+
+                float shake = Mathf.Sin(Time.time * 60f) * shakeIntensity;
+
+                float verticalShake = (Mathf.PerlinNoise(Time.time * 50f, 0) - 0.5f) * (shakeIntensity * 0.5f);
+
+                targetImage.rectTransform.anchoredPosition = new Vector2(shake, verticalShake);
             }
             else
             {

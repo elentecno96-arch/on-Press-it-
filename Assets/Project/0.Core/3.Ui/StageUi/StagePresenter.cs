@@ -32,8 +32,6 @@ namespace Project.Rhythm.Presentation
         private readonly Dictionary<StageThemeType, GameObject> _playerMap = new();
         private readonly Dictionary<StageThemeType, GameObject> _notePrefabMap = new();
 
-        private readonly Dictionary<int, Note.Note> _fixedNoteMap = new();
-
         private ITouchVisual _currentTouchVisual;
         private StageThemeType _currentTheme = (StageThemeType)(-1);
 
@@ -155,35 +153,6 @@ namespace Project.Rhythm.Presentation
             _currentTheme = theme;
         }
 
-        public Note.Note GetOrSpawnPersistent(string id)
-        {
-            if (string.IsNullOrEmpty(id)) return null;
-            int key = id.GetHashCode();
-
-            if (_fixedNoteMap.TryGetValue(key, out var existingNote))
-            {
-                if (existingNote != null)
-                {
-                    if (!existingNote.gameObject.activeSelf) existingNote.gameObject.SetActive(true);
-                    return existingNote;
-                }
-                _fixedNoteMap.Remove(key);
-            }
-
-            GameObject prefab = GetCurrentNotePrefab();
-            if (prefab == null) return null;
-
-            GameObject obj = stageView.CreateNote(prefab);
-            if (obj != null && obj.TryGetComponent<Note.Note>(out var note))
-            {
-                _fixedNoteMap.Add(key, note);
-                Debug.Log($"[Presenter] Persistent Note '{id}' 최초 스폰 완료");
-                return note;
-            }
-
-            return null;
-        }
-
         private void InitializeUI()
         {
             if (inGameView != null)
@@ -274,22 +243,15 @@ namespace Project.Rhythm.Presentation
         public GameObject SpawnNote()
         {
             var prefab = GetCurrentNotePrefab();
-            if (prefab == null) return null;
-
-            var obj = stageView.CreateNote(prefab);
-
-            if (obj != null)
-                obj.transform.SetAsFirstSibling();
-            return obj;
+            return SpawnNote(prefab);
         }
-
-        public Note.Note GetFixedNote(string id) =>
-            _fixedNoteMap.TryGetValue(id.GetHashCode(), out var note) ? note : null;
 
         public ITouchVisual GetTouchVisual() => _currentTouchVisual;
 
         public GameObject SpawnNote(GameObject notePrefab)
         {
+            if (notePrefab == null) return null;
+
             var obj = stageView.CreateNote(notePrefab);
 
             if (obj != null)

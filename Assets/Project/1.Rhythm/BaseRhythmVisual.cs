@@ -67,35 +67,31 @@ namespace Project.Rhythm.Visual
 
         protected virtual void Update()
         {
-            if (_currentAnimation == null || _currentAnimation.Length == 0) return;
-
-            if (_currentAnimation.Length > 1)
+            if (_currentAnimation == null || _currentAnimation.Length <= 1)
             {
-                _frameTimer += Time.deltaTime;
-
-                if (_frameTimer >= _currentFrameRate)
-                {
-                    _frameTimer = 0f;
-
-                    if (!_isLooping && _currentFrameIndex >= _currentAnimation.Length - 1)
-                    {
-                        OnAnimationComplete();
-                        return;
-                    }
-
-                    _currentFrameIndex++;
-
-                    if (_isLooping)
-                    {
-                        _currentFrameIndex %= _currentAnimation.Length;
-                    }
-
-                    targetImage.sprite = _currentAnimation[_currentFrameIndex];
-                }
+                // 프레임이 1개 이하면 스프라이트만 교체하고 연산 중지
+                if (_currentAnimation != null && _currentAnimation.Length == 1)
+                    targetImage.sprite = _currentAnimation[0];
+                return;
             }
-            else
+
+            _frameTimer += Time.deltaTime;
+            if (_frameTimer >= _currentFrameRate)
             {
-                targetImage.sprite = _currentAnimation[0];
+                _frameTimer = 0f;
+                _currentFrameIndex++;
+
+                if (!_isLooping && _currentFrameIndex >= _currentAnimation.Length)
+                {
+                    OnAnimationComplete();
+                    return;
+                }
+
+                if (_isLooping) _currentFrameIndex %= _currentAnimation.Length;
+
+                // 인덱스 안전 범위 체크 후 할당
+                if (_currentFrameIndex < _currentAnimation.Length)
+                    targetImage.sprite = _currentAnimation[_currentFrameIndex];
             }
         }
 
@@ -115,7 +111,9 @@ namespace Project.Rhythm.Visual
 
         protected virtual void OnAnimationComplete()
         {
-            SetAnimation(idleFrames, idleFrameRate, true);
+            _currentFrameIndex = _currentAnimation.Length - 1; // 마지막 프레임 고정
+            if (idleFrames != null && idleFrames.Length > 0)
+                SetAnimation(idleFrames, idleFrameRate, true);
         }
 
         protected void PlaySfx(AudioClip clip)
@@ -132,7 +130,10 @@ namespace Project.Rhythm.Visual
         public virtual void ResetVisual()
         {
             _isJudged = false;
+            _isHolding = false;
+
             transform.DOKill();
+
             SetAnimation(idleFrames, idleFrameRate, true);
         }
 

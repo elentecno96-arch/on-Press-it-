@@ -12,7 +12,7 @@ namespace Project.Rhythm.Interface
         void StopHoldAction();
 
         void PlayAction(JudgeResult result);
-
+        void ResetVisual();
         void UpdateVisual(float progress);
         void StartCountdown(float duration);
     }
