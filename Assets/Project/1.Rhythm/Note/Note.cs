@@ -1,6 +1,7 @@
 using Project.Rhythm.Data.Enum;
 using Project.Rhythm.Interface;
 using Project.Rhythm.Judgement;
+using System;
 using UnityEngine;
 
 namespace Project.Rhythm.Note
@@ -28,10 +29,11 @@ namespace Project.Rhythm.Note
         [SerializeField] private NoteType noteType;
         public NoteType Type => noteType;
         public bool IsPersistent => noteType == NoteType.Persistent;
+        private Action<Note> _onRelease;
 
         public float SpawnTime { get; private set; }
         public float AppearDuration { get; private set; }
-
+        private bool _isReleased;
         private bool _isJudged;
         public bool Judged => _isJudged;
 
@@ -43,15 +45,18 @@ namespace Project.Rhythm.Note
 
         public void Setup(float spawnTime, float appearDuration)
         {
-            if (noteType != NoteType.Runtime)
-            {
-                Debug.LogError($"[Note] Setup 잘못 호출됨: {noteType}");
-                return;
-            }
-
+            _isReleased = false;
+            _isJudged = false;
             SpawnTime = spawnTime;
             AppearDuration = appearDuration;
-            _isJudged = false;
+
+            if (TryGetComponent<RectTransform>(out var rt))
+            {
+                rt.anchoredPosition = Vector2.zero;
+                rt.localScale = Vector3.one;
+            }
+
+            _visual?.ResetVisual();
         }
 
         public void InitializePersistent(float spawnTime, float appearDuration)
@@ -80,22 +85,28 @@ namespace Project.Rhythm.Note
 
         public void UpdateNote(float currentTime)
         {
-            if (noteType != NoteType.Runtime) return;
+            if (noteType == NoteType.Signal || _isReleased) return;
+            if (_isJudged && IsPersistent) return;
 
             float progress = (currentTime - SpawnTime) / AppearDuration;
-
             _visual?.UpdateVisual(progress);
 
-            if (progress >= 2f)
+            if (noteType == NoteType.Runtime && progress >= 2.0f)
             {
                 HandleRetire();
             }
         }
+
         public void UpdateHoldProgress(float progress)
         {
             // 홀드 게이지를 채우거나 이펙트를 재생하는 로직
         }
 
+        public void SetPoolAction(System.Action<Note> action)
+        {
+            _onRelease = action;
+            _isReleased = false; 
+        }
 
         public void OnJudged(JudgeResult result)
         {
@@ -123,9 +134,17 @@ namespace Project.Rhythm.Note
 
         private void HandleRetire()
         {
-            if (noteType != NoteType.Runtime) return;
+            if (noteType != NoteType.Runtime || _isReleased) return;
 
-            Destroy(gameObject);
+            if (_onRelease != null)
+            {
+                _isReleased = true;
+                _onRelease.Invoke(this);
+            }
+            else
+            {
+                Destroy(gameObject);
+            }
         }
     }
 }

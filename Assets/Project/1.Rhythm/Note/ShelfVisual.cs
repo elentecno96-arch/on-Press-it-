@@ -1,5 +1,6 @@
 using DG.Tweening;
 using Project.Rhythm.Judgement;
+using Project.Rhythm.Data.Enum;
 using Project.Rhythm.Visual;
 using UnityEngine;
 
@@ -20,15 +21,19 @@ namespace Project.Rhythm.Note
             }
             else
             {
-                float overshootProgress = (progress - 1.0f) / 1.0f;
-                targetScale = Mathf.Lerp(1.0f, 2.5f, overshootProgress);
-                if (progress > 1.5f)
+                float overshootProgress = (progress - 1.0f);
+                targetScale = Mathf.Lerp(1.0f, 2.0f, overshootProgress);
+
+                if (progress > 1.7f)
                 {
-                    float alpha = Mathf.Lerp(1f, 0f, (progress - 1.5f) / 0.5f);
+                    float alpha = Mathf.Lerp(1f, 0f, (progress - 1.7f) / 0.3f);
                     targetImage.color = new Color(1, 1, 1, alpha);
                 }
+                else
+                {
+                    targetImage.color = Color.white;
+                }
             }
-
             transform.localScale = new Vector3(targetScale, targetScale, 1f);
         }
 
@@ -37,28 +42,28 @@ namespace Project.Rhythm.Note
             if (_isJudged) return;
             _isJudged = true;
 
+            transform.DOComplete();
+
             if (result != JudgeResult.Miss)
             {
                 PlaySfx(successSfx);
-                SetAnimation(successFrames,successFrameRate, true);
+                SetAnimation(successFrames, successFrameRate, false);
 
-                transform.DOComplete();
-                transform.DOPunchScale(Vector3.one * 0.15f, 0.2f);
+                transform.DOPunchScale(Vector3.one * 0.2f, 0.2f);
             }
             else
             {
                 PlaySfx(missSfx);
-                SetAnimation(missFrames,missFrameRate, true);
+                SetAnimation(missFrames, missFrameRate, true);
 
-                transform.DOComplete();
                 transform.DOShakePosition(0.3f, 10f);
                 targetImage.DOFade(0, 0.3f).SetDelay(0.2f);
             }
         }
 
-        public override void PlayAction(Project.Rhythm.Data.Enum.PatternType type)
+        public override void PlayAction(PatternType type)
         {
-            if (type == Project.Rhythm.Data.Enum.PatternType.Tap || type == Project.Rhythm.Data.Enum.PatternType.Slide)
+            if (type == PatternType.Tap || type == PatternType.Slide)
             {
                 PlaySfx(actionSfx);
             }
@@ -66,23 +71,22 @@ namespace Project.Rhythm.Note
 
         public override void ResetVisual()
         {
-            base.ResetVisual();
-            if (targetImage != null) targetImage.color = Color.white;
+            base.ResetVisual(); 
+
+            if (targetImage != null)
+            {
+                targetImage.DOKill();
+                targetImage.color = Color.white; 
+            }
+
             transform.localScale = Vector3.one;
         }
 
         protected override void OnDisable()
         {
-            base.OnDisable();
-
             transform.DOKill();
             targetImage.DOKill();
-
-            _isJudged = false;
-
-            if (targetImage != null) targetImage.color = Color.white;
-            transform.localScale = Vector3.one;
-            transform.localPosition = Vector3.zero;
+            base.OnDisable();
         }
 
         public override void StartCountdown(float targetBeat)
